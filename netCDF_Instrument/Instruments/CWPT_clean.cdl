@@ -1,0 +1,58 @@
+netcdf Continuous_Water_Pressure_Logger_Data {
+    dimensions:
+    time = 1;
+    variables:   
+        uint64 time(time) ;
+                time:long_name = "";
+                time:standard_name = "time";
+                time:units = "milliseconds since 1970-01-01 00:00:00 0:00" ;
+                time:calendar = "gregorian" ;
+                time:axis = "T" ;
+                time:ancillary_variables = "";
+                time:comment = "" ;
+        float lat;
+                lat:long_name = "Latitude of Sensor" ;
+                lat:standard_name = "latitude" ;
+                lat:units = "degrees_north" ;
+                lat:axis = "Y" ; 
+                lat:valid_min = -90.0f ;
+                lat:valid_max = 90.0f ; 
+                lat:_FillValue = 0.0f;
+                lat:ancillary_variables = "" ;
+                lat:comment = "Latitude 0 equals equator" ;
+       float lon ;
+                lon:long_name = "Longitude of Sensor" ;
+                lon:standard_name = "longitude" ; 
+                lon:units = "degrees_east" ; 
+                lon:axis = "X" ; 
+                lon:valid_min = -180.0f ; 
+                lon:valid_max = 180.0f ;
+                lon:_FillValue = 0.0f;
+                lon:ancillary_variables = "" ;
+                lon:comment = "Longitude 0 equals Prime Meridian" ; 
+       float z ;
+                z:long_name = "Altitude of Sensor" ;
+                z:standard_name = "altitude" ; 
+                z:units = "meters" ; 
+                z:axis = "Z" ; 
+                z:positive = "up" ;
+                z:valid_min = -11000.0f ; 
+                z:valid_max = 9000.0f ; 
+                z:_FillValue = 0.0f; 
+                z:ancillary_variables = "" ;
+                z:comment = "Altitude above NAVD88(?)" ;
+        float pressure(time) ;
+                pressure:long_name = "" ; 
+                pressure:standard_name = "pressure" ;
+                pressure:nodc_name = "PRESSURE" ; 
+                pressure:units = "Pascals" ; 
+                pressure:scale_factor = 1.0f ; 
+                pressure:add_offset = 0.0f ; 
+                pressure:_FillValue = 0.0f ; 
+                pressure:valid_min = -10000.0f ; 
+                pressure:valid_max = 10000.0f ; 
+                pressure:coordinates = "time lat lon z" ; 
+    data:
+        time = 100;
+}
+

@@ -1,0 +1,56 @@
+netcdf Continuous_Water_Pressure_Logger_Data {
+    dimensions:
+    time = 1;//.................................................... Number of time steps in the time series
+       
+        uint64 time(time) ;//………………………………………………………………………………………………………………………….  Uint64 or double gives better than millisecond accuracy.
+                time:long_name = "" ;//.....................................  RECOMMENDED - Reserve. 
+                time:standard_name = "time" ;//.............................  REQUIRED    - Do not change
+                time:units = "milliseconds since 1970-01-01 00:00:00 0:00" ;//REQUIRED    - CF compliant. November 17, 1858? 
+                time:calendar = "gregorian" ;//.............................. REQUIRED    - Acceptable for dates after 1582.
+                time:axis = "T" ;//.......................................... REQUIRED    - Do not change.
+                time:ancillary_variables = "" ; //........................... RECOMMENDED – Reserve. 
+                time:comment = "" ; //....................................... RECOMMENDED – Reserve.  
+        float lat ;//........................................................ Float gives better than millimeter accuracy 
+                lat:long_name = "Latitude of Sensor" ; //.................... RECOMMENDED – Reserve.
+                lat:standard_name = "latitude" ; //.......................... REQUIRED    - Do not change.
+                lat:units = "degrees_north" ; //............................. REQUIRED    - CF compliant.
+                lat:axis = "Y" ; //.......................................... REQUIRED    - Do not change.
+                lat:valid_min = -90.0f ; //.................................. RECOMMENDED – Any station latitude above the South Pole.
+                lat:valid_max = 90.0f ; //................................... RECOMMENDED – Any station latitude below the North Pole.
+                lat:_FillValue = 0.0f;//..................................... REQUIRED    - if there is a missing value.
+                lat:ancillary_variables = "" ; //............................ RECOMMENDED – Reserve.
+                lat:comment = "Latitude 0 equals equator" ; //............... RECOMMENDED – Define latitude system.
+       float lon ; //.........................................................Float gives better than millimeter accuracy. 
+                lon:long_name = "Longitude of Sensor" ; //................... RECOMMENDED – Reserve. 
+                lon:standard_name = "longitude" ; //......................... REQUIRED    - Do not change.
+                lon:units = "degrees_east" ; //.............................. REQUIRED    - CF compliant
+                lon:axis = "X" ; //.......................................... REQUIRED    - Do not change.
+                lon:valid_min = -180.0f ; //................................. RECOMMENDED – Any station longitude.
+                lon:valid_max = 180.0f ; //.................................. RECOMMENDED – Any station longitude.
+                lon:_FillValue = 0.0f;//..................................... REQUIRED    - if there is a missing value.    
+                lon:ancillary_variables = "" ; //............................ RECOMMENDED – Reserve.
+                lon:comment = "Longitude 0 equals Prime Meridian" ; //....... RECOMMENDED – Define longitude system.
+       float z ;//........................................................... Float gives better than millimeter accuracy.                                                        
+                z:long_name = "Altitude of Sensor" ; //...................... RECOMMENDED – Reserve.
+                z:standard_name = "altitude" ; //............................ REQUIRED    - CF compliant.
+                z:units = "meters" ; //...................................... REQUIRED    - UDUNITS compliant.
+                z:axis = "Z" ; //............................................ REQUIRED    - Do not change.
+                z:positive = "up" ; //....................................... REQUIRED    - CF compliant.
+                z:valid_min = -11000.0f ; //................................. RECOMMENDED – Any station above the Earth’s surface.
+                z:valid_max = 9000.0f ; //................................... RECOMMENDED – Any station below 1km above Mount Everest
+                z:_FillValue = 0.0f; //...................................... REQUIRED    - If there is a missing value.
+                z:ancillary_variables = "" ; //.............................. RECOMMENDED – Reserve. 
+                z:comment = "Altitude above NAVD88(?)" ; //.................. RECOMMENDED – Define altitude system.
+        float pressure(time) ;//............................................. Float gives better than ?? accuracy 
+                pressure:long_name = "" ; //................................. RECOMMENDED - Provide a descriptive, long name. 
+                pressure:standard_name = "pressure" ; //..................... REQUIRED    - Checking name table for CF ocmpliance.
+                pressure:nodc_name = "PRESSURE" ; //......................... RECOMMENDED – Need to check.
+                pressure:units = "Pascals" ; //.............................. REQUIRED    - Use UDUNITS compatible units.
+                pressure:scale_factor = 1.0f ; //............................ REQUIRED - Standard netCDF convention for unscaled data
+                pressure:add_offset = 0.0f ; // ............................. REQUIRED – Standard netCDF convention for no-offset data
+                pressure:_FillValue = 0.0f ; //................ REQUIRED  if there is a missing value.
+                pressure:valid_min = -10000.0f ; //............ RECOMMENDED – Whatever makes sense here. 
+                pressure:valid_max = 10000.0f ; //............. RECOMMENDED – Whatever makes sense here.
+                pressure:coordinates = "time lat lon z" ; //... REQUIRED    - CF compliant. 
+    }
+
