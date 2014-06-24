@@ -8,8 +8,7 @@ import sys
 from datetime import datetime
 import pytz
 from pytz import timezone
-import time
-
+import pandas
 
 #--python 3 compatibility
 pyver = sys.version_info
@@ -65,6 +64,10 @@ class pressure(object):
         '''        
         offset = self.data_start - self.epoch_start            
         return offset.total_seconds()
+    
+    def convert_dateobject(self, datestring):
+        first_date = datetime.strptime(datestring, "%d-%B-%Y %H:%M:%S.%f")
+        return pytz.utc.localize(first_date)
 
 
     def time_var(self,ds):
@@ -137,25 +140,12 @@ class pressure(object):
         pressure_var[:] = self.pressure_data
         return pressure_var
     
-    def sea_pressure_var(self,ds):
-        sea_pressure_var = ds.createVariable("seapressure","f4", ("time",),fill_value=self.fill_value)
-        sea_pressure_var.long_name = "sea pressure record"
-        sea_pressure_var.description = "The sea presure after air pressure is subtracted"
-        sea_pressure_var.units = self.pressure_units
-        sea_pressure_var.scale_factor = np.float32(1.0)
-        sea_pressure_var.add_offset = np.float32(1.0)
-        sea_pressure_var.min = self.valid_pressure[0]
-        sea_pressure_var.max = self.valid_pressure[1]
-        sea_pressure_var.ancillary_variables = 'This is so meta'
-        sea_pressure_var.coordiantes = "time latitude longitude z"
-        sea_pressure_var[:] = self.pressure_data
-        return sea_pressure_var
-
-
+   
     def write(self):
         assert not os.path.exists(self.out_filename),"out_filename already exists"
         #--create variables and assign data
         ds = netCDF4.Dataset(self.out_filename,'w',format="NETCDF4")
+        print('TimeDAta = %s - PRessure data - %s' % (len(self.utc_millisecond_data), len(self.pressure_data)))
         time_dimen = ds.createDimension("time",len(self.pressure_data))   
         print(len(self.pressure_data))  
         time_var = self.time_var(ds)
@@ -277,8 +267,8 @@ class leveltroll(pressure):
     '''derived class for leveltroll ascii files
     '''
     def __init__(self):
-        self.numpy_dtype = np.dtype([("seconds",np.float32),("pressure",np.float32)])
-        self.record_start_marker = "Date & Time"
+      #  self.numpy_dtype = np.dtype([("seconds",np.float32),("pressure",np.float32)])
+      #  self.record_start_marker = "Date & Time"
         self.timezone_marker = "time zone"        
         super(leveltroll,self).__init__()
 
@@ -287,19 +277,43 @@ class leveltroll(pressure):
         '''load the data from in_filename
         only parse the initial datetime = much faster
         '''
-        f = open(self.in_filename,'rb')
         
-        self.read_header(f)
-        self.data_start = self.read_datetime(f)
-        data = np.genfromtxt(f,dtype=self.numpy_dtype,delimiter=',',usecols=[1,2])     
-        f.close()
+        df2 = pandas.read_csv(self.in_filename, skiprows=8226,  sep=' ')
+        new_frame = df2[['Unnamed: 0','Unnamed: 1', 'Unnamed: 5']]
+        new_frame.columns = ['Date','Time','Pressure']
+        val_dict = new_frame.to_dict()
         
-        long_seconds = np.float64(time.time(data["date & time"]))
+        
+        date_objects = []
+        for x in range(0,len(val_dict['Date'])):
+            str_time = '%s %s' % (val_dict['Date'][x], val_dict['Time'][x])
+            print(x)
+            try:
+                date_objects.append(self.convert_dateobject(str_time))
+            except:
+                print('Nope!')
+        
+        
+        #self.read_header(f)
+        self.data_start = self.read_datetime(date_objects[0])
+        
+       # data = np.genfromtxt(f,dtype=self.numpy_dtype,delimiter=',',usecols=[1,2])     
+       # f.close()
+        
+        long_seconds = list()
+        for x in date_objects:
+            long_seconds.append(np.int64((x - self.data_start).total_seconds()))
+            
         self.utc_millisecond_data = (long_seconds + np.float64(self.offset_seconds)) * 1000
+        
+        print(self.utc_millisecond_data)
         #print self.utc_millisecond_data[0],self.utc_millisecond_data[1]
-        self.pressure_data = data["pres15"]
-        self.sea_pressure_data = data["pres08"]
-        self.depth_data = data["dpth01"]
+        pressure_list = []
+        keys = list(val_dict['Pressure'])
+        for n in keys:
+            pressure_list.append(n)
+        pressure_list.pop()
+        self.pressure_data = pressure_list
         
 
     def read_header(self,f):
@@ -310,7 +324,6 @@ class leveltroll(pressure):
         while not line.lower().startswith(self.record_start_marker):
             bit_line = f.readline() 
             line = bit_line.decode()
-            print(line)
             line_count += 1
 #             if line.lower().startswith(self.timezone_marker):
 #                 self.timezone_string = line.split(':')[1].strip()        
@@ -324,20 +337,21 @@ class leveltroll(pressure):
     def read_datetime(self,f):
         '''read the first datetime and cast
         '''        
-        dt_fmt = "%m/%d/%Y %I:%M:%S %p "
-        dt_converter = lambda x: datetime.strptime(str(x),dt_fmt)\
-            .replace(tzinfo=self.tzinfo)
-        reset_point = f.tell()  
-        bit_line = f.readline()          
-        line = bit_line.decode()  
-        print(line)        
-        raw = line.strip().split(',')
-        dt_str = raw[0]
-        try:
-            data_start = dt_converter(dt_str)
-        except Exception as e:
-            raise Exception("ERROR - cannot parse first date time stamp: "+str(self.td_str)+" using format: "+dt_fmt+'\n')
-        f.seek(reset_point)
+        dt_fmt = "%d-%B-%Y %I:%M:%S.%f"
+#         dt_converter = lambda x: datetime.strptime(str(x),dt_fmt)\
+#             .replace(tzinfo=self.tzinfo)
+#         reset_point = f.tell()  
+#         bit_line = f.readline()          
+#         line = bit_line.decode()  
+        #line = f
+        data_start = f       
+#         raw = line.strip().split(',')
+#         dt_str = raw[0]
+#         try:
+#             data_start = dt_converter(line)
+#         except Exception as e:
+#             raise Exception("ERROR - cannot parse first date time stamp: "+str(self.td_str)+" using format: "+dt_fmt+'\n')
+# #         f.seek(reset_point)
         return data_start
 
 
@@ -360,8 +374,8 @@ if __name__ == "__main__":
     lt = leveltroll()        
     
     #--for testing
-    lt.in_filename = os.path.join("benchmark","baro.csv")
-    lt.out_filename = os.path.join("benchmark","baro.csv.nc")
+    lt.in_filename = os.path.join("benchmark","RBR_RSK.txt")
+    lt.out_filename = os.path.join("benchmark","RBR.csv.nc")
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)
     lt.is_baro = True
@@ -380,5 +394,7 @@ if __name__ == "__main__":
 
     #--write the netcdf file
     lt.write()
+    
+    
     
     

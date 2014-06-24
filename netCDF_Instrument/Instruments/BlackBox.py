@@ -274,12 +274,15 @@ class leveltroll(pressure):
 
         data = np.genfromtxt(f,dtype=self.numpy_dtype,delimiter=',',usecols=[1,2])     
         f.close()
-        print(data)
+        
         # long_seconds = np.float64(data["seconds"])
         #print(data)
+       
         long_seconds = data["seconds"]
         self.utc_millisecond_data = (long_seconds + np.float64(self.offset_seconds)) * 1000
-        #print self.utc_millisecond_data[0],self.utc_millisecond_data[1]
+        
+        print('Here it is')
+        print(self.utc_millisecond_data)
         self.pressure_data = data["pressure"]
         
 

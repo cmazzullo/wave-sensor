@@ -1,0 +1,6 @@
+MODULES_MANAGER_V2
+Instruments.BlackBox|C:\Users\Gregory\Documents\GitHub\wave-sensor\netCDF_Instrument\Instruments\BlackBox.py
+Instruments.RBRTroll|C:\Users\Gregory\Documents\GitHub\wave-sensor\netCDF_Instrument\Instruments\RBRTroll.py
+Instruments.Testing|C:\Users\Gregory\Documents\GitHub\wave-sensor\netCDF_Instrument\Instruments\Testing.py
+Instruments.__init__|C:\Users\Gregory\Documents\GitHub\wave-sensor\netCDF_Instrument\Instruments\__init__.py
+Instruments.generate_test_nc_datasets|C:\Users\Gregory\Documents\GitHub\wave-sensor\netCDF_Instrument\Instruments\generate_test_nc_datasets.py

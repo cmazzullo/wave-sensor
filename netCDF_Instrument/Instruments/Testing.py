@@ -4,7 +4,7 @@ Created on Jun 20, 2014
 @author: Gregory
 '''
 from nose import with_setup
-from UnitTesting import BlackBox
+import Instruments.BlackBox as BlackBox
 import unittest
 
 

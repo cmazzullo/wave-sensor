@@ -1,0 +1,4 @@
+dict = {1: 2, 2: 3, 3: 4}
+list_pop = list(dict.values.pop())
+
+print(list_pop)
