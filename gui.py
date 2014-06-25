@@ -2,9 +2,11 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
 import sys
+from pytz import timezone
 sys.path.append('.')
 import RBRTroll
 import numpy as np
+import time
 
 class WaveGui:
     """A graphical interface to the netCDF conversion program. Prompts
@@ -12,9 +14,10 @@ class WaveGui:
     file from the sensor to a properly formatted netCDF file.
     """
     def __init__(self, root):
+        self.root = root
+
         generic_sensor = RBRTroll.pressure()
         fill_value = str(generic_sensor.fill_value)
-
         self.in_filename = StringVar()
         self.out_filename = StringVar()
         self.username = StringVar()
@@ -48,6 +51,8 @@ class WaveGui:
                         self.select_pressure_units,
                         self.process_button,
                         self.quit_button)
+        self.setup_for_instrument('SomeInstrument')
+
 
     def setup_mainframe(self, root):
         mainframe = ttk.Frame(root, padding="3 3 12 12")
@@ -59,32 +64,28 @@ class WaveGui:
         self.mainframe = mainframe
 
     def select_instrument(self, root):
-        # Option Menu for Self.Instrument selection
         ttk.Label(self.mainframe, text="Sensor brand:",
                   justify=LEFT).grid(column=1, row=1, sticky=W)
-#        self.instrument.set("LevelTroll") # default value
-
-        def setup_for_instrument(instrument_name):
-            self.mainframe.destroy()
-            self.setup_mainframe(root)
-            self.select_instrument(root)
-            for w in self.widgets:
-                try: 
-                    if w not in self.suppress_dict[instrument_name]:
-                        w()
-                except KeyError:
-                    w()
-
-            for child in self.mainframe.winfo_children():
-                child.grid_configure(padx=5, pady=5)
-            root.minsize(root.winfo_width(), root.winfo_height())
-
         imenu = OptionMenu(self.mainframe, self.instrument,
                            "LevelTroll",
                            "RBRVirtuoso",
                            "SomeInstrument",
-                           command=setup_for_instrument)
+                           command=self.setup_for_instrument)
         imenu.grid(column=2, row=1, sticky=(W, E))
+
+    def setup_for_instrument(self, instrument_name):
+        self.mainframe.destroy()
+        self.setup_mainframe(root)
+        self.select_instrument(root)
+        for w in self.widgets:
+            try: 
+                if w not in self.suppress_dict[instrument_name]:
+                    w()
+            except KeyError:
+                w()
+        for child in self.mainframe.winfo_children():
+            child.grid_configure(padx=5, pady=5)
+        root.minsize(root.winfo_width(), root.winfo_height())
 
 
     def get_in_filename(self):
@@ -92,9 +93,8 @@ class WaveGui:
         in_filename_entry = ttk.Entry(self.mainframe, width=7,
                                       textvariable=self.in_filename)
         in_filename_entry.grid(column=2, row=2, sticky=(W, E))
-        ttk.Label(self.mainframe, text="In Filename:").grid(column=1,
-                                                            row=2,
-                                                            sticky=W)
+        ttk.Label(self.mainframe, 
+                  text="In Filename:").grid(column=1, row=2, sticky=W)
         def select_infile():
             fname = filedialog.askopenfilename()
             if fname is None:
@@ -214,15 +214,18 @@ class WaveGui:
                                                    sticky=W)
 
     def process_file(self):
-        print('processing file...')
         sensor = self.instrument.get()
-        print(sensor)
         if sensor == 'LevelTroll':
             device = RBRTroll.leveltroll()
         elif sensor == 'RBRVirtuoso':
             # The rbr and leveltroll subclasses are mixed up in
             # the current file
             device = RBRTroll.leveltroll()
+        root = self.root
+        d = MessageDialog(root, message="Processing file. "
+                          "This may take a few minutes.",
+                          title='Processing...',
+                          nobutton=True)
 
         # TODO: Check for missing inputs
         # Progress bar while processing file
@@ -235,22 +238,51 @@ class WaveGui:
             device.z_units = self.altitude_units.get()
             device.is_baro = self.barometric.get() == 'Yes'
             device.salinity = np.float32(self.salinity.get())
-            device.tz = timezone('US/' + 
+            device.tz = timezone('US/' +
                                  self.timezone.get().capitalize())
             device.pressure_units = self.pressure_units.get()
 
             device.read()
             device.write()
+            d.top.destroy()
+            d = MessageDialog(root, message="Success! File saved " +
+                              "in:\n%s." % self.in_filename.get(),
+                              title='Success!')
+            root.wait_window(d.top)
+            root.destroy()
         except:
-            # TODO: dialog boxes
-            pass
+            d.top.destroy()
+            d = MessageDialog(root, message="Input Error! Please " +
+                              "double check your form entries.",
+                              title='Error!')
+#            root.wait_window(d.top)
+
+
     def quit_button(self):
         """Exits the application without saving anything"""
         ttk.Button(self.mainframe, text="Quit",
                    command=lambda: root.destroy()).grid(column=2, 
                                                         row=21, 
                                                         sticky=W)
+class MessageDialog:
+
+    def __init__(self, parent, message="", title="",  nobutton=False):
         
+        top = self.top = Toplevel(parent)
+        top.transient(parent)
+        top.title(title)
+        Label(top, text=message).pack()
+        if not nobutton:
+            b = Button(top, text="OK", command=self.ok)
+            b.pack(pady=5)
+            top.initial_focus = top
+        parent.update()
+        parent.grab_set()
+
+
+    def ok(self):
+        self.top.destroy()
+
 if __name__ == "__main__":
     root = Tk()
     gui = WaveGui(root)
