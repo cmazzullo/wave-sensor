@@ -1,14 +1,20 @@
-import numpy as np
+# import numpy as np
+# from datetime import datetime
+# import pytz
+# 
+# sven = ['14-May-2014 03:52:06.250', 
+#         '14-May-2014 03:52:03.750', 
+#         '14-May-2014 03:52:04.000']
+# 
+# 
+# def convert_dateobject(datestring):
+#     first_date = datetime.strptime(datestring, "%d-%B-%Y %H:%M:%S.%f")
+#     return pytz.utc.localize(first_date)
+# 
+# 
+# 
+# 
+# for x in sven:
+#     offset = convert_dateobject(x) - datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
+#     print(offset.total_seconds())
 
-sven = np.array(['2005-02-01', '2005-02-02', '2005-02-03', '2005-02-04',
-       '2005-02-05', '2005-02-06', '2005-02-07', '2005-02-08',
-       '2005-02-09', '2005-02-10', '2005-02-11', '2005-02-12',
-       '2005-02-13', '2005-02-14', '2005-02-15', '2005-02-16',
-       '2005-02-17', '2005-02-18', '2005-02-19', '2005-02-20',
-       '2005-02-21', '2005-02-22', '2005-02-23', '2005-02-24',
-       '2005-02-25', '2005-02-26', '2005-02-27', '2005-02-28'],
-       dtype='datetime64[D]')
-
-test = np.datetime64()
-test.
-print(test)

@@ -7,9 +7,7 @@ import os
 import sys
 from datetime import datetime
 import pytz
-from pytz import timezone
 import pandas
-
 
 
 #--python 3 compatibility
@@ -68,12 +66,12 @@ class pressure(object):
         return offset.total_seconds()
     
     def convert_dateobject(self, datestring):
-        first_date = datetime.strptime(datestring, "%d-%B-%Y %H:%M:%S.%f")
-        return pytz.utc.localize(first_date)
+            first_date = datetime.strptime(datestring, "%d-%B-%Y %H:%M:%S.%f")
+            return pytz.utc.localize(first_date)
 
 
     def time_var(self,ds):
-        time_var = ds.createVariable("time","u8",("time",),fill_value=np.int64(1.0e+10))
+        time_var = ds.createVariable("time","u8",("time",),fill_value=np.float64())
         time_var.long_name = ''
         time_var.standard_name = "time"
         time_var.units = "milliseconds since "+self.epoch_start.strftime("%Y-%m-%d %H:%M:%S")+" in UTC"
@@ -147,7 +145,6 @@ class pressure(object):
         assert not os.path.exists(self.out_filename),"out_filename already exists"
         #--create variables and assign data
         ds = netCDF4.Dataset(self.out_filename,'w',format="NETCDF4")
-        print('TimeDAta = %s - PRessure data - %s' % (len(self.utc_millisecond_data), len(self.pressure_data)))
         time_dimen = ds.createDimension("time",len(self.pressure_data))   
         print(len(self.pressure_data))  
         time_var = self.time_var(ds)
@@ -280,90 +277,26 @@ class leveltroll(pressure):
         only parse the initial datetime = much faster
         '''
         
-        #df2 = pandas.read_csv(self.in_filename, skiprows=8226,  sep=' ')
-        df2 = pandas.read_csv(self.in_filename,skiprows=8226, sep=' ', engine='c', index_col=['Unnamed: 0','Unnamed: 1'],  usecols=['Unnamed: 0', 'Unnamed: 1', 'Unnamed: 5'])
-        df2.columns= ['Pressure']
-        data_objects = df2.to_dict()
-        dates = ['%s %s' % (x, y) for x, y in data_objects['Pressure'].keys()]
-        pressure = list(data_objects['Pressure'].values())
-        
-        pressure.pop()
-        
-#         for x in range(0,len(val_dict['Date'])):
-#             str_time = '%s %s' % (val_dict['Date'][x], val_dict['Time'][x])
-#             print(x)
-#             try:
-#                 date_objects.append(self.convert_dateobject(str_time))
-#             except:
-#                 print('Nope!')
-        
-        
-        #self.read_header(f)
-        self.data_start = self.convert_dateobject(dates[0])#self.read_datetime()
-        
-       # data = np.genfromtxt(f,dtype=self.numpy_dtype,delimiter=',',usecols=[1,2])     
-       # f.close()
+        df2 = pandas.read_csv(self.in_filename,skiprows=8226, sep=' ', engine='c',  usecols=['Unnamed: 0', 'Unnamed: 1', 'Unnamed: 5'])
+     
+        df2.columns = ['Date','Time','Pressure']
         print('here we go')
-        long_seconds = [datetime.utcoffset(self.convert_dateobject(x)).total_seconds() for x in dates if x != 'nan nan']
-        self.utc_millisecond_data = (long_seconds + np.float64(self.offset_seconds)) * 1000
-        print('done')
-        print(self.utc_millisecond_data)
-        #print self.utc_millisecond_data[0],self.utc_millisecond_data[1]
         
-        self.pressure_data = pressure
+       
+        for x in df2.itertuples():
+            if x[0] == 0:
+                self.data_start = (self.convert_dateobject('%s %s' % (x[1],x[2])) - self.epoch_start).total_seconds()
+                break
+
+        self.utc_millisecond_data = []
+      
+        for x in range(0, df2.shape[0] - 1):
+            self.utc_millisecond_data.append(self.data_start * 1000)
+            self.data_start += .25
+    
+        self.pressure_data = [x[3] for x in df2[:-1].itertuples()]
+#   
         print('done read')
-
-    def read_header(self,f):
-        ''' read the header from the level troll ASCII file
-        '''
-        line = ""
-        line_count = 0    
-        while not line.lower().startswith(self.record_start_marker):
-            bit_line = f.readline() 
-            line = bit_line.decode()
-            line_count += 1
-#             if line.lower().startswith(self.timezone_marker):
-#                 self.timezone_string = line.split(':')[1].strip()        
-        if self.timezone_string is None:
-            raise Exception("ERROR - could not find time zone in file "+\
-                self.in_filename+" header before line "+str(line_count)+'\n') 
-        #self.set_timezone()
-        self.tz = timezone("eastern")     
-        
-
-    def read_datetime(self,f):
-        '''read the first datetime and cast
-        '''        
-        dt_fmt = "%d-%B-%Y %I:%M:%S.%f"
-#         dt_converter = lambda x: datetime.strptime(str(x),dt_fmt)\
-#             .replace(tzinfo=self.tzinfo)
-#         reset_point = f.tell()  
-#         bit_line = f.readline()          
-#         line = bit_line.decode()  
-        #line = f
-        data_start = f       
-#         raw = line.strip().split(',')
-#         dt_str = raw[0]
-#         try:
-#             data_start = dt_converter(line)
-#         except Exception as e:
-#             raise Exception("ERROR - cannot parse first date time stamp: "+str(self.td_str)+" using format: "+dt_fmt+'\n')
-# #         f.seek(reset_point)
-        return data_start
-
-
-#     def set_timezone(self):
-#         '''set the timezone from the timezone string found in the header - 
-#         needed to get the times into UTC
-#         '''
-#         tz_dict = {"central":"US/Central","eastern":"US/Eastern"}
-#         for tz_str,tz in tz_dict.items():
-#             if self.timezone_string.lower().startswith(tz_str):
-#                 self.tzinfo = timezone(tz)
-#                 return               
-#         raise Exception("could not find a timezone match for " + self.timezone_string)                
-
-
 
 if __name__ == "__main__":
     
