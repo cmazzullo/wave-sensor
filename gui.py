@@ -15,7 +15,6 @@ class WaveGui:
         generic_sensor = RBRTroll.pressure()
         fill_value = str(generic_sensor.fill_value)
 
-
         self.in_filename = StringVar()
         self.out_filename = StringVar()
         self.username = StringVar()
@@ -47,7 +46,8 @@ class WaveGui:
                         self.select_is_barometric,
                         self.enter_salinity,
                         self.select_pressure_units,
-                        self.button_process)
+                        self.process_button,
+                        self.quit_button)
 
     def setup_mainframe(self, root):
         mainframe = ttk.Frame(root, padding="3 3 12 12")
@@ -75,6 +75,8 @@ class WaveGui:
                 except KeyError:
                     w()
 
+            for child in self.mainframe.winfo_children():
+                child.grid_configure(padx=5, pady=5)
             root.minsize(root.winfo_width(), root.winfo_height())
 
         imenu = OptionMenu(self.mainframe, self.instrument,
@@ -160,7 +162,8 @@ class WaveGui:
         ttk.Label(self.mainframe, text="Altitude units:",
                   justify=LEFT).grid(column=1, row=8, sticky=W)
         self.altitude_units.set("meters") # default value
-        amenu = OptionMenu(self.mainframe, self.altitude_units, "feet", "meters")
+        amenu = OptionMenu(self.mainframe, self.altitude_units, 
+                           "feet", "meters")
         amenu.grid(column=2, row=8, sticky=(W, E))
 
     def select_timezone(self):
@@ -168,21 +171,26 @@ class WaveGui:
         ttk.Label(self.mainframe, text="Timezone:",
                   justify=LEFT).grid(column=1, row=9, sticky=W)
         self.timezone.set("Eastern") # default value
-        tmenu = OptionMenu(self.mainframe, self.timezone, "Central", "Eastern")
+        tmenu = OptionMenu(self.mainframe, self.timezone, 
+                           "Central", "Eastern")
         tmenu.grid(column=2, row=9, sticky=(W, E))
 
     def select_is_barometric(self):
         # Barometric option menu
-        ttk.Label(self.mainframe, text="Barometric correction dataset?:",
+        ttk.Label(self.mainframe, 
+                  text="Barometric correction dataset?:", 
                   justify=LEFT).grid(column=1, row=10, sticky=W)
         self.barometric.set("No") # default value
-        bmenu = OptionMenu(self.mainframe, self.barometric, "Yes", "No")
+        bmenu = OptionMenu(self.mainframe, self.barometric, 
+                           "Yes", "No")
         bmenu.grid(column=2, row=10, sticky=(W, E))
 
     def enter_salinity(self):
         # Salinity
-        ttk.Label(self.mainframe, text="Salinity:").grid(column=1, row=11, sticky=W)
-        salinity_entry = ttk.Entry(self.mainframe, width=7, textvariable=self.salinity)
+        ttk.Label(self.mainframe, 
+                  text="Salinity:").grid(column=1, row=11, sticky=W)
+        salinity_entry = ttk.Entry(self.mainframe, width=7, 
+                                   textvariable=self.salinity)
         salinity_entry.grid(column=2, row=11, sticky=(W, E))
 
 
@@ -199,16 +207,11 @@ class WaveGui:
                                "psi")
         pressures.grid(column=2, row=13, sticky=(W, E))
 
-    def button_process(self):
+    def process_button(self):
         # 'Process File' Button
         ttk.Button(self.mainframe, text="Process File",
-                   command=self.process_file).grid(column=2, row=21,
+                   command=self.process_file).grid(column=1, row=21,
                                                    sticky=W)
-
-        for child in self.mainframe.winfo_children():
-            child.grid_configure(padx=5, pady=5)
-
-
 
     def process_file(self):
         print('processing file...')
@@ -221,22 +224,33 @@ class WaveGui:
             # the current file
             device = RBRTroll.leveltroll()
 
-            # TODO: Check for missing inputs
-        device.in_filename = self.in_filename.get()
-        device.out_filename = self.out_filename.get()
-#       device.username = self.username
-        device.latitude = np.float32(self.latitude.get())
-        device.longitude = np.float32(self.longitude.get())
-        device.z = np.float32(self.altitude.get())
-        device.z_units = self.altitude_units.get()
-        device.is_baro = self.barometric.get() == 'Yes'
-        device.salinity = np.float32(self.salinity.get())
-        device.tz = timezone('US/' + self.timezone.get().capitalize())
-        device.pressure_units = self.pressure_units.get()
+        # TODO: Check for missing inputs
+        # Progress bar while processing file
+        try:
+            device.in_filename = self.in_filename.get()
+            device.out_filename = self.out_filename.get()
+            device.latitude = np.float32(self.latitude.get())
+            device.longitude = np.float32(self.longitude.get())
+            device.z = np.float32(self.altitude.get())
+            device.z_units = self.altitude_units.get()
+            device.is_baro = self.barometric.get() == 'Yes'
+            device.salinity = np.float32(self.salinity.get())
+            device.tz = timezone('US/' + 
+                                 self.timezone.get().capitalize())
+            device.pressure_units = self.pressure_units.get()
 
-        device.read()
-        device.write()
-
+            device.read()
+            device.write()
+        except:
+            # TODO: dialog boxes
+            pass
+    def quit_button(self):
+        """Exits the application without saving anything"""
+        ttk.Button(self.mainframe, text="Quit",
+                   command=lambda: root.destroy()).grid(column=2, 
+                                                        row=21, 
+                                                        sticky=W)
+        
 if __name__ == "__main__":
     root = Tk()
     gui = WaveGui(root)
