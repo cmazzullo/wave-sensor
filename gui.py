@@ -218,9 +218,7 @@ class WaveGui:
         if sensor == 'LevelTroll':
             device = RBRTroll.leveltroll()
         elif sensor == 'RBRVirtuoso':
-            # The rbr and leveltroll subclasses are mixed up in
-            # the current file
-            device = RBRTroll.leveltroll()
+            device = RBRTroll.rbrsolo()
         root = self.root
         d = MessageDialog(root, message="Processing file. "
                           "This may take a few minutes.",
