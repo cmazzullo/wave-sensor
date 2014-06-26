@@ -5,6 +5,7 @@ Created on Jun 20, 2014
 '''
 from nose import with_setup
 import Instruments.BlackBox as BlackBox
+import Instruments.RBRTroll as RBR
 import unittest
 
 

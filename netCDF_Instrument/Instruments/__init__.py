@@ -17,4 +17,7 @@
 # for x in sven:
 #     offset = convert_dateobject(x) - datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
 #     print(offset.total_seconds())
+from datetime import datetime
 
+first_date = datetime.strptime('20-Jun-2014 18:02:07.288', "%d-%b-%Y %H:%M:%S.%f")
+print(first_date)   
