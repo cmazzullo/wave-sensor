@@ -1,6 +1,3 @@
-"""Contains  Waveguage, a class to read in data from a Wave Guage
-pressure sensor and write it to a netCDF file."""
-
 from RBRTroll import pressure
 import numpy as np
 from datetime import datetime
@@ -19,31 +16,32 @@ class Waveguage(pressure):
         super(Waveguage, self).__init__()
 
     def read(self):
-        """Sets data_start to a datetime object, utc_millisecond_data
+        """Sets start_time to a datetime object, utc_millisecond_data
         to a numpy array of dtype=int64 and pressure_data to a numpy
         array of dtype float64."""
         
-        self.data_start = self.get_data_start()
+        self.start_time = self.get_start_time()
         self.pressure_data = self.get_pressure_data()
-        self.utc_millisecond_data =self.get_millisecond_data(pressure_data)
+        self.utc_millisecond_data = self.\
+          get_millisecond_data(pressure_data)
 
     def get_millisecond_data(self, pressure_data):
         """Generates the time data using the initial timestamp in the
         file and the length of the pressure data array."""
         
-        offset = self.data_start - self.epoch_start
+        offset = self.start_time - self.epoch_start
         offset_ms = 1000 * offset.total_seconds()
-        freq = self.get_frequency()
-        return np.arange(pressure_data.shape[0],
-                         dtype='int64') * (1000 / freq) + offset_ms
-        
-    def get_frequency(self):
+        self.frequency = self._get_frequency()
+        return np.arange(pressure_data.shape[0], dtype='int64')
+            * (1000 / self.frequency) + offset_ms
+
+    def _get_frequency(self):
         with open(self.in_filename) as f:
             line = f.readline()
         freq = int(line[25:27])
         return freq
     
-    def get_data_start(self):
+    def get_start_time(self):
         """Returns the time that the device started reading as a
         datetime object."""
         
@@ -53,9 +51,9 @@ class Waveguage(pressure):
                     break
         date_string = line[:23]
         date_format = 'Y%y,M%m,D%d,H%H,M%M,S%S'
-        data_start = datetime.strptime(date_string, date_format).\
+        start_time = datetime.strptime(date_string, date_format).\
           replace(tzinfo=self.tzinfo)
-        return data_start
+        return start_time
 
     def get_pressure_data(self):
         """Reads the pressure data from the current file and returns

@@ -1,156 +1,284 @@
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
+import sys
+from pytz import timezone
+sys.path.append('.')
+import RBRTroll
+import numpy as np
+import time
 
-class WaveGui:
+class Wavegui:
     """A graphical interface to the netCDF conversion program. Prompts
-    the user for information about the wave sensor and converts a CSV 
+    the user for information about the wave sensor and converts a CSV
     file from the sensor to a properly formatted netCDF file.
     """
     def __init__(self, root):
-
+        self.root = root
+        generic_sensor = RBRTroll.pressure()
+        fill_value = str(generic_sensor.fill_value)
         self.in_filename = StringVar()
         self.out_filename = StringVar()
         self.username = StringVar()
-        self.latitude = StringVar()
-        self.longitude = StringVar()
-        self.altitude = StringVar()
+        self.latitude = StringVar(value=fill_value)
+        self.longitude = StringVar(value=fill_value)
+        self.altitude = StringVar(value=fill_value)
         self.altitude_units = StringVar()
         self.barometric = StringVar()
-        self.salinity = StringVar()
+        self.salinity = StringVar(value=fill_value)
         self.timezone = StringVar()
         self.instrument = StringVar()
         self.pressure_units = StringVar()
 
-        root.title("USGS Wave Data")
-        # vars = [in_filename,
-        #     self.out_filename,
-        #     self.username,
-        #     self.latitude,
-        #     self.longitude,
-        #     self.altitude,
-        #     self.self.altitude_units,
-        #     self.barometric,
-        #     self.salinity,
-        #     self.timezone,
-        #     self.instrument,
-        #     self.pressure_units]
-        
+        # Sets of widgets to hide for particular devices:
+        self.suppress_dict = {'LevelTroll' :
+                                  (self.select_is_barometric,
+                                   self.enter_salinity)}
+
+        self.setup_mainframe(root)
+        self.select_instrument(root)
+        self.widgets = (self.get_in_filename,
+                        self.get_out_filename,
+                        self.enter_username,
+                        self.enter_latitude,
+                        self.enter_longitude,
+                        self.enter_altitude,
+                        self.select_altitude_units,
+                        self.select_timezone,
+                        self.select_is_barometric,
+                        self.enter_salinity,
+                        self.select_pressure_units,
+                        self.process_button,
+                        self.quit_button)
+        self.setup_for_instrument('SomeInstrument')
+
+    def setup_mainframe(self, root):
         mainframe = ttk.Frame(root, padding="3 3 12 12")
         mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
         mainframe.columnconfigure(0, weight=1)
         mainframe.rowconfigure(0, weight=1)
-        
+        root.title("USGS Wave Data")
+        mainframe.bind('<Return>', self.process_file)
+        self.mainframe = mainframe
+
+    def select_instrument(self, root):
+        ttk.Label(self.mainframe, text="Sensor brand:",
+                  justify=LEFT).grid(column=1, row=1, sticky=W)
+        imenu = OptionMenu(self.mainframe, self.instrument,
+                           "LevelTroll",
+                           "RBRVirtuoso",
+                           "SomeInstrument",
+                           command=self.setup_for_instrument)
+        imenu.grid(column=2, row=1, sticky=(W, E))
+
+    def setup_for_instrument(self, instrument_name):
+        self.mainframe.destroy()
+        self.setup_mainframe(root)
+        self.select_instrument(root)
+        for w in self.widgets:
+            try: 
+                if w not in self.suppress_dict[instrument_name]:
+                    w()
+            except KeyError:
+                w()
+        for child in self.mainframe.winfo_children():
+            child.grid_configure(padx=5, pady=5)
+        root.minsize(root.winfo_width(), root.winfo_height())
+
+    def get_in_filename(self):
         # Input Filename
-        in_filename_entry = ttk.Entry(mainframe, width=7, 
+        in_filename_entry = ttk.Entry(self.mainframe, width=7,
                                       textvariable=self.in_filename)
-        in_filename_entry.grid(column=2, row=1, sticky=(W, E))
-        ttk.Label(mainframe, text="In Filename:").grid(column=1, 
-                                                       row=1, 
-                                                       sticky=W)
+        in_filename_entry.grid(column=2, row=2, sticky=(W, E))
+        ttk.Label(self.mainframe, 
+                  text="In Filename:").grid(column=1, row=2, sticky=W)
         def select_infile():
             fname = filedialog.askopenfilename()
             if fname is None:
                 pass
             else:
                 self.in_filename.set(fname)
-        ttk.Button(mainframe, text="Browse", 
-                   command=select_infile).grid(column=3, row=1, 
+        ttk.Button(self.mainframe, text="Browse",
+                   command=select_infile).grid(column=3, row=2,
                                                sticky=W)
-        
+        in_filename_entry.focus()
+
+    def get_out_filename(self):
         # Output Filename
-        out_filename_entry = ttk.Entry(mainframe, width=7, textvariable=self.out_filename)
-        out_filename_entry.grid(column=2, row=2, sticky=(W, E))
-        ttk.Label(mainframe, text="Out Filename:").grid(column=1, row=2, sticky=W)
+        out_filename_entry = ttk.Entry(self.mainframe, width=7,
+                                       textvariable=self.out_filename)
+        out_filename_entry.grid(column=2, row=3, sticky=(W, E))
+        ttk.Label(self.mainframe, text="Out Filename:").grid(column=1,
+                                                             row=3,
+                                                             sticky=W)
         def select_outfile():
             fname = filedialog.asksaveasfilename(defaultextension='.nc')
             if fname is None:
                 pass
             else:
                 self.out_filename.set(fname)
-        ttk.Button(mainframe, text="Browse", 
-                   command=select_outfile).grid(column=3, row=2, 
+        ttk.Button(self.mainframe, text="Browse",
+                   command=select_outfile).grid(column=3, row=3,
                                                 sticky=W)
-        
-        # Operator's name
-        username_entry = ttk.Entry(mainframe, width=7, textvariable=self.username)
-        username_entry.grid(column=2, row=3, sticky=(W, E))
-        ttk.Label(mainframe, text="Your name:").grid(column=1, row=3, sticky=W)
-        
-        # Latitude
-        latitude_entry = ttk.Entry(mainframe, width=7, textvariable=self.latitude)
-        latitude_entry.grid(column=2, row=4, sticky=(W, E))
-        ttk.Label(mainframe, text="Latitude:").grid(column=1, row=4, sticky=W)
-        
-        # Longitude
-        longitude_entry = ttk.Entry(mainframe, width=7, textvariable=self.longitude)
-        longitude_entry.grid(column=2, row=5, sticky=(W, E))
-        ttk.Label(mainframe, text="Longitude:").grid(column=1, row=5, sticky=W)
-        
-        # Altitude
-        altitude_entry = ttk.Entry(mainframe, width=7, textvariable=self.altitude)
-        altitude_entry.grid(column=2, row=6, sticky=(W, E))
-        ttk.Label(mainframe, text="Altitude:").grid(column=1, row=6, sticky=W)
-        
-        # Altitude units
-        ttk.Label(mainframe, text="Altitude units:", 
-                  justify=LEFT).grid(column=1, row=7, sticky=W)
-        self.altitude_units.set("meters") # default value
-        amenu = OptionMenu(mainframe, self.altitude_units, "feet", "meters")
-        amenu.grid(column=2, row=7, sticky=(W, E))
-        
-        # Timezone option menu
-        ttk.Label(mainframe, text="Timezone:", 
-                  justify=LEFT).grid(column=1, row=8, sticky=W)
-        self.timezone.set("Eastern") # default value
-        tmenu = OptionMenu(mainframe, self.timezone, "Central", "Eastern")
-        tmenu.grid(column=2, row=8, sticky=(W, E))
-        
-        # Barometric option menu
-        ttk.Label(mainframe, text="Barometric correction dataset?:",
-                  justify=LEFT).grid(column=1, row=9, sticky=W)
-        self.barometric.set("No") # default value
-        bmenu = OptionMenu(mainframe, self.barometric, "Yes", "No")
-        bmenu.grid(column=2, row=9, sticky=(W, E))
-        
-        # Salinity
-        salinity_entry = ttk.Entry(mainframe, width=7, textvariable=self.salinity)
-        salinity_entry.grid(column=2, row=10, sticky=(W, E))
-        ttk.Label(mainframe, text="Salinity:").grid(column=1, row=10, sticky=W)
-        
-        # Option Menu for Self.Instrument selection
-        ttk.Label(mainframe, text="Sensor brand:", 
-                  justify=LEFT).grid(column=1, row=11, sticky=W)
-        self.instrument.set("LevelTroll") # default value
-        imenu = OptionMenu(mainframe, self.instrument, "LevelTroll", "RBRVirtuoso",
-                           "SomeInstrument")
-        imenu.grid(column=2, row=11, sticky=(W, E))
-        
-        # Option Menu for Pressure Units
-        ttk.Label(mainframe, text="Pressure units:", 
-                  justify=LEFT).grid(column=1, row=12, sticky=W)
-        self.pressure_units.set("pascals") # default value
-        pressures = OptionMenu(mainframe, self.pressure_units, "atm", "bar", 
-                               "pascals", "psi")
-        pressures.grid(column=2, row=12, sticky=(W, E))
-        
-        
-        # 'Process File' Button
-        ttk.Button(mainframe, text="Process File", 
-                   command=self.process_file).grid(column=2, row=20, sticky=W)
-        
-        for child in mainframe.winfo_children(): 
-            child.grid_configure(padx=5, pady=5)
-        in_filename_entry.focus()                    
-        root.bind('<Return>', self.process_file)            
-        
-    def process_file(self):
-        try:
-            print(self.timezone.get())
-        # TODO: Send user-submitted info to the netCDF generator
-        except ValueError:
-            pass
 
-root = Tk()
-gui = WaveGui(root)
-root.mainloop()
+    def enter_username(self):
+        # Operator's name
+        username_entry = ttk.Entry(self.mainframe, width=7,
+                                   textvariable=self.username)
+        username_entry.grid(column=2, row=4, sticky=(W, E))
+        ttk.Label(self.mainframe, text="Your name:").grid(column=1,
+                                                          row=4,
+                                                          sticky=W)
+
+    def enter_latitude(self):
+        # Latitude
+        latitude_entry = ttk.Entry(self.mainframe, width=7,
+                                   textvariable=self.latitude)
+        latitude_entry.grid(column=2, row=5, sticky=(W, E))
+        ttk.Label(self.mainframe, 
+                  text="Latitude:").grid(column=1, row=5, sticky=W)
+
+    def enter_longitude(self):
+        # Longitude
+        longitude_entry = ttk.Entry(self.mainframe, width=7, 
+                                    textvariable=self.longitude)
+        longitude_entry.grid(column=2, row=6, sticky=(W, E))
+        ttk.Label(self.mainframe, 
+                  text="Longitude:").grid(column=1, row=6, sticky=W)
+
+    def enter_altitude(self):
+        # Altitude
+        altitude_entry = ttk.Entry(self.mainframe, width=7, 
+                                   textvariable=self.altitude)
+        altitude_entry.grid(column=2, row=7, sticky=(W, E))
+        ttk.Label(self.mainframe, 
+                  text="Altitude:").grid(column=1, row=7, sticky=W)
+
+    def select_altitude_units(self):
+        # Altitude units
+        ttk.Label(self.mainframe, text="Altitude units:",
+                  justify=LEFT).grid(column=1, row=8, sticky=W)
+        self.altitude_units.set("meters") # default value
+        amenu = OptionMenu(self.mainframe, self.altitude_units, 
+                           "feet", "meters")
+        amenu.grid(column=2, row=8, sticky=(W, E))
+
+    def select_timezone(self):
+        # Timezone option menu
+        ttk.Label(self.mainframe, text="Timezone:",
+                  justify=LEFT).grid(column=1, row=9, sticky=W)
+        self.timezone.set("Eastern") # default value
+        tmenu = OptionMenu(self.mainframe, self.timezone, 
+                           "Central", "Eastern")
+        tmenu.grid(column=2, row=9, sticky=(W, E))
+
+    def select_is_barometric(self):
+        # Barometric option menu
+        ttk.Label(self.mainframe, 
+                  text="Barometric correction dataset?:", 
+                  justify=LEFT).grid(column=1, row=10, sticky=W)
+        self.barometric.set("No") # default value
+        bmenu = OptionMenu(self.mainframe, self.barometric, 
+                           "Yes", "No")
+        bmenu.grid(column=2, row=10, sticky=(W, E))
+
+    def enter_salinity(self):
+        # Salinity
+        ttk.Label(self.mainframe, 
+                  text="Salinity:").grid(column=1, row=11, sticky=W)
+        salinity_entry = ttk.Entry(self.mainframe, width=7, 
+                                   textvariable=self.salinity)
+        salinity_entry.grid(column=2, row=11, sticky=(W, E))
+
+
+
+    def select_pressure_units(self):
+        # Option Menu for Pressure Units
+        ttk.Label(self.mainframe, text="Pressure units:",
+                  justify=LEFT).grid(column=1, row=13, sticky=W)
+        self.pressure_units.set("pascals") # default value
+        pressures = OptionMenu(self.mainframe, self.pressure_units,
+                               "atm",
+                               "bar",
+                               "pascals",
+                               "psi")
+        pressures.grid(column=2, row=13, sticky=(W, E))
+
+    def process_button(self):
+        # 'Process File' Button
+        ttk.Button(self.mainframe, text="Process File",
+                   command=self.process_file).grid(column=1, row=21,
+                                                   sticky=W)
+
+    def process_file(self):
+        sensor = self.instrument.get()
+        if sensor == 'LevelTroll':
+            device = RBRTroll.leveltroll()
+        elif sensor == 'RBRVirtuoso':
+            device = RBRTroll.rbrsolo()
+        root = self.root
+        d = MessageDialog(root, message="Processing file. "
+                          "This may take a few minutes.",
+                          title='Processing...',
+                          nobutton=True)
+
+        # TODO: Check for missing inputs
+        # Progress bar while processing file
+        try:
+            device.in_filename = self.in_filename.get()
+            device.out_filename = self.out_filename.get()
+            device.latitude = np.float32(self.latitude.get())
+            device.longitude = np.float32(self.longitude.get())
+            device.z = np.float32(self.altitude.get())
+            device.z_units = self.altitude_units.get()
+            device.is_baro = self.barometric.get() == 'Yes'
+            device.salinity = np.float32(self.salinity.get())
+            device.tz = timezone('US/' +
+                                 self.timezone.get().capitalize())
+            device.pressure_units = self.pressure_units.get()
+
+            device.read()
+            device.write()
+            d.top.destroy()
+            d = MessageDialog(root, message="Success! File saved " +
+                              "in:\n%s." % self.in_filename.get(),
+                              title='Success!')
+            root.wait_window(d.top)
+            root.destroy()
+        except:
+            d.top.destroy()
+            d = MessageDialog(root, message="Input Error! Please " +
+                              "double check your form entries.",
+                              title='Error!')
+#            root.wait_window(d.top)
+
+
+    def quit_button(self):
+        """Exits the application without saving anything"""
+        ttk.Button(self.mainframe, text="Quit",
+                   command=lambda: root.destroy()).grid(column=2, 
+                                                        row=21, 
+                                                        sticky=W)
+class MessageDialog:
+
+    def __init__(self, parent, message="", title="",  nobutton=False):
+        
+        top = self.top = Toplevel(parent)
+        top.transient(parent)
+        top.title(title)
+        Label(top, text=message).pack()
+        if not nobutton:
+            b = Button(top, text="OK", command=self.ok)
+            b.pack(pady=5)
+            top.initial_focus = top
+        parent.update()
+        parent.grab_set()
+
+
+    def ok(self):
+        self.top.destroy()
+
+if __name__ == "__main__":
+    root = Tk()
+    gui = Wavegui(root)
+    root.mainloop()
