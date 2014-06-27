@@ -3,7 +3,7 @@ from datetime import datetime
 import pytz
 import numpy as np
 import pylab
-import blackbox
+import Instruments.BlackBox as blackbox
 
 start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
 data_start = datetime(year=2014,month=3,day=20,tzinfo=pytz.utc)
@@ -14,11 +14,11 @@ amplitudes = np.array([0.1,1.0,10,100]) #psi
 periods = np.array([10.0,100.0,1000.0,10000.0]) #seconds
 
 offset = (data_start - start).total_seconds()
-print offset
+print(offset)
 t = np.arange(offset,offset+(npts*dt),dt) #time
 freqs = 1.0 / periods
 omegas = 2.0 * np.pi * freqs
-print freqs
+print(freqs)
 pres_signal = np.zeros_like(t)
 for o,a in zip(omegas,amplitudes):
 	pres_signal += a * np.sin(t*o)
