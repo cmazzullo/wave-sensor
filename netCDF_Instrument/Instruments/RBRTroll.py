@@ -47,6 +47,8 @@ class pressure(object):
         self.epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
         self.data_start = None
         self.timezone_string = None
+        self.date_format_string = None
+        self.frequency = None
 
         self.valid_pressure_units = ["psi","pascals","atm"]
         self.valid_z_units = ["meters","feet"]
@@ -58,17 +60,18 @@ class pressure(object):
 
         self.fill_value = np.float32(-1.0e+10)
 
-    @property    
-    def offset_seconds(self):
-        '''offsets seconds from specified epoch using UTC time
-        '''        
-        offset = self.data_start - self.epoch_start            
-        return offset.total_seconds()
+    def convert_to_milliseconds(self, index, freq):
+            if index == 0:
+                return self.data_start
+            else:
+                self.data_start += (1000/freq)
+                return self.data_start
+            
     
-    def convert_dateobject(self, datestring):
+    def convert_date_to_milliseconds(self, datestring):
         print(datestring)
-        first_date = datetime.strptime(datestring, "%d-%b-%Y %H:%M:%S.%f")
-        return pytz.utc.localize(first_date)
+        first_date = datetime.strptime(datestring, self.date_format_string)
+        return (pytz.utc.localize(first_date) - self.epoch_start).total_seconds() * 1000
 
 
     def time_var(self,ds):
@@ -83,7 +86,7 @@ class pressure(object):
         time_var[:] = self.utc_millisecond_data
         return time_var
 
-
+    
     def longitude_var(self,ds):
         longitude_var = ds.createVariable("longitude","f4",fill_value=self.fill_value)
         longitude_var.long_name = "longitude of sensor"
@@ -158,107 +161,18 @@ class pressure(object):
         ds.readme = "file created by "+sys.argv[0]+" on "+str(datetime.now())+" from source file "+self.in_filename
         
 
-    def get_user_input(self):        
-        in_filename = raw_input("level troll filename\n")
-        print(self.in_filename)
-        while not os.path.exists(in_filename):
-            print("file",in_filename,"does not exists - try again")
-            in_filename = raw_input("level troll filename\n")
-        self.in_filename = in_filename        
-
-        baro = None
-        is_baro = True
-        while baro not in ['y','n']:
-            baro = raw_input("is this a barometric correction dataset? (y/n)\n").lower()
-        if baro == 'y':
-            is_baro = True
-        else:
-            is_baro = False                            
-        self.is_baro = baro
-
-        pressure_units = ''
-        while pressure_units not in self.valid_pressure_units:
-            pressure_units = raw_input("what are the pressure units? ("+','.join(self.valid_pressure_units)+")?\n").lower()
-        self.pressure_units = pressure_units
-
-        latitude = self.fill_value
-        while not self.inrange(latitude,self.valid_latitude):    
-            while True:                
-                latitude = raw_input("what is the latitude (DD) where these data were collected?\n")    
-                try:
-                    latitude = np.float32(latitude)
-                    break
-                except:
-                    pass    
-        self.latitude = latitude
-
-
-        longitude = self.fill_value
-        while not self.inrange(longitude,self.valid_longitude):    
-            while True:                
-                longitude = raw_input("what is the longitude (DD) where these data were collected?\n")    
-                try:
-                    longitude = np.float32(longitude)
-                    break
-                except:
-                    pass    
-        self.longitude = longitude
-
-        z = self.fill_value
-        while not self.inrange(z,self.valid_z):    
-            while True:                
-                z = raw_input("what is the altitude of the sensor?\n")    
-                try:
-                    z = np.float32(z)
-                    break
-                except:
-                    pass    
-        self.z = z
-
-        z_units = raw_input("what are the z units (" +','.join(self.valid_z_units)+ ")\n")
-        while z_units.lower() not in self.valid_z_units:
-            z_units = raw_input("what are the z units (" +','.join(self.valid_z_units)+ ")\n")
-        self.z_units = z_units            
-
-        if not is_baro:
-            salinity = self.fill_value
-            while not self.inrange(salinity,self.valid_salinity):    
-                while True:                
-                    salinity = raw_input("what is the salinity (ppm or mg/l) where these data were collected?\n")    
-                    try:
-                        salinity = np.float32(salinity)
-                        break
-                    except:
-                        pass    
-            self.salinity_ppm = salinity
-
-        out_filename = raw_input("what is the output netcdf file name? (enter to use level troll filename with \'.nc\' suffix")        
-        if out_filename == '':            
-            out_filename = in_filename + ".nc"            
-        if os.path.exists(out_filename):
-            cont = raw_input("Warning - netcdf4 file "+out_filename+" already exists - overwrite? (y/n)?")
-            if not cont:
-                out_filename = raw_input("what is the output netcdf file name? (enter to use level troll filename with \'.nc\' suffix")
-                if out_filename == '':
-                    out_filename = self.in_filename + ".nc"
-            else:
-                try:
-                    os.remove(out_filename)                    
-                except:
-                    raise Exception("unable to remove existing netcdf file: "+out_filename)                    
-        
-        self.out_filename = out_filename
-
-
-    def inrange(self,val,limits):
-        if val >= limits[0] and val <= limits[1]:
-            return True
-        else:
-            return False
+#     def inrange(self,val,limits):
+#         if val >= limits[0] and val <= limits[1]:
+#             return True
+#         else:
+#             return False
 
 
     def read(self):
         raise Exception("read() must be implemented in the derived classes")
+    
+    def read_start(self):
+        raise Exception("read_start() must be implemented in the derived classes")
 
 
 
@@ -267,7 +181,7 @@ class rbrsolo(pressure):
     '''derived class for leveltroll ascii files
     '''
     def __init__(self):
-        self.timezone_marker = "time zone"        
+        self.timezone_marker = "time zone"      
         super(rbrsolo,self).__init__()
     
 
@@ -275,33 +189,36 @@ class rbrsolo(pressure):
         '''load the data from in_filename
         only parse the initial datetime = much faster
         '''
-        skip_index = self.read_start() #for skipping lines in case there is calibration header data
+        self.frequency = 4
+        self.date_format_string = '%d-%b-%Y %H:%M:%S.%f'  
+        skip_index = self.read_start('^[0-9]{2}-[A-Z]{1}[a-z]{2,8}-[0-9]{4}$',' ') #for skipping lines in case there is calibration header data
         
-        df2 = pandas.read_csv(self.in_filename,skiprows=skip_index, delim_whitespace=True, header=None, engine='c', usecols=[0,1,2])
+        df= pandas.read_csv(self.in_filename,skiprows=skip_index, delim_whitespace=True, \
+                            header=None, engine='c', usecols=[0,1,2])
     
         print('here we go')
         
-        for x in df2.itertuples():
+        for x in df[0:1].itertuples():
             if x[0] == 0:
-                self.data_start = (self.convert_dateobject('%s %s' % (x[1],x[2])) - self.epoch_start).total_seconds()
+                self.data_start = self.convert_date_to_milliseconds('%s %s' % (x[1],x[2]))
                 break
-
-        self.utc_millisecond_data = []
-      
-        for x in range(0, df2.shape[0] - 1):
-            self.utc_millisecond_data.append(self.data_start * 1000)
-            self.data_start += .25
     
-        self.pressure_data = [x[3] for x in df2[:-1].itertuples()]
+        self.utc_millisecond_data = [self.convert_to_milliseconds(x, self.frequency)  for x in \
+                                     range(0,df.shape[0] - 1)]
+#         for x in range(0, df.shape[0] - 1):
+#             self.utc_millisecond_data.append(self.data_start * 1000)
+#             self.data_start += .25
+    
+        self.pressure_data = [x[3] for x in df[:-1].itertuples()]
 
         print('done read')
         
-    def read_start(self):
+    def read_start(self, expression, delimeter):
         skip_index = 0;
-        with open(self.in_filename,'r') as RBRText:
-            for x in RBRText:
-                file_string = x.split(' ')[0]
-                if re.match('^[0-9-]{3}[A-Z]{1}[a-z]{2,8}[0-9-]{5}$', file_string):
+        with open(self.in_filename,'r') as fileText:
+            for x in fileText:
+                file_string = x.split(delimeter)[0]
+                if re.match(expression, file_string):
                     print('Success! Index %s' % skip_index)
                     break
                 skip_index += 1   
@@ -313,7 +230,7 @@ if __name__ == "__main__":
     lt = rbrsolo()        
     
     #--for testing
-    lt.in_filename = os.path.join("benchmark","RBRtest2.txt")
+    lt.in_filename = os.path.join("benchmark","RBR_RSK.txt")
     lt.out_filename = os.path.join("benchmark","RBR.csv.nc")
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)
@@ -333,7 +250,5 @@ if __name__ == "__main__":
 
     #--write the netcdf file
     lt.write()
-    
-    
     
     

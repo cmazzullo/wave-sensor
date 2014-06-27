@@ -53,12 +53,7 @@ class pressure(object):
 
         self.fill_value = np.float32(-1.0e+10)
 
-    @property    
-    def offset_seconds(self):
-        '''offsets seconds from specified epoch using UTC time
-        '''        
-        offset = self.data_start - self.epoch_start            
-        return offset.total_seconds()
+    
 
 
     def time_var(self,ds):
@@ -334,7 +329,14 @@ class leveltroll(pressure):
             if self.timezone_string.lower().startswith(tz_str):
                 self.tzinfo = timezone(tz)
                 return               
-        raise Exception("could not find a timezone match for " + self.timezone_string)                
+        raise Exception("could not find a timezone match for " + self.timezone_string)  
+    
+    @property    
+    def offset_seconds(self):
+        '''offsets seconds from specified epoch using UTC time
+        '''        
+        offset = self.data_start - self.epoch_start            
+        return offset.total_seconds()              
 
 
 
