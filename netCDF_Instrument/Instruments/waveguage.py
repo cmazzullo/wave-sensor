@@ -1,10 +1,10 @@
-from RBRTroll import pressure
+from sensor import Sensor
 import numpy as np
 from datetime import datetime
 from pytz import timezone
 import pandas as pd
 
-class Waveguage(pressure):
+class Waveguage(Sensor):
     """Reads in an ASCII file output by a Waveguage pressure sensor
     from Ocean Sensor Systems Inc.
 

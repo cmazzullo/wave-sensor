@@ -4,13 +4,14 @@ from tkinter import filedialog
 import sys
 from pytz import timezone
 sys.path.append('.')
-import RBRTroll
+
 import numpy as np
 import time
 
-import waveguage
-import BlackBox
-import RBRTroll
+from sensor import Sensor
+from rbrsolo import RBRSolo
+from leveltroll import Leveltroll
+from waveguage import Waveguage
 
 class Wavegui:
     """A graphical interface to the netCDF conversion program. Prompts
@@ -21,12 +22,12 @@ class Wavegui:
 
         # Simply add a new instrument name : class pair to this dict 
         # to have it included in the GUI!
-        self.instruments = {'LevelTroll' : BlackBox.leveltroll(),
-                            'RBRSolo' : RBRTroll.rbrsolo(),
-                            'Wave Guage' : waveguage.Waveguage()}
+        self.instruments = {'LevelTroll' : Leveltroll(),
+                            'RBRSolo' : RBRSolo(),
+                            'Wave Guage' : Waveguage()}
 
         self.root = root
-        generic_sensor = RBRTroll.pressure()
+        generic_sensor = Sensor()
         fill_value = str(generic_sensor.fill_value)
         self.in_filename = StringVar()
         self.out_filename = StringVar()
