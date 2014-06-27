@@ -1,4 +1,0 @@
-dict = {1: 2, 2: 3, 3: 4}
-list_pop = dict.values.to_array()
-list_pop.pop()
-print(list_pop)

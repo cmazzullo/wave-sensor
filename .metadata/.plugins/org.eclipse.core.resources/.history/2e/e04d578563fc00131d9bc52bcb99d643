@@ -1,9 +1,0 @@
-import numpy as np
-from datetime import datetime
-
-sven = ['14-May-2014 03:52:06.250', 
-        '14-May-2014 03:52:03.750', 
-        '14-May-2014 03:52:04.000']
-
-for x in sven:
-    print(datetime.utcoffset())

@@ -1,4 +1,0 @@
-dict2 = {1:2,2:3,3:4}
-
-for x, y in dict2.items():
-    print(x,y)
