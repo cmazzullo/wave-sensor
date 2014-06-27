@@ -1,3 +1,6 @@
+"""Contains  Waveguage, a class to read in data from a Wave Guage
+pressure sensor and write it to a netCDF file."""
+
 from RBRTroll import pressure
 import numpy as np
 from datetime import datetime
@@ -6,33 +9,44 @@ import pandas as pd
 
 class Waveguage(pressure):
     """Reads in an ASCII file output by a Waveguage pressure sensor
-    from Ocean Sensor Systems Inc."""
+    from Ocean Sensor Systems Inc.
+
+    This class reads in data from a plaintext output file into a
+    pandas Dataframe. This is then translated into numpy ndarrays
+    and written to a netCDF binary file."""
 
     def __init__(self):
         super(Waveguage, self).__init__()
 
     def read(self):
-        """This gets the values of:
-        data_start
-        utc_millisecond_data
-        pressure_data"""
-        self.data_start = self.read_data_start()
-        data = self.read_data()
+        """Sets data_start to a datetime object, utc_millisecond_data
+        to a numpy array of dtype=int64 and pressure_data to a numpy
+        array of dtype float64."""
+        
+        self.data_start = self.get_data_start()
+        self.pressure_data = self.get_pressure_data()
+        self.utc_millisecond_data =self.get_millisecond_data(pressure_data)
+
+    def get_millisecond_data(self, pressure_data):
+        """Generates the time data using the initial timestamp in the
+        file and the length of the pressure data array."""
+        
         offset = self.data_start - self.epoch_start
         offset_ms = 1000 * offset.total_seconds()
         freq = self.get_frequency()
-        self.utc_millisecond_data = np.\
-          arange(data.shape[0], dtype='int64') * (1000 / freq)\
-          + offset_ms
-        self.pressure_data = np.array(data.p, dtype='float64')
-
+        return np.arange(pressure_data.shape[0],
+                         dtype='int64') * (1000 / freq) + offset_ms
+        
     def get_frequency(self):
         with open(self.in_filename) as f:
             line = f.readline()
         freq = int(line[25:27])
         return freq
     
-    def read_data_start(self):
+    def get_data_start(self):
+        """Returns the time that the device started reading as a
+        datetime object."""
+        
         with open(self.in_filename) as f:
             for i, line in enumerate(f):
                 if i > 0 and line.startswith('Y'):
@@ -43,15 +57,20 @@ class Waveguage(pressure):
           replace(tzinfo=self.tzinfo)
         return data_start
 
-    def read_data(self):
+    def get_pressure_data(self):
+        """Reads the pressure data from the current file and returns
+        it in a numpy array of dtype float64."""
+        
         data = pd.read_csv(self.in_filename, skiprows=20, header=None,
                           lineterminator=',', sep=',', engine='c',
                           names='p')
         data = data[:-1]
         data.p = [np.float64(string.strip()) for string in data.p]
-        return data
+        data_array = np.array(data.p, dtype='float64')
+        return data_array
 
 if __name__ == '__main__':
+    # Just for testing!
     wg = Waveguage()
     wg.in_filename = 'waveguage.csv'
     wg.out_filename = 'wg-output.nc'

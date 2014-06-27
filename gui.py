@@ -7,6 +7,7 @@ sys.path.append('.')
 import RBRTroll
 import numpy as np
 import time
+import waveguage
 
 class WaveGui:
     """A graphical interface to the netCDF conversion program. Prompts
@@ -68,8 +69,8 @@ class WaveGui:
                   justify=LEFT).grid(column=1, row=1, sticky=W)
         imenu = OptionMenu(self.mainframe, self.instrument,
                            "LevelTroll",
-                           "RBRVirtuoso",
-                           "SomeInstrument",
+                           "RBRSolo",
+                           "WaveGuage",
                            command=self.setup_for_instrument)
         imenu.grid(column=2, row=1, sticky=(W, E))
 
@@ -217,8 +218,10 @@ class WaveGui:
         sensor = self.instrument.get()
         if sensor == 'LevelTroll':
             device = RBRTroll.leveltroll()
-        elif sensor == 'RBRVirtuoso':
+        elif sensor == 'RBRSolo':
             device = RBRTroll.rbrsolo()
+        elif sensor == 'WaveGuage':
+            device = waveguage.Waveguage()
         root = self.root
         d = MessageDialog(root, message="Processing file. "
                           "This may take a few minutes.",
@@ -236,10 +239,9 @@ class WaveGui:
             device.z_units = self.altitude_units.get()
             device.is_baro = self.barometric.get() == 'Yes'
             device.salinity = np.float32(self.salinity.get())
+            device.pressure_units = self.pressure_units.get()
             device.tz = timezone('US/' +
                                  self.timezone.get().capitalize())
-            device.pressure_units = self.pressure_units.get()
-
             device.read()
             device.write()
             d.top.destroy()
@@ -253,8 +255,6 @@ class WaveGui:
             d = MessageDialog(root, message="Input Error! Please " +
                               "double check your form entries.",
                               title='Error!')
-#            root.wait_window(d.top)
-
 
     def quit_button(self):
         """Exits the application without saving anything"""
@@ -276,7 +276,6 @@ class MessageDialog:
             top.initial_focus = top
         parent.update()
         parent.grab_set()
-
 
     def ok(self):
         self.top.destroy()
