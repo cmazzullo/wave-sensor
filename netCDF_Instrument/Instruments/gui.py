@@ -7,6 +7,7 @@ sys.path.append('.')
 import RBRTroll
 import numpy as np
 import time
+import waveguage
 
 class Wavegui:
     """A graphical interface to the netCDF conversion program. Prompts
@@ -66,8 +67,8 @@ class Wavegui:
                   justify=LEFT).grid(column=1, row=1, sticky=W)
         imenu = OptionMenu(self.mainframe, self.instrument,
                            "LevelTroll",
-                           "RBRVirtuoso",
-                           "SomeInstrument",
+                           "RBRSolo",
+                           "Wave Guage",
                            command=self.setup_for_instrument)
         imenu.grid(column=2, row=1, sticky=(W, E))
 
@@ -214,8 +215,11 @@ class Wavegui:
         sensor = self.instrument.get()
         if sensor == 'LevelTroll':
             device = RBRTroll.leveltroll()
-        elif sensor == 'RBRVirtuoso':
+        elif sensor == 'RBRSolo':
             device = RBRTroll.rbrsolo()
+        elif sensor == 'Wave Guage':
+            device = waveguage.Waveguage()
+
         root = self.root
         d = MessageDialog(root, message="Processing file. "
                           "This may take a few minutes.",
