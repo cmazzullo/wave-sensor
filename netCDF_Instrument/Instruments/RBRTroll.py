@@ -59,13 +59,11 @@ class pressure(object):
         self.valid_pressure = (np.float32(-10000),np.float32(10000))
 
         self.fill_value = np.float32(-1.0e+10)
-
-    def convert_to_milliseconds(self, index, freq):
-            if index == 0:
-                return self.data_start
-            else:
-                self.data_start += (1000/freq)
-                return self.data_start
+        
+    
+    def convert_to_milliseconds(self, series_length, datestring):
+        return  np.arange(series_length, dtype='int64') * (1000 / self.frequency)\
+          + self.convert_date_to_milliseconds(datestring)
             
     
     def convert_date_to_milliseconds(self, datestring):
@@ -192,26 +190,14 @@ class rbrsolo(pressure):
         self.frequency = 4
         self.date_format_string = '%d-%b-%Y %H:%M:%S.%f'  
         skip_index = self.read_start('^[0-9]{2}-[A-Z]{1}[a-z]{2,8}-[0-9]{4}$',' ') #for skipping lines in case there is calibration header data
-        
         df= pandas.read_csv(self.in_filename,skiprows=skip_index, delim_whitespace=True, \
                             header=None, engine='c', usecols=[0,1,2])
-    
-        print('here we go')
-        
         for x in df[0:1].itertuples():
             if x[0] == 0:
-                self.data_start = self.convert_date_to_milliseconds('%s %s' % (x[1],x[2]))
+                self.utc_millisecond_data = self.convert_to_milliseconds(df.shape[0] - 1, \
+                                                                         ('%s %s' % (x[1],x[2])))
                 break
-    
-        self.utc_millisecond_data = [self.convert_to_milliseconds(x, self.frequency)  for x in \
-                                     range(0,df.shape[0] - 1)]
-#         for x in range(0, df.shape[0] - 1):
-#             self.utc_millisecond_data.append(self.data_start * 1000)
-#             self.data_start += .25
-    
         self.pressure_data = [x[3] for x in df[:-1].itertuples()]
-
-        print('done read')
         
     def read_start(self, expression, delimeter):
         skip_index = 0;
