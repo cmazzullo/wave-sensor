@@ -22,8 +22,7 @@ class Waveguage(pressure):
         
         self.start_time = self.get_start_time()
         self.pressure_data = self.get_pressure_data()
-        self.utc_millisecond_data = self.\
-          get_millisecond_data(pressure_data)
+        self.utc_millisecond_data = self.get_millisecond_data(self.pressure_data)
 
     def get_millisecond_data(self, pressure_data):
         """Generates the time data using the initial timestamp in the
@@ -32,7 +31,7 @@ class Waveguage(pressure):
         offset = self.start_time - self.epoch_start
         offset_ms = 1000 * offset.total_seconds()
         self.frequency = self._get_frequency()
-        return np.arange(pressure_data.shape[0], dtype='int64')
+        return np.arange(pressure_data.shape[0], dtype='int64')\
             * (1000 / self.frequency) + offset_ms
 
     def _get_frequency(self):
@@ -51,8 +50,8 @@ class Waveguage(pressure):
                     break
         date_string = line[:23]
         date_format = 'Y%y,M%m,D%d,H%H,M%M,S%S'
-        start_time = datetime.strptime(date_string, date_format).\
-          replace(tzinfo=self.tzinfo)
+        start_time = datetime.strptime(date_string, date_format).replace(tzinfo=self.tzinfo)
+
         return start_time
 
     def get_pressure_data(self):

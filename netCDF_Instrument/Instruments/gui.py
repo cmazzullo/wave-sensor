@@ -7,7 +7,10 @@ sys.path.append('.')
 import RBRTroll
 import numpy as np
 import time
+
 import waveguage
+import BlackBox
+import RBRTroll
 
 class Wavegui:
     """A graphical interface to the netCDF conversion program. Prompts
@@ -15,6 +18,13 @@ class Wavegui:
     file from the sensor to a properly formatted netCDF file.
     """
     def __init__(self, root):
+
+        # Simply add a new instrument name : class pair to this dict 
+        # to have it included in the GUI!
+        self.instruments = {'LevelTroll' : BlackBox.leveltroll(),
+                            'RBRSolo' : RBRTroll.rbrsolo(),
+                            'Wave Guage' : waveguage.Waveguage()}
+
         self.root = root
         generic_sensor = RBRTroll.pressure()
         fill_value = str(generic_sensor.fill_value)
@@ -30,7 +40,8 @@ class Wavegui:
         self.timezone = StringVar()
         self.instrument = StringVar()
         self.pressure_units = StringVar()
-
+        
+        
         # Sets of widgets to hide for particular devices:
         self.suppress_dict = {'LevelTroll' :
                                   (self.select_is_barometric,
@@ -65,10 +76,15 @@ class Wavegui:
     def select_instrument(self, root):
         ttk.Label(self.mainframe, text="Sensor brand:",
                   justify=LEFT).grid(column=1, row=1, sticky=W)
+# variable = StringVar(master)
+# variable.set(OPTIONS[0]) # default value
+
+# w = apply(OptionMenu, (master, variable) + tuple(OPTIONS))
+# w.pack()
+        args = self.instruments.keys()
+
         imenu = OptionMenu(self.mainframe, self.instrument,
-                           "LevelTroll",
-                           "RBRSolo",
-                           "Wave Guage",
+                           *args,
                            command=self.setup_for_instrument)
         imenu.grid(column=2, row=1, sticky=(W, E))
 
@@ -213,13 +229,7 @@ class Wavegui:
 
     def process_file(self):
         sensor = self.instrument.get()
-        if sensor == 'LevelTroll':
-            device = RBRTroll.leveltroll()
-        elif sensor == 'RBRSolo':
-            device = RBRTroll.rbrsolo()
-        elif sensor == 'Wave Guage':
-            device = waveguage.Waveguage()
-
+        device = self.instruments[sensor]
         root = self.root
         d = MessageDialog(root, message="Processing file. "
                           "This may take a few minutes.",
@@ -228,25 +238,26 @@ class Wavegui:
 
         # TODO: Check for missing inputs
         # Progress bar while processing file
-        try:
-            device.in_filename = self.in_filename.get()
-            device.out_filename = self.out_filename.get()
-            device.latitude = np.float32(self.latitude.get())
-            device.longitude = np.float32(self.longitude.get())
-            device.z = np.float32(self.altitude.get())
-            device.z_units = self.altitude_units.get()
-            device.is_baro = self.barometric.get() == 'Yes'
-            device.salinity = np.float32(self.salinity.get())
-            device.tz = timezone('US/' +
+        
+        device.in_filename = self.in_filename.get()
+        device.out_filename = self.out_filename.get()
+        device.latitude = np.float32(self.latitude.get())
+        device.longitude = np.float32(self.longitude.get())
+        device.z = np.float32(self.altitude.get())
+        device.z_units = self.altitude_units.get()
+        device.is_baro = self.barometric.get() == 'Yes'
+        device.salinity = np.float32(self.salinity.get())
+        device.tzinfo = timezone('US/' +
                                  self.timezone.get().capitalize())
-            device.pressure_units = self.pressure_units.get()
+        device.pressure_units = self.pressure_units.get()
 
-            device.read()
-            device.write()
-            d.top.destroy()
-            d = MessageDialog(root, message="Success! File saved " +
-                              "in:\n%s." % self.in_filename.get(),
-                              title='Success!')
+        device.read()
+        device.write()
+        d.top.destroy()
+        d = MessageDialog(root, message="Success! File saved " +
+                          "in:\n%s." % self.in_filename.get(),
+                          title='Success!')
+        try:
             root.wait_window(d.top)
             root.destroy()
         except:
