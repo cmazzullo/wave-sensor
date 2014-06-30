@@ -3,7 +3,7 @@ Created on Jun 20, 2014
 
 @author: Gregory
 '''
-from sensor import Sensor
+from Instruments.sensor import Sensor
 import os
 import sys
 from datetime import datetime
@@ -47,6 +47,7 @@ class RBRSolo(Sensor):
             if x[0] == 0:
                 self.utc_millisecond_data = self.convert_to_milliseconds(df.shape[0] - 1, \
                                                                          ('%s %s' % (x[1],x[2])))
+               
                 break
         self.pressure_data = [x[3] for x in df[:-1].itertuples()]
         
@@ -64,7 +65,7 @@ class RBRSolo(Sensor):
 if __name__ == "__main__":
     
     #--create an instance    
-    lt = rbrsolo()        
+    lt = RBRSolo()        
     
     #--for testing
     lt.in_filename = os.path.join("benchmark","RBR_RSK.txt")

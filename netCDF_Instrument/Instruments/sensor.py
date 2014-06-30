@@ -71,7 +71,7 @@ class Sensor(object):
 
 
     def time_var(self,ds):
-        time_var = ds.createVariable("time","u8",("time",),fill_value=np.int64())
+        time_var = ds.createVariable("time","f8",("time",))
         time_var.long_name = ''
         time_var.standard_name = "time"
         time_var.units = "milliseconds since "+self.epoch_start.strftime("%Y-%m-%d %H:%M:%S")
@@ -144,7 +144,7 @@ class Sensor(object):
     def write(self):
         #assert not os.path.exists(self.out_filename),"out_filename already exists"
         #--create variables and assign data
-        ds = netCDF4.Dataset(self.out_filename,'w',format="NETCDF4")
+        ds = netCDF4.Dataset(self.out_filename,'w',format="NETCDF4_CLASSIC")
         time_dimen = ds.createDimension("time",len(self.pressure_data))   
         print(len(self.pressure_data))  
         time_var = self.time_var(ds)
