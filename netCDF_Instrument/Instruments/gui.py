@@ -8,10 +8,10 @@ sys.path.append('.')
 import numpy as np
 import time
 
-from Instruments.sensor import Sensor
-from Instruments.rbrsolo import RBRSolo
-from Instruments.leveltroll import Leveltroll
-from Instruments.waveguage import Waveguage
+from sensor import Sensor
+from rbrsolo import RBRSolo
+from leveltroll import Leveltroll
+from waveguage import Waveguage
 
 class Wavegui:
     """A graphical interface to the netCDF conversion program. Prompts

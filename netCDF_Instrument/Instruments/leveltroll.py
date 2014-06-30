@@ -1,4 +1,4 @@
-from Instruments.sensor import Sensor
+from sensor import Sensor
 
 import os
 import sys
