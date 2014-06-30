@@ -17,8 +17,3 @@
 # for x in sven:
 #     offset = convert_dateobject(x) - datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
 #     print(offset.total_seconds())
-import numpy as np
-x = 3
-y = [np.add(z, 1) for z in range(1,10)]
-
-print(y)

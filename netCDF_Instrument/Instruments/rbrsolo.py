@@ -3,7 +3,7 @@ Created on Jun 20, 2014
 
 @author: Gregory
 '''
-from sensor import Sensor
+from Instruments.sensor import Sensor
 import os
 import sys
 from datetime import datetime

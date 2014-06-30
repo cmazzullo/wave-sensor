@@ -1,4 +1,4 @@
-from sensor import Sensor
+from Instruments.sensor import Sensor
 import numpy as np
 from datetime import datetime
 from pytz import timezone
