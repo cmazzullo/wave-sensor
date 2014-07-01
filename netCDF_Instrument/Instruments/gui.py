@@ -1,3 +1,12 @@
+import matplotlib
+matplotlib.use('TkAgg')
+from numpy import arange, sin, pi
+
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+# implement the default mpl key bindings
+from matplotlib.backend_bases import key_press_handler
+from matplotlib.figure import Figure
+
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
@@ -20,7 +29,7 @@ class Wavegui:
     """
     def __init__(self, root):
 
-        # Simply add a new instrument name : class pair to this dict 
+        # Simply add a new instrument name : class pair to this dict
         # to have it included in the GUI!
         self.instruments = {'LevelTroll' : Leveltroll(),
                             'RBRSolo' : RBRSolo(),
@@ -32,6 +41,7 @@ class Wavegui:
         self.in_filename = StringVar()
         self.out_filename = StringVar()
         self.username = StringVar()
+        self.email = StringVar()
         self.latitude = StringVar(value=fill_value)
         self.longitude = StringVar(value=fill_value)
         self.altitude = StringVar(value=fill_value)
@@ -41,29 +51,29 @@ class Wavegui:
         self.timezone = StringVar()
         self.instrument = StringVar()
         self.pressure_units = StringVar()
-        
-        
-        # Sets of widgets to hide for particular devices:
-        self.suppress_dict = {'LevelTroll' :
-                                  (self.select_is_barometric,
-                                   self.enter_salinity)}
 
         self.setup_mainframe(root)
-        self.select_instrument(root)
-        self.widgets = (self.get_in_filename,
-                        self.get_out_filename,
-                        self.enter_username,
-                        self.enter_latitude,
-                        self.enter_longitude,
-                        self.enter_altitude,
-                        self.select_altitude_units,
-                        self.select_timezone,
-                        self.select_is_barometric,
-                        self.enter_salinity,
-                        self.select_pressure_units,
-                        self.process_button,
-                        self.quit_button)
-        self.setup_for_instrument('SomeInstrument')
+
+        make_entry = self.make_entry
+        make_optionmenu = self.make_optionmenu
+        self._row = 1
+
+        make_optionmenu(self.altitude_units, "Altitude units:",
+                        ("feet", "meters"))
+        make_optionmenu(self.instrument, "Instrument brand:",
+                        self.instruments.keys())
+        make_optionmenu(self.timezone, "Timezone:",
+                        ("Central", "Eastern"))
+        make_optionmenu(self.pressure_units, "Pressure units:",
+                        ("atm", "bar", "psi"))
+
+        make_entry(self.username, "Your name:")
+        make_entry(self.email, "Your email:")
+        make_entry(self.latitude, "Latitude:")
+        make_entry(self.longitude, "Longitude:")
+        make_entry(self.altitude, "Altitude:")
+        make_entry(self.salinity, "Salinity:")
+        e = EmbeddedPlot(root)
 
     def setup_mainframe(self, root):
         mainframe = ttk.Frame(root, padding="3 3 12 12")
@@ -74,27 +84,12 @@ class Wavegui:
         mainframe.bind('<Return>', self.process_file)
         self.mainframe = mainframe
 
-    def select_instrument(self, root):
-        ttk.Label(self.mainframe, text="Sensor brand:",
-                  justify=LEFT).grid(column=1, row=1, sticky=W)
-# variable = StringVar(master)
-# variable.set(OPTIONS[0]) # default value
-
-# w = apply(OptionMenu, (master, variable) + tuple(OPTIONS))
-# w.pack()
-        args = self.instruments.keys()
-
-        imenu = OptionMenu(self.mainframe, self.instrument,
-                           *args,
-                           command=self.setup_for_instrument)
-        imenu.grid(column=2, row=1, sticky=(W, E))
-
     def setup_for_instrument(self, instrument_name):
         self.mainframe.destroy()
         self.setup_mainframe(root)
         self.select_instrument(root)
         for w in self.widgets:
-            try: 
+            try:
                 if w not in self.suppress_dict[instrument_name]:
                     w()
             except KeyError:
@@ -108,7 +103,7 @@ class Wavegui:
         in_filename_entry = ttk.Entry(self.mainframe, width=7,
                                       textvariable=self.in_filename)
         in_filename_entry.grid(column=2, row=2, sticky=(W, E))
-        ttk.Label(self.mainframe, 
+        ttk.Label(self.mainframe,
                   text="In Filename:").grid(column=1, row=2, sticky=W)
         def select_infile():
             fname = filedialog.askopenfilename()
@@ -130,7 +125,8 @@ class Wavegui:
                                                              row=3,
                                                              sticky=W)
         def select_outfile():
-            fname = filedialog.asksaveasfilename(defaultextension='.nc')
+            fname = filedialog.asksaveasfilename(defaultextension=
+                                                 '.nc')
             if fname is None:
                 pass
             else:
@@ -139,88 +135,23 @@ class Wavegui:
                    command=select_outfile).grid(column=3, row=3,
                                                 sticky=W)
 
-    def enter_username(self):
-        # Operator's name
-        username_entry = ttk.Entry(self.mainframe, width=7,
-                                   textvariable=self.username)
-        username_entry.grid(column=2, row=4, sticky=(W, E))
-        ttk.Label(self.mainframe, text="Your name:").grid(column=1,
-                                                          row=4,
-                                                          sticky=W)
+    def make_optionmenu(self, variable, label, option_list,
+                        default_value=None):
+        variable.set(default_value)
+        menu = OptionMenu(self.mainframe, variable, *option_list)
+        menu.grid(column=2, row=self._row, sticky=(W, E))
+        ttk.Label(self.mainframe, text=label,
+                  justify=LEFT).grid(column=1, row=self._row,
+                                     sticky=W)
+        self._row += 1
 
-    def enter_latitude(self):
-        # Latitude
-        latitude_entry = ttk.Entry(self.mainframe, width=7,
-                                   textvariable=self.latitude)
-        latitude_entry.grid(column=2, row=5, sticky=(W, E))
-        ttk.Label(self.mainframe, 
-                  text="Latitude:").grid(column=1, row=5, sticky=W)
-
-    def enter_longitude(self):
-        # Longitude
-        longitude_entry = ttk.Entry(self.mainframe, width=7, 
-                                    textvariable=self.longitude)
-        longitude_entry.grid(column=2, row=6, sticky=(W, E))
-        ttk.Label(self.mainframe, 
-                  text="Longitude:").grid(column=1, row=6, sticky=W)
-
-    def enter_altitude(self):
-        # Altitude
-        altitude_entry = ttk.Entry(self.mainframe, width=7, 
-                                   textvariable=self.altitude)
-        altitude_entry.grid(column=2, row=7, sticky=(W, E))
-        ttk.Label(self.mainframe, 
-                  text="Altitude:").grid(column=1, row=7, sticky=W)
-
-    def select_altitude_units(self):
-        # Altitude units
-        ttk.Label(self.mainframe, text="Altitude units:",
-                  justify=LEFT).grid(column=1, row=8, sticky=W)
-        self.altitude_units.set("meters") # default value
-        amenu = OptionMenu(self.mainframe, self.altitude_units, 
-                           "feet", "meters")
-        amenu.grid(column=2, row=8, sticky=(W, E))
-
-    def select_timezone(self):
-        # Timezone option menu
-        ttk.Label(self.mainframe, text="Timezone:",
-                  justify=LEFT).grid(column=1, row=9, sticky=W)
-        self.timezone.set("Eastern") # default value
-        tmenu = OptionMenu(self.mainframe, self.timezone, 
-                           "Central", "Eastern")
-        tmenu.grid(column=2, row=9, sticky=(W, E))
-
-    def select_is_barometric(self):
-        # Barometric option menu
-        ttk.Label(self.mainframe, 
-                  text="Barometric correction dataset?:", 
-                  justify=LEFT).grid(column=1, row=10, sticky=W)
-        self.barometric.set("No") # default value
-        bmenu = OptionMenu(self.mainframe, self.barometric, 
-                           "Yes", "No")
-        bmenu.grid(column=2, row=10, sticky=(W, E))
-
-    def enter_salinity(self):
-        # Salinity
-        ttk.Label(self.mainframe, 
-                  text="Salinity:").grid(column=1, row=11, sticky=W)
-        salinity_entry = ttk.Entry(self.mainframe, width=7, 
-                                   textvariable=self.salinity)
-        salinity_entry.grid(column=2, row=11, sticky=(W, E))
-
-
-
-    def select_pressure_units(self):
-        # Option Menu for Pressure Units
-        ttk.Label(self.mainframe, text="Pressure units:",
-                  justify=LEFT).grid(column=1, row=13, sticky=W)
-        self.pressure_units.set("pascals") # default value
-        pressures = OptionMenu(self.mainframe, self.pressure_units,
-                               "atm",
-                               "bar",
-                               "pascals",
-                               "psi")
-        pressures.grid(column=2, row=13, sticky=(W, E))
+    def make_entry(self, variable, label):
+        entry = ttk.Entry(self.mainframe, width=7,
+                          textvariable=variable)
+        entry.grid(column=2, row=self._row, sticky=(W, E))
+        ttk.Label(self.mainframe,
+                  text=label).grid(column=1, row=self._row, sticky=W)
+        self._row += 1
 
     def process_button(self):
         # 'Process File' Button
@@ -237,9 +168,6 @@ class Wavegui:
                           title='Processing...',
                           nobutton=True)
 
-        # TODO: Check for missing inputs
-        # Progress bar while processing file
-        
         device.in_filename = self.in_filename.get()
         device.out_filename = self.out_filename.get()
         device.latitude = np.float32(self.latitude.get())
@@ -253,6 +181,8 @@ class Wavegui:
         device.pressure_units = self.pressure_units.get()
 
         device.read()
+
+        e.destroy()
         device.write()
         d.top.destroy()
         d = MessageDialog(root, message="Success! File saved " +
@@ -266,19 +196,17 @@ class Wavegui:
             d = MessageDialog(root, message="Input Error! Please " +
                               "double check your form entries.",
                               title='Error!')
-#            root.wait_window(d.top)
-
 
     def quit_button(self):
         """Exits the application without saving anything"""
         ttk.Button(self.mainframe, text="Quit",
-                   command=lambda: root.destroy()).grid(column=2, 
-                                                        row=21, 
+                   command=lambda: root.destroy()).grid(column=2,
+                                                        row=21,
                                                         sticky=W)
 class MessageDialog:
 
     def __init__(self, parent, message="", title="",  nobutton=False):
-        
+
         top = self.top = Toplevel(parent)
         top.transient(parent)
         top.title(title)
@@ -294,7 +222,45 @@ class MessageDialog:
     def ok(self):
         self.top.destroy()
 
+class EmbeddedPlot:
+
+    def __init__(self, root):
+        top = self.top = Toplevel(root)
+        f = Figure(figsize=(5,4), dpi=100)
+        self.a = a = f.add_subplot(111)
+        t = arange(0.0,3.0,0.01)
+        s = sin(2*pi*t)
+        a.plot(t,s)
+
+        self.canvas = canvas = FigureCanvasTkAgg(f, master=top)
+        canvas.show()
+        canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
+        self.toolbar = toolbar = NavigationToolbar2TkAgg(canvas, top)
+        toolbar.update()
+        canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=1)
+        canvas.mpl_connect('key_press_event',
+                           self.on_key_event)
+        canvas.mpl_connect('button_press_event',
+                           self.onclick)
+        button = Button(master=top, text='Quit',
+                        command=self._quit)
+        button.pack(side=BOTTOM)
+
+    def on_key_event(self, event):
+        print('you pressed %s'%event.key)
+        key_press_handler(event, self.canvas, self.toolbar)
+
+    def _quit(self):
+        top.quit()     # stops mainloop
+        top.destroy()  # this is necessary on Windows to prevent
+
+    def onclick(self, event):
+        print('button=%d, x=%d, y=%d, xdata=%f, ydata=%f ' % (
+            event.button, event.x, event.y, event.xdata,
+            event.ydata))
+
 if __name__ == "__main__":
     root = Tk()
     gui = Wavegui(root)
+    e = EmbeddedPlot(root)
     root.mainloop()
