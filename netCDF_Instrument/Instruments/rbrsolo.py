@@ -40,8 +40,10 @@ class RBRSolo(Sensor):
         only parse the initial datetime = much faster
         '''
         self.frequency = 4
-        self.local_frequency_range = [11, 19]
-        self.mfg_frequency_range = [10, 20]
+        self.local_frequency_range = [11, 19] # for IOOS test17
+        self.mfg_frequency_range = [10, 20] # for IOOS test 17
+        self.max_rate_of_change = 20
+        self.prev_value = True # for IOOS test 20
         self.date_format_string = '%d-%b-%Y %H:%M:%S.%f'  
         skip_index = self.read_start('^[0-9]{2}-[A-Z]{1}[a-z]{2,8}-[0-9]{4}$',' ')
         self.five_count_list = list() #for skipping lines in case there is calibration header data
@@ -56,6 +58,7 @@ class RBRSolo(Sensor):
         self.pressure_data = [x[3] for x in df[:-1].itertuples()]
         self.test_16_stucksensor()
         self.test_17_frequencyrange()
+        self.test_20_rateofchange()
                 
     def test_16_stucksensor(self):
         self.pressure_test16_data = [self.get_16_value(x) for x in self.pressure_data]
@@ -63,9 +66,21 @@ class RBRSolo(Sensor):
     def test_17_frequencyrange(self):
         self.pressure_test17_data = [self.get_17_value(x) for x in self.pressure_data]
         
+    def test_20_rateofchange(self):
+        self.pressure_test20_data = [self.get_20_value(x) for x in self.pressure_data]
         
+    def get_16alt_value(self):
+        for x in range(0,len(self.pressure_data)):
+            min = x-5
+            if min < 0:
+                 min = 0
+            flags = np.count_nonzero(np.equal(x,self.pressure_data[:x]))
+            
+            
     def get_16_value(self,x):
            
+           
+       
         if len(self.five_count_list) > 5:
             self.five_count_list.pop()
             
@@ -81,12 +96,23 @@ class RBRSolo(Sensor):
             
     def get_17_value(self, x):
         
-        
-        if x >= self.local_frequency_range[0] and x <= self.local_frequency_range[1]:
+        if np.greater_equal(x,self.local_frequency_range[0]) and \
+        np.less_equal(x,self.local_frequency_range[1]):
             return 1
-        elif x >= self.mfg_frequency_range[0] and x <= self.mfg_frequency_range[1]:
+        elif np.greater_equal(x,self.mfg_frequency_range[0]) and \
+                            np.less_equal(x,self.mfg_frequency_range[1]):
             return 3
         else:
+            return 4
+        
+    def get_20_value(self, x):
+      
+        if np.isnan(self.prev_value) or \
+        np.less_equal(np.abs(np.subtract(x,self.prev_value)), self.max_rate_of_change):
+            self.prev_value = x
+            return 1
+        else:
+            self.prev_value = x
             return 4
         
         
@@ -119,7 +145,7 @@ if __name__ == "__main__":
     lt = RBRSolo()        
     
     #--for testing
-    lt.in_filename = os.path.join("benchmark","RBR_RSK_Test.txt")
+    lt.in_filename = os.path.join("benchmark","RBR_RSK.txt")
     lt.out_filename = os.path.join("benchmark","RBR.csv.nc")
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)
