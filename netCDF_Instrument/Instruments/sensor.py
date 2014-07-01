@@ -63,7 +63,7 @@ class Sensor(object):
         
         self.pressure_test16_data = None
         self.pressure_test17_data = None
-        
+        self.pressure_test20_data = None
         
     
     def convert_to_milliseconds(self, series_length, datestring):
@@ -157,6 +157,11 @@ class Sensor(object):
         pressure_test17[:] = self.pressure_test17_data
         return pressure_test17
     
+    def pressure_test20(self,ds):
+        pressure_test20 = ds.createVariable("pressure_test20","b",("time",))
+        pressure_test20[:] = self.pressure_test20_data
+        return pressure_test20
+    
     
     def write(self):
         #assert not os.path.exists(self.out_filename),"out_filename already exists"
@@ -171,6 +176,7 @@ class Sensor(object):
         pressure_var = self.pressure_var(ds)
         pressure_test16 = self.pressure_test16(ds)
         pressure_test17 = self.pressure_test17(ds)
+        pressure_test20 = self.pressure_test20(ds)
         ds.salinity_ppm = np.float32(self.salinity_ppm)        
         ds.time_zone = "UTC"
         ds.readme = "file created by "+sys.argv[0]+" on "+str(datetime.now())+" from source file "+self.in_filename
