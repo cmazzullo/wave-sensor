@@ -175,6 +175,14 @@ class Wavegui:
                                  self.timezone.get().capitalize())
         device.pressure_units = self.pressure_units.get()
 
+        # This stuff is a bit silly but it might change
+        device.geospatial_lat_min = device.latitude
+        device.geospatial_lat_max = device.latitude
+        device.geospatial_lon_min = device.longitude
+        device.geospatial_lon_max = device.longitude
+        device.geospatial_vertical_min = device.z
+        device.geospatial_vertical_max = device.z
+
         device.read()
 
         e = EmbeddedPlot(root, device.pressure_data[:100])
