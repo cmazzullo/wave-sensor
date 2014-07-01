@@ -11,6 +11,7 @@ import pytz
 import pandas
 import re
 
+
 #--python 3 compatibility
 pyver = sys.version_info
 if pyver[0] == 3:
@@ -39,17 +40,67 @@ class RBRSolo(Sensor):
         only parse the initial datetime = much faster
         '''
         self.frequency = 4
+        self.local_frequency_range = [11, 19]
+        self.mfg_frequency_range = [10, 20]
         self.date_format_string = '%d-%b-%Y %H:%M:%S.%f'  
-        skip_index = self.read_start('^[0-9]{2}-[A-Z]{1}[a-z]{2,8}-[0-9]{4}$',' ') #for skipping lines in case there is calibration header data
+        skip_index = self.read_start('^[0-9]{2}-[A-Z]{1}[a-z]{2,8}-[0-9]{4}$',' ')
+        self.five_count_list = list() #for skipping lines in case there is calibration header data
         df= pandas.read_csv(self.in_filename,skiprows=skip_index, delim_whitespace=True, \
                             header=None, engine='c', usecols=[0,1,2])
         for x in df[0:1].itertuples():
             if x[0] == 0:
                 self.utc_millisecond_data = self.convert_to_milliseconds(df.shape[0] - 1, \
                                                                          ('%s %s' % (x[1],x[2])))
-               
                 break
+        
         self.pressure_data = [x[3] for x in df[:-1].itertuples()]
+        self.test_16_stucksensor()
+        self.test_17_frequencyrange()
+                
+    def test_16_stucksensor(self):
+        self.pressure_test16_data = [self.get_16_value(x) for x in self.pressure_data]
+        
+    def test_17_frequencyrange(self):
+        self.pressure_test17_data = [self.get_17_value(x) for x in self.pressure_data]
+        
+        
+    def get_16_value(self,x):
+           
+        if len(self.five_count_list) > 5:
+            self.five_count_list.pop()
+            
+        flags = np.count_nonzero(np.equal(x,self.five_count_list))
+        self.five_count_list.insert(0,x)
+        
+        if flags <= 2:
+            return 1
+        elif flags <= 4:
+            return 3
+        else:
+            return 4  
+            
+    def get_17_value(self, x):
+        
+        
+        if x >= self.local_frequency_range[0] and x <= self.local_frequency_range[1]:
+            return 1
+        elif x >= self.mfg_frequency_range[0] and x <= self.mfg_frequency_range[1]:
+            return 3
+        else:
+            return 4
+        
+        
+#         mfg_check1 = np.less(self.pressure_data, self.mfg_frequency_range[0])
+#         mfg_check2 = np.greater(self.pressure_data, self.mfg_frequency_range[1])
+#         mfg_check = [np.maximum(x, y) for x in mfg_check1 for y in mfg_check2]
+#         
+#         for x in range(0,10):
+#             print(mfg_check[x])
+#         
+#         local_check1 = np.less(self.pressure_data, self.local_frequency_range[0])
+#         local_check2 = np.greater(self.pressure_data, self.local_frequency_range[1])
+#         local_check = [np.maximum(x, y) for x in local_check1 for y in local_check2]
+                
         
     def read_start(self, expression, delimeter):
         skip_index = 0;
@@ -68,7 +119,7 @@ if __name__ == "__main__":
     lt = RBRSolo()        
     
     #--for testing
-    lt.in_filename = os.path.join("benchmark","RBR_RSK.txt")
+    lt.in_filename = os.path.join("benchmark","RBR_RSK_Test.txt")
     lt.out_filename = os.path.join("benchmark","RBR.csv.nc")
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)

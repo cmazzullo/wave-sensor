@@ -42,11 +42,14 @@ class Sensor(object):
         self.salinity_ppm = -1.0e+10
         self.utc_millisecond_data = None
         self.pressure_data = None
+        self.presure_data_flags = None
         self.epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
         self.data_start = None
         self.timezone_string = None
         self.date_format_string = None
         self.frequency = None
+        self.local_frequency_range = None
+        self.mfg_frequency_range = None
 
         self.valid_pressure_units = ["psi","pascals","atm"]
         self.valid_z_units = ["meters","feet"]
@@ -57,6 +60,10 @@ class Sensor(object):
         self.valid_pressure = (np.float32(-10000),np.float32(10000))
 
         self.fill_value = np.float32(-1.0e+10)
+        
+        self.pressure_test16_data = None
+        self.pressure_test17_data = None
+        
         
     
     def convert_to_milliseconds(self, series_length, datestring):
@@ -140,7 +147,17 @@ class Sensor(object):
         pressure_var[:] = self.pressure_data
         return pressure_var
     
-   
+    def pressure_test16(self,ds):
+        pressure_test16 = ds.createVariable("pressure_test16","b",("time",))
+        pressure_test16[:] = self.pressure_test16_data
+        return pressure_test16
+    
+    def pressure_test17(self,ds):
+        pressure_test17 = ds.createVariable("pressure_test17","b",("time",))
+        pressure_test17[:] = self.pressure_test17_data
+        return pressure_test17
+    
+    
     def write(self):
         #assert not os.path.exists(self.out_filename),"out_filename already exists"
         #--create variables and assign data
@@ -152,10 +169,36 @@ class Sensor(object):
         longitude_var = self.longitude_var(ds)
         z_var = self.z_var(ds)
         pressure_var = self.pressure_var(ds)
+        pressure_test16 = self.pressure_test16(ds)
+        pressure_test17 = self.pressure_test17(ds)
         ds.salinity_ppm = np.float32(self.salinity_ppm)        
         ds.time_zone = "UTC"
         ds.readme = "file created by "+sys.argv[0]+" on "+str(datetime.now())+" from source file "+self.in_filename
-        
+        ds.cdm_datatype = "station"
+        ds.comment = "not used"
+        ds.contributor_name = "USGS"
+        ds.contributor_role = "data collector"
+        ds.creator_email = "not used"
+        ds.creator_name = "not used"
+        ds.creator_url = "not used"
+        ds.date_created = datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ")
+        ds.date_modified = datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ")
+        ds.geospatial_lat_min = "GUI"
+        ds.geospatial_lat_max = "GUI"
+        ds.geospatial_lon_min = "GUI"
+        ds.geospatial_lon_max = "GUI"
+        ds.geospatial_lat_units = "degrees_north"
+        ds.geospatial_lat_resolution = "point"
+        ds.geospatial_lon_units = "degrees_east"
+        ds.geospatial_lon_resolution = "point"
+        ds.geospatial_vertical_min = "GUI"
+        ds.geospatial_vertical_max = "GUI"
+        ds.geospatial_vertical_units = "meters"
+        ds.geospatial_vertical_resolution = "point"
+        ds.geospatial_vertical_positive = "up"
+        ds.history = "not used"
+        ds.id = "not used"
+        print('done write')
 
 #     def inrange(self,val,limits):
 #         if val >= limits[0] and val <= limits[1]:
