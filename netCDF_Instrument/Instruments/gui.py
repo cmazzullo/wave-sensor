@@ -73,7 +73,10 @@ class Wavegui:
         make_entry(self.longitude, "Longitude:")
         make_entry(self.altitude, "Altitude:")
         make_entry(self.salinity, "Salinity:")
-        e = EmbeddedPlot(root)
+        self.get_filename(self.in_filename, 'Input filename:', 'in')
+        self.get_filename(self.out_filename, 'Output filename', 'out')
+        self.process_button()
+        self.quit_button()
 
     def setup_mainframe(self, root):
         mainframe = ttk.Frame(root, padding="3 3 12 12")
@@ -98,8 +101,27 @@ class Wavegui:
             child.grid_configure(padx=5, pady=5)
         root.minsize(root.winfo_width(), root.winfo_height())
 
+    def get_filename(self, variable, label, inorout):
+        def select_infile():
+            fname = filedialog.askopenfilename()
+            self.in_filename.set(fname)
+        def select_outfile():
+            fname = filedialog.asksaveasfilename(defaultextension='.nc')
+            self.out_filename.set(fname)
+        commands = {'in': select_infile, 'out': select_outfile}
+        
+        entry = ttk.Entry(self.mainframe, width=7,
+                                      textvariable=variable)
+        entry.grid(column=2, row=self._row, sticky=(W, E))
+        ttk.Label(self.mainframe,
+                  text=label).grid(column=1, row=self._row, sticky=W)
+        ttk.Button(self.mainframe, text="Browse",
+                   command=commands[inorout]).grid(column=3,
+                                                   row=self._row, sticky=W)
+        entry.focus()
+        self._row += 1
+        
     def get_in_filename(self):
-        # Input Filename
         in_filename_entry = ttk.Entry(self.mainframe, width=7,
                                       textvariable=self.in_filename)
         in_filename_entry.grid(column=2, row=2, sticky=(W, E))
@@ -117,7 +139,6 @@ class Wavegui:
         in_filename_entry.focus()
 
     def get_out_filename(self):
-        # Output Filename
         out_filename_entry = ttk.Entry(self.mainframe, width=7,
                                        textvariable=self.out_filename)
         out_filename_entry.grid(column=2, row=3, sticky=(W, E))
@@ -181,6 +202,7 @@ class Wavegui:
         device.pressure_units = self.pressure_units.get()
 
         device.read()
+        e = EmbeddedPlot(root)
 
         e.destroy()
         device.write()
@@ -251,8 +273,8 @@ class EmbeddedPlot:
         key_press_handler(event, self.canvas, self.toolbar)
 
     def _quit(self):
-        top.quit()     # stops mainloop
-        top.destroy()  # this is necessary on Windows to prevent
+#        self.top.quit()     # stops mainloop
+        self.top.destroy()  # this is necessary on Windows to prevent
 
     def onclick(self, event):
         print('button=%d, x=%d, y=%d, xdata=%f, ydata=%f ' % (
@@ -262,5 +284,4 @@ class EmbeddedPlot:
 if __name__ == "__main__":
     root = Tk()
     gui = Wavegui(root)
-    e = EmbeddedPlot(root)
     root.mainloop()
