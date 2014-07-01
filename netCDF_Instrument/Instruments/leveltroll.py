@@ -43,14 +43,9 @@ class Leveltroll(Sensor):
         data = np.genfromtxt(f,dtype=self.numpy_dtype,delimiter=',',usecols=[1,2])     
         f.close()
         
-        # long_seconds = np.float64(data["seconds"])
-        #print(data)
-       
         long_seconds = data["seconds"]
         self.utc_millisecond_data = (long_seconds + np.float64(self.offset_seconds)) * 1000
-        
-        print('Here it is')
-        print(self.utc_millisecond_data)
+
         self.pressure_data = data["pressure"]
         
 
@@ -62,7 +57,6 @@ class Leveltroll(Sensor):
         while not line.lower().startswith(self.record_start_marker):
             bit_line = f.readline() 
             line = bit_line.decode()
-            print(line)
             line_count += 1
             if line.lower().startswith(self.timezone_marker):
                 self.timezone_string = line.split(':')[1].strip()        
@@ -81,7 +75,7 @@ class Leveltroll(Sensor):
         reset_point = f.tell()  
         bit_line = f.readline()          
         line = bit_line.decode()  
-        print(line)        
+
         raw = line.strip().split(',')
         dt_str = raw[0]
         try:
@@ -89,7 +83,6 @@ class Leveltroll(Sensor):
         except Exception as e:
             raise Exception("ERROR - cannot parse first date time stamp: "+str(self.td_str)+" using format: "+dt_fmt+'\n')
         f.seek(reset_point)
-        print ('datastart - %s' % data_start)
         return data_start
 
 
