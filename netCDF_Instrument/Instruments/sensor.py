@@ -64,6 +64,7 @@ class Sensor(object):
         self.valid_pressure = (np.float32(-10000),np.float32(10000))
 
         self.fill_value = np.float32(-1.0e+10)
+        self.creator_name = "Tim Howard"
         
         self.pressure_test16_data = None
         self.pressure_test17_data = None
@@ -230,7 +231,7 @@ class Sensor(object):
         ds.keywords_vocabulary = "not used at this time"
         ds.license = "This data may only be used upon the consent of the USGS"
         ds.Metadata_Conventions = "Unidata Dataset Discovery v1.0"
-        ds.metadata_link = "not used at this"
+        ds.metadata_link = "usgs.katrinamapperinfo.com"
         ds.naming_authority = "not used at this time"
         ds.processing_level = "deferred with intention to implement"
         ds.project = "deferred with intention to implement"
@@ -243,7 +244,9 @@ class Sensor(object):
         ds.time_coverage_end = self.data_end_date
         ds.time_coverage_duration = self.data_duration_time
         ds.time_coverage_resolution = "ISO 8601"
-        ds.title = "GUI"
+        ds.title = 'Measure of pressure at %s degrees latitude, %s degrees longitude, %s alittude by %s' \
+        ' from the date range of %s to %s' % (self.latitude, self.longitude, self.z,self.creator_name, \
+                                                   self.data_start_date, self.data_end_date)
         print('done write')
 
 #     def inrange(self,val,limits):
