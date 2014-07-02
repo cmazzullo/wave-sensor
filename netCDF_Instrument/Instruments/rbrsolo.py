@@ -143,7 +143,7 @@ if __name__ == "__main__":
     lt = RBRSolo()        
     
     #--for testing
-    lt.in_filename = os.path.join("benchmark","RBR_RSK.txt")
+    lt.in_filename = os.path.join("benchmark","RBR_RSK_Test.txt")
     lt.out_filename = os.path.join("benchmark","RBR.csv.nc")
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)
