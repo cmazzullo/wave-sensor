@@ -1,36 +1,27 @@
-#! /usr/bin/env python3
+#!/usr/bin/env python3
 import matplotlib
 matplotlib.use('TkAgg')
-from numpy import arange, sin, pi
-
+import collections
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-# implement the default mpl key bindings
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
-
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
 from pytz import timezone
 import os
-
-import sys
-sys.path.append('.')
-
 import numpy as np
 import time
-
 from Instruments.sensor import Sensor
 from Instruments.rbrsolo import RBRSolo
 from Instruments.leveltroll import Leveltroll
 from Instruments.waveguage import Waveguage
 
 class Variable:
-    def __init__(self, name, name_in_device=None, label=None,
-                 docs=None, options=None, required=False,
+    def __init__(self, name_in_device=None, label=None,
+                 docs=None, options=None, required=True,
                  filename=False, default_value=None,
                  valtype=str):
-        self.name = name
         self.name_in_device = name_in_device
         self.label = label
         self.docs = docs
@@ -45,8 +36,7 @@ class Variable:
     def getvalue(self):
         val = self.stringvar.get()
         return self.valtype(val)
-        
-            
+
 class Wavegui:
     """A graphical interface to the netCDF conversion program. Prompts
     the user for information about the wave sensor and converts a CSV
@@ -62,59 +52,55 @@ class Wavegui:
         generic_sensor = Sensor()
         fill_value = str(generic_sensor.fill_value)
         
-        variables = [
-            Variable('username', label='Your full name:'),
-            Variable('email', label='Your email address:'),
-            Variable('latitude', name_in_device='latitude',
-                     label='Latitude:', valtype=np.float32),
-            Variable('longitude', name_in_device='longitude',
-                     label='Longitude:', valtype=np.float32),
-            Variable('altitude', name_in_device='z',
-                     label='Altitude:',
-                     docs="Altitude with respect to the WGS 84 "\
-                     "ellipsoid.", valtype=np.float32),
-            # Variable('altitude_units',
-            #          options=("feet", "meters"),
-            #          name_in_device='z_units',
-            #          label='Altitude units:'),
-            Variable('salinity', name_in_device='salinity',
-                     label='Salinity:', valtype=np.float32),
-            Variable('timezone', name_in_device='tzinfo',
-                     label='Timezone:',
-                     options=("US/Central", "US/Eastern"),
-                     valtype=timezone),
-            Variable('instrument', options=self.instruments.keys(),
-                     label='Instrument:'),
-            Variable('pressure_units', name_in_device='pressure_units',
-                     label='Pressure units:',
-                     options=("atm", "bar", "psi")),
-            Variable('keywords', label='Comma-separated keywords:'),
-            Variable('project', label='Project name:'),
-            Variable('in_filename', name_in_device='in_filename',
-                     label='Input filename:', filename='in'),
-            Variable('out_filename', name_in_device='out_filename',
-                     label='Output filename:', filename='out')]
-        self.variables = variables
+        self.variables = variables = collections.OrderedDict()
+        variables['username'] = Variable(label='Your full name:')
+        variables['email'] = Variable(label='Your email address:')
+        variables['latitude'] = Variable(name_in_device='latitude',
+                  label='Latitude:', valtype=np.float32)
+        variables['longitude'] = Variable(name_in_device='longitude',
+                  label='Longitude:', valtype=np.float32)
+        variables['altitude'] = Variable(name_in_device='z',
+                  label='Altitude:',
+                  docs="Altitude in meters with respect to the "\
+                  " WGS 84 ellipsoid.", valtype=np.float32)
+        variables['salinity'] = Variable(name_in_device='salinity',
+                  label='Salinity:', valtype=np.float32)
+        variables['timezone'] = Variable(name_in_device='tzinfo',
+                  label='Timezone:',
+                  options=("US/Central", "US/Eastern"),
+                  valtype=timezone)
+        variables['instrument'] = Variable(options=self.instruments.keys(),
+                  label='Instrument:')
+        variables['pressure_units'] = Variable(name_in_device='pressure_units',
+                  label='Pressure units:',
+                  options=("atm", "bar", "psi"))
+        # variables['keywords'] = Variable(label='Comma-separated keywords:',
+        #           required=False)
+        variables['project'] = Variable(label='Project name:')
+        variables['in_filename'] = Variable(name_in_device='in_filename',
+                  label='Input filename:', filename='in')
+        variables['out_filename'] = Variable(name_in_device='out_filename',
+                  label='Output filename:', filename='out')
+
         self.setup_mainframe(root)
 
-        for row, var in enumerate(variables):
-            self.make_widget(var, row)
+        for row, var in enumerate(variables.values()):
+            self.make_widget(var, row) 
 
         self.process_button(len(variables))
         self.quit_button(len(variables))
 
-        # TESTING STUFF        
         self.read_from_file(variables)
         
     def write_to_file(self, variables):
         with open(self.log_file, 'w') as f:
-            for var in variables:
+            for var in variables.values():
                 f.write(var.stringvar.get() + '\n')
 
     def read_from_file(self, variables):
         if os.path.isfile(self.log_file):
             with open(self.log_file, 'r') as f:
-                for line, var in zip(f, variables):
+                for line, var in zip(f, variables.values()):
                     var.stringvar.set(line.rstrip())
 
     def setup_mainframe(self, root):
@@ -134,7 +120,6 @@ class Wavegui:
             fname = filedialog.asksaveasfilename(
                 defaultextension='.nc')
             var.stringvar.set(fname)
-
         if var.filename == 'in':
             command = select_infile
         else:
@@ -163,7 +148,6 @@ class Wavegui:
             entry = ttk.Entry(self.mainframe, width=20,
                               textvariable=var.stringvar)
             entry.grid(column=2, row=row, sticky=(W, E))
-
         def display_help(docs):
             d = MessageDialog(root, message=docs, title='Help')
         if var.docs:
@@ -173,22 +157,26 @@ class Wavegui:
         
     def process_button(self, row):
         ttk.Button(self.mainframe, text="Process File",
-                   command=self.process_file).grid(column=1,
-                                                   row=row,
-                                                   sticky=W)
+                   command=self.process_file).\
+                   grid(column=1, row=row, sticky=W)
         
     def process_file(self):
-
-        self.write_to_file(self.variables)
-        instrument = next(var.stringvar.get()
-                          for var in self.variables
-                          if var.name == 'instrument')
-        device = self.instruments[instrument]
         root = self.root
+        for var in self.variables.values():
+            if var.required and var.stringvar.get() == '':
+                d = MessageDialog(root, message="Incomplete "\
+                                  "entries, please fill out all "\
+                                  "fields.", title='Incomplete!')
+                root.wait_window(d.top)
+                return 
+        
+        self.write_to_file(self.variables)
+        device = self.instruments[self.variables['instrument']]
+
         d = MessageDialog(root, message="Processing file. "
                           "This may take a few minutes.",
                           title='Processing...', nobutton=True)
-        for var in self.variables:
+        for var in self.variables.values():
             if var.name_in_device:
                 setattr(device, var.name_in_device, var.getvalue())
 
@@ -204,13 +192,9 @@ class Wavegui:
         e = EmbeddedPlot(root, device.pressure_data[:100])
         root.wait_window(e.top)
         start_time = e.get_start_time()
-        print(start_time)
-        out_file = next(var.stringvar.get()
-                        for var in self.variables
-                        if var.name == 'out_filename')
 
+        out_file = self.variables['out_filename']
         if os.path.isfile(out_file): os.remove(out_file)
-            
         device.write()
         d.top.destroy()
         d = MessageDialog(root, message="Success! File saved " +
@@ -228,9 +212,9 @@ class Wavegui:
     def quit_button(self, row):
         """Exits the application without saving anything"""
         ttk.Button(self.mainframe, text="Quit",
-                   command=lambda: root.destroy()).grid(column=2,
-                                                        row=row,
-                                                        sticky=W)
+                   command=lambda: root.destroy()).\
+                   grid(column=2, row=row, sticky=W)
+                   
 class MessageDialog:
 
     def __init__(self, parent, message="", title="",  nobutton=False):
@@ -268,21 +252,16 @@ class EmbeddedPlot:
                            self.on_key_event)
         canvas.mpl_connect('button_press_event',
                            self.onclick)
-        button = Button(master=top, text='Quit',
+        button = Button(master=top, text='Accept',
                         command=self._quit)
         button.pack(side=BOTTOM)
-
-    def on_key_event(self, event):
-        print('you pressed %s'%event.key)
-        key_press_handler(event, self.canvas, self.toolbar)
 
     def _quit(self):
         self.top.destroy()  # this is necessary on Windows to prevent
 
     def onclick(self, event):
         print('button=%d, x=%d, y=%d, xdata=%f, ydata=%f ' % (
-            event.button, event.x, event.y, event.xdata,
-            event.ydata))
+            event.button, event.x, event.y, event.xdata, event.ydata))
         self.xdata = event.xdata
         
     def get_start_time(self):
