@@ -138,7 +138,7 @@ class Wavegui:
         
     def make_widget(self, var, row):
 
-        label = ('' if var.required else '(*)') + var.label
+        label = ('(*)' if var.required else '') + var.label
         ttk.Label(self.mainframe, text=label).\
           grid(column=1, row=row, sticky=W)
         if var.filename:
