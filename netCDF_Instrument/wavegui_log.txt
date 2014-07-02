@@ -1,0 +1,13 @@
+Chris Mazzullo
+cmazzull
+1
+40
+jklj
+789
+US/Central
+RBRSolo
+atm
+hello, world
+USGS
+/home/chris/wave-sensor/netCDF_Instrument/Instruments/benchmark/RBR_RSK.txt
+/home/chris/hdfskdshfdskj.nc
