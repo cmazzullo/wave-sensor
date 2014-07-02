@@ -55,7 +55,9 @@ class RBRSolo(Sensor):
                                                                          ('%s %s' % (x[1],x[2])))
                 break
         
-        self.pressure_data = [x[3] for x in df[:-1].itertuples()]
+        self.pressure_data = [x[1] for x in df[2][:-1].iteritems()]
+        for x in range(0,100):
+            print(self.pressure_data[x])
         self.test_16_stucksensor()
         self.test_17_frequencyrange()
         self.test_20_rateofchange()
@@ -68,13 +70,7 @@ class RBRSolo(Sensor):
         
     def test_20_rateofchange(self):
         self.pressure_test20_data = [self.get_20_value(x) for x in self.pressure_data]
-        
-    def get_16alt_value(self):
-        for x in range(0,len(self.pressure_data)):
-            min = x-5
-            if min < 0:
-                 min = 0
-            flags = np.count_nonzero(np.equal(x,self.pressure_data[:x]))
+   
             
             
     def get_16_value(self,x):

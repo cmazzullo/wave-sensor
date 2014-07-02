@@ -1,4 +1,4 @@
-from sensor import Sensor
+from Instruments.sensor import Sensor
 
 import os
 import sys
@@ -109,7 +109,7 @@ class Leveltroll(Sensor):
 if __name__ == "__main__":
     
     #--create an instance    
-    lt = leveltroll()        
+    lt = Leveltroll()        
     
     #--for testing
     lt.in_filename = os.path.join("benchmark","baro.csv")
