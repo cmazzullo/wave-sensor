@@ -24,67 +24,105 @@ from Instruments.rbrsolo import RBRSolo
 from Instruments.leveltroll import Leveltroll
 from Instruments.waveguage import Waveguage
 
+class Variable:
+    def __init__(self, name, name_in_device, label=None, docs=None,
+                 options=None):
+        self.name = name
+        self.name_in_device = name_in_device
+        if label: self.label = label
+        if docs: self.docs = docs
+        if options: self.options = options
+        self.stringvar = StringVar()
+            
 class Wavegui:
     """A graphical interface to the netCDF conversion program. Prompts
     the user for information about the wave sensor and converts a CSV
     file from the sensor to a properly formatted netCDF file.
     """
     def __init__(self, root):
-
+        self.log_file = 'wavegui_log.txt'
         # Simply add a new instrument name : class pair to this dict
         # to have it included in the GUI!
         self.instruments = {'LevelTroll' : Leveltroll(),
                             'RBRSolo' : RBRSolo(),
                             'Wave Guage' : Waveguage()}
-
         self.root = root
         generic_sensor = Sensor()
         fill_value = str(generic_sensor.fill_value)
-        self.in_filename = StringVar(value='./Instruments/benchmark/RBR_RSK.txt')
-        self.out_filename = StringVar(value='/home/chris/test.deleteme.nc')
-        self.username = StringVar()
-        self.email = StringVar()
-        self.latitude = StringVar(value=fill_value)
-        self.longitude = StringVar(value=fill_value)
-        self.altitude = StringVar(value=fill_value)
-        self.altitude_units = StringVar()
-        self.salinity = StringVar(value=fill_value)
-        self.timezone = StringVar()
-        self.instrument = StringVar()
-        self.pressure_units = StringVar()
+
+        self.attributes = {'in_filename': StringVar(),
+                            'out_filename': StringVar(),
+                            'username': StringVar(),
+                            'email': StringVar(),
+                            'latitude': StringVar(),
+                            'longitude': StringVar(),
+                            'altitude': StringVar(),
+                            'altitude_units': StringVar(),
+                            'salinity': StringVar(),
+                            'timezone': StringVar(),
+                            'instrument': StringVar(),
+                            'pressure_units': StringVar(),
+                            'keywords': StringVar(),
+                            'project': StringVar()}
 
         self.setup_mainframe(root)
 
-        make_entry = self.make_entry
-        make_optionmenu = self.make_optionmenu
+        def_field = self.def_field
         self._row = 1
 
-        make_optionmenu(self.altitude_units, "Altitude units:",
-                        ("feet", "meters"))
-        make_optionmenu(self.instrument, "Instrument brand:",
-                        self.instruments.keys())
-        make_optionmenu(self.timezone, "Timezone:",
-                        ("Central", "Eastern"))
-        make_optionmenu(self.pressure_units, "Pressure units:",
-                        ("atm", "bar", "psi"))
-
-        make_entry(self.username, "Your name:")
-        make_entry(self.email, "Your email:")
-        make_entry(self.latitude, "Latitude:")
-        make_entry(self.longitude, "Longitude:")
-        make_entry(self.altitude, "Altitude:")
-        make_entry(self.salinity, "Salinity:")
-        self.get_filename(self.in_filename, 'Input filename:', 'in')
-        self.get_filename(self.out_filename, 'Output filename', 'out')
+        def_field(self.attributes['altitude_units'], "Altitude units:",
+                        choices=("feet", "meters"))
+        def_field(self.attributes['instrument'], "Instrument brand:",
+                        choices=self.instruments.keys())
+        def_field(self.attributes['timezone'], "Timezone:",
+                        choices=("Central", "Eastern"))
+        def_field(self.attributes['pressure_units'], "Pressure units:",
+                        choices=("atm", "bar", "psi"))
+        def_field(self.attributes['username'], "Your name:",
+                   doc='The name of the person who ' +
+                   'collected the data')
+        def_field(self.attributes['email'], "Your email:")
+        def_field(self.attributes['latitude'], "Latitude:")
+        def_field(self.attributes['longitude'], "Longitude:")
+        def_field(self.attributes['altitude'], "Altitude:")
+        def_field(self.attributes['salinity'], "Salinity:")
+        def_field(self.attributes['keywords'], "Keywords:",
+                   doc='A comma-separated list of keywords ' +
+                   'that apply to the information in the file')
+        def_field(self.attributes['project'], "Project:",
+                   doc='The scientific project that the ' +
+                   'data was collected under.')
+        self.get_filename('in', self.attributes['in_filename'])
+        self.get_filename('out', self.attributes['out_filename'])
         self.process_button()
         self.quit_button()
 
         # TESTING STUFF        
-        self.altitude_units.set('feet')
-        self.timezone.set('Eastern')
-        self.instrument.set('RBRSolo')
-        self.pressure_units.set('atm')
+        self.attributes['altitude_units'].set('feet')
+        self.attributes['timezone'].set('Eastern')
+        self.attributes['instrument'].set('RBRSolo')
+        self.attributes['pressure_units'].set('atm')
+        self.attributes['in_filename'].set('./Instruments/benchmark/RBR_RSK.txt')
+        self.attributes['out_filename'].set('/home/chris/test.deleteme.nc')
+        self.attributes['latitude'].set('10')
+        self.attributes['longitude'].set('10')
+        self.attributes['altitude'].set('10')
+        self.attributes['salinity'].set('10')
+        self.read_from_file()
+        
+    def write_to_file(self):
+        with open(self.log_file, 'w') as f:
+            for key in self.attributes:
+                f.write(key + ' ' + self.attributes[key].get()
+                        + '\n')
 
+    def read_from_file(self):
+        with open(self.log_file, 'r') as f:
+            for line in f:
+                e = line.split()
+                if e[0] in self.attributes.keys() and len(e) > 2:
+                    self.attributes[e[0]].set(' '.join(e[1:]))
+                    
     def setup_mainframe(self, root):
         mainframe = ttk.Frame(root, padding="3 3 12 12")
         mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
@@ -94,61 +132,85 @@ class Wavegui:
         mainframe.bind('<Return>', self.process_file)
         self.mainframe = mainframe
 
-    def setup_for_instrument(self, instrument_name):
-        self.mainframe.destroy()
-        self.setup_mainframe(root)
-        self.select_instrument(root)
-        for w in self.widgets:
-            try:
-                if w not in self.suppress_dict[instrument_name]:
-                    w()
-            except KeyError:
-                w()
-        for child in self.mainframe.winfo_children():
-            child.grid_configure(padx=5, pady=5)
-        root.minsize(root.winfo_width(), root.winfo_height())
-
-    def get_filename(self, variable, label, inorout):
+    def get_filename(self, inorout, variable):
         def select_infile():
             fname = filedialog.askopenfilename()
-            self.in_filename.set(fname)
         def select_outfile():
             fname = filedialog.asksaveasfilename(
                 defaultextension='.nc')
-            self.out_filename.set(fname)
-        commands = {'in': select_infile, 'out': select_outfile}
-        
+
+        if inorout == 'in':
+            label = 'Input file:'
+            command = select_infile
+            variable = self.attributes['in_filename']
+        else:
+            label = 'Output file:'
+            command = select_outfile
+            variable = self.attributes['out_filename']
+            
         entry = ttk.Entry(self.mainframe, width=7,
                                       textvariable=variable)
         entry.grid(column=2, row=self._row, sticky=(W, E))
         ttk.Label(self.mainframe,
                   text=label).grid(column=1, row=self._row, sticky=W)
         ttk.Button(self.mainframe, text="Browse",
-                   command=commands[inorout]).grid(column=3,
-                                                   row=self._row, sticky=W)
-        entry.focus()
+                   command=command).grid(column=3,
+                                         row=self._row, sticky=W)
         self._row += 1
         
     def make_optionmenu(self, variable, label, option_list,
-                        default_value=None):
+                        default_value=None, help_string=None):
         variable.set(default_value)
-        menu = OptionMenu(self.mainframe, variable, *option_list)
-        menu.grid(column=2, row=self._row, sticky=(W, E))
+
         ttk.Label(self.mainframe, text=label,
                   justify=LEFT).grid(column=1, row=self._row,
                                      sticky=W)
+
+        if help_string:
+            ttk.Button(self.mainframe, text='Help',
+                    command=lambda: self.display_help(help_string))\
+                    .grid(column=3, row=self._row, sticky=W)
         self._row += 1
 
-    def make_entry(self, variable, label):
-        entry = ttk.Entry(self.mainframe, width=7,
+    def make_entry(self, variable, label, help_string=None,
+                   default_value=''):
+        variable.set(default_value)
+        entry = ttk.Entry(self.mainframe, width=20,
                           textvariable=variable)
         entry.grid(column=2, row=self._row, sticky=(W, E))
         ttk.Label(self.mainframe,
                   text=label).grid(column=1, row=self._row, sticky=W)
+        if help_string:
+            ttk.Button(self.mainframe, text='Help',
+                    command=lambda: self.display_help(help_string))\
+                    .grid(column=3, row=self._row, sticky=W)
+
         self._row += 1
 
+    def def_field(self, variable, label, doc=None, default='',
+                  choices=None):
+                  
+        variable.set(default)
+        ttk.Label(self.mainframe,
+                  text=label).grid(column=1, row=self._row, sticky=W)
+        
+        if choices == None:
+            entry = ttk.Entry(self.mainframe, width=20,
+                            textvariable=variable)
+            entry.grid(column=2, row=self._row, sticky=(W, E))
+        else:
+            menu = OptionMenu(self.mainframe, variable, *choices)
+            menu.grid(column=2, row=self._row, sticky=(W, E))
+        def display_help(doc):
+            d = MessageDialog(root, message=doc, title='Help')
+        if doc:
+            ttk.Button(self.mainframe, text='Help',
+                    command=lambda: display_help(doc))\
+                    .grid(column=3, row=self._row, sticky=W)
+
+        self._row += 1
+        
     def process_button(self):
-        # 'Process File' Button
         ttk.Button(self.mainframe, text="Process File",
                    command=self.process_file).grid(column=1,
                                                    row=self._row,
@@ -156,7 +218,10 @@ class Wavegui:
         self._row += 1
         
     def process_file(self):
-        sensor = self.instrument.get()
+
+        self.write_to_file()
+        
+        sensor = self.attributes['instrument'].get()
         device = self.instruments[sensor]
         root = self.root
         d = MessageDialog(root, message="Processing file. "
@@ -164,16 +229,15 @@ class Wavegui:
                           title='Processing...',
                           nobutton=True)
 
-        device.in_filename = self.in_filename.get()
-        device.out_filename = self.out_filename.get()
-        device.latitude = np.float32(self.latitude.get())
-        device.longitude = np.float32(self.longitude.get())
-        device.z = np.float32(self.altitude.get())
-        device.z_units = self.altitude_units.get()
-        device.salinity = np.float32(self.salinity.get())
-        device.tzinfo = timezone('US/' +
-                                 self.timezone.get().capitalize())
-        device.pressure_units = self.pressure_units.get()
+        device.in_filename = self.attributes['in_filename'].get()
+        device.out_filename = self.attributes['out_filename'].get()
+        device.latitude = np.float32(self.attributes['latitude'].get())
+        device.longitude = np.float32(self.attributes['longitude'].get())
+        device.z = np.float32(self.attributes['altitude'].get())
+        device.z_units = self.attributes['altitude_units'].get()
+        device.salinity = np.float32(self.attributes['salinity'].get())
+        device.tzinfo = timezone('US/' + self.attributes['timezone'].get().capitalize())
+        device.pressure_units = self.attributes['pressure_units'].get()
 
         # This stuff is a bit silly but it might change
         device.geospatial_lat_min = device.latitude
@@ -184,14 +248,14 @@ class Wavegui:
         device.geospatial_vertical_max = device.z
 
         device.read()
-
+        d.top.destroy()
         e = EmbeddedPlot(root, device.pressure_data[:100])
         root.wait_window(e.top)
         start_time = e.get_start_time()
         print(start_time)
 
-        if os.path.isfile(self.out_filename.get()):
-            os.remove(self.out_filename.get())
+        if os.path.isfile(self.attributes['out_filename'].get()):
+            os.remove(self.attributes['out_filename'].get())
         device.write()
         d.top.destroy()
         d = MessageDialog(root, message="Success! File saved " +
@@ -237,9 +301,6 @@ class EmbeddedPlot:
         top = self.top = Toplevel(root)
         f = Figure(figsize=(5,4), dpi=100)
         self.a = a = f.add_subplot(111)
-
-        t = arange(0.0,3.0,0.01)
-        s = sin(2*pi*t)
         a.plot(data)
 
         self.canvas = canvas = FigureCanvasTkAgg(f, master=top)
@@ -261,7 +322,6 @@ class EmbeddedPlot:
         key_press_handler(event, self.canvas, self.toolbar)
 
     def _quit(self):
-#        self.top.quit()     # stops mainloop
         self.top.destroy()  # this is necessary on Windows to prevent
 
     def onclick(self, event):
