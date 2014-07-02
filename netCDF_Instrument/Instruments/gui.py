@@ -24,7 +24,7 @@ from Instruments.waveguage import Waveguage
 class Variable:
     def __init__(self, name_in_device=None, label=None,
                  docs=None, options=None, required=True,
-                 filename=False, default_value=None,
+                 filename=False, default_value='',
                  valtype=str):
         self.name_in_device = name_in_device
         self.label = label
