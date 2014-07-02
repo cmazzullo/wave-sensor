@@ -12,6 +12,10 @@ from pytz import timezone
 import os
 import numpy as np
 import time
+
+import sys
+sys.path.append('.')
+
 from Instruments.sensor import Sensor
 from Instruments.rbrsolo import RBRSolo
 from Instruments.leveltroll import Leveltroll
@@ -52,55 +56,56 @@ class Wavegui:
         generic_sensor = Sensor()
         fill_value = str(generic_sensor.fill_value)
         
-        self.variables = variables = collections.OrderedDict()
-        variables['username'] = Variable(label='Your full name:')
-        variables['email'] = Variable(label='Your email address:')
-        variables['latitude'] = Variable(name_in_device='latitude',
+        self.fields = fields = collections.OrderedDict()
+        fields['username'] = Variable(label='Your full name:',
+                                         name_in_device='creator_name')
+        fields['email'] = Variable(label='Your email address:')
+        fields['latitude'] = Variable(name_in_device='latitude',
                   label='Latitude:', valtype=np.float32)
-        variables['longitude'] = Variable(name_in_device='longitude',
+        fields['longitude'] = Variable(name_in_device='longitude',
                   label='Longitude:', valtype=np.float32)
-        variables['altitude'] = Variable(name_in_device='z',
+        fields['altitude'] = Variable(name_in_device='z',
                   label='Altitude:',
                   docs="Altitude in meters with respect to the "\
                   " WGS 84 ellipsoid.", valtype=np.float32)
-        variables['salinity'] = Variable(name_in_device='salinity',
+        fields['salinity'] = Variable(name_in_device='salinity',
                   label='Salinity:', valtype=np.float32)
-        variables['timezone'] = Variable(name_in_device='tzinfo',
+        fields['timezone'] = Variable(name_in_device='tzinfo',
                   label='Timezone:',
                   options=("US/Central", "US/Eastern"),
                   valtype=timezone)
-        variables['instrument'] = Variable(options=self.instruments.keys(),
+        fields['instrument'] = Variable(options=self.instruments.keys(),
                   label='Instrument:')
-        variables['pressure_units'] = Variable(name_in_device='pressure_units',
+        fields['pressure_units'] = Variable(name_in_device='pressure_units',
                   label='Pressure units:',
                   options=("atm", "bar", "psi"))
-        # variables['keywords'] = Variable(label='Comma-separated keywords:',
+        # fields['keywords'] = Variable(label='Comma-separated keywords:',
         #           required=False)
-        variables['project'] = Variable(label='Project name:')
-        variables['in_filename'] = Variable(name_in_device='in_filename',
+        fields['project'] = Variable(label='Project name:')
+        fields['in_filename'] = Variable(name_in_device='in_filename',
                   label='Input filename:', filename='in')
-        variables['out_filename'] = Variable(name_in_device='out_filename',
+        fields['out_filename'] = Variable(name_in_device='out_filename',
                   label='Output filename:', filename='out')
 
         self.setup_mainframe(root)
 
-        for row, var in enumerate(variables.values()):
+        for row, var in enumerate(fields.values()):
             self.make_widget(var, row) 
 
-        self.process_button(len(variables))
-        self.quit_button(len(variables))
+        self.process_button(len(fields))
+        self.quit_button(len(fields))
 
-        self.read_from_file(variables)
+        self.read_from_file(fields)
         
-    def write_to_file(self, variables):
+    def write_to_file(self, fields):
         with open(self.log_file, 'w') as f:
-            for var in variables.values():
+            for var in fields.values():
                 f.write(var.stringvar.get() + '\n')
 
-    def read_from_file(self, variables):
+    def read_from_file(self, fields):
         if os.path.isfile(self.log_file):
             with open(self.log_file, 'r') as f:
-                for line, var in zip(f, variables.values()):
+                for line, var in zip(f, fields.values()):
                     var.stringvar.set(line.rstrip())
 
     def setup_mainframe(self, root):
@@ -128,15 +133,13 @@ class Wavegui:
         entry = ttk.Entry(self.mainframe, width=7,
                                       textvariable=var.stringvar)
         entry.grid(column=2, row=row, sticky=(W, E))
-        ttk.Label(self.mainframe,
-                  text=var.label).grid(column=1, row=row, sticky=W)
         ttk.Button(self.mainframe, text="Browse",
-                   command=command).grid(column=3,
-                                         row=row, sticky=W)
+                   command=command).grid(column=3, row=row, sticky=W)
         
     def make_widget(self, var, row):
 
-        ttk.Label(self.mainframe, text=var.label).\
+        label = ('' if var.required else '(*)') + var.label
+        ttk.Label(self.mainframe, text=label).\
           grid(column=1, row=row, sticky=W)
         if var.filename:
             self.get_filename(var, row)
@@ -162,7 +165,7 @@ class Wavegui:
         
     def process_file(self):
         root = self.root
-        for var in self.variables.values():
+        for var in self.fields.values():
             if var.required and var.stringvar.get() == '':
                 d = MessageDialog(root, message="Incomplete "\
                                   "entries, please fill out all "\
@@ -170,13 +173,13 @@ class Wavegui:
                 root.wait_window(d.top)
                 return 
         
-        self.write_to_file(self.variables)
-        device = self.instruments[self.variables['instrument']]
+        self.write_to_file(self.fields)
+        device = self.instruments[self.fields['instrument'].getvalue()]
 
         d = MessageDialog(root, message="Processing file. "
                           "This may take a few minutes.",
                           title='Processing...', nobutton=True)
-        for var in self.variables.values():
+        for var in self.fields.values():
             if var.name_in_device:
                 setattr(device, var.name_in_device, var.getvalue())
 
@@ -193,7 +196,7 @@ class Wavegui:
         root.wait_window(e.top)
         start_time = e.get_start_time()
 
-        out_file = self.variables['out_filename']
+        out_file = self.fields['out_filename']
         if os.path.isfile(out_file): os.remove(out_file)
         device.write()
         d.top.destroy()
@@ -248,8 +251,6 @@ class EmbeddedPlot:
         self.toolbar = toolbar = NavigationToolbar2TkAgg(canvas, top)
         toolbar.update()
         canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=1)
-        canvas.mpl_connect('key_press_event',
-                           self.on_key_event)
         canvas.mpl_connect('button_press_event',
                            self.onclick)
         button = Button(master=top, text='Accept',
