@@ -1,12 +1,12 @@
-Chris Mazzullo
-cmazzull
-1
-40
-3
-789
+fdssfds
+dsfdsfds
+33
+33
+33
+33
 US/Central
 RBRSolo
-atm
-USGS
-/home/chris/wave-sensor/netCDF_Instrument/Instruments/RBR_RSK.txt
-/home/chris/dfdfsfd.nc
+bar
+33
+/home/chris/wave-sensor/netCDF_Instrument/Instruments/benchmark/RBR_RSK_Test.txt
+/home/chris/sdfsdfsd.nc

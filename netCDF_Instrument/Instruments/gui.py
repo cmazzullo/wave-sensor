@@ -196,7 +196,7 @@ class Wavegui:
         root.wait_window(e.top)
         start_time = e.get_start_time()
 
-        out_file = self.fields['out_filename']
+        out_file = self.fields['out_filename'].getvalue()
         if os.path.isfile(out_file): os.remove(out_file)
         device.write()
         d.top.destroy()
