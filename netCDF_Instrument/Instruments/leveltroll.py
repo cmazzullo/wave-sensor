@@ -48,6 +48,18 @@ class Leveltroll(Sensor):
 
         self.pressure_data = data["pressure"]
         
+        # added for tests and other attributes
+        self.local_frequency_range = [11, 19] # for IOOS test 17
+        self.mfg_frequency_range = [10, 20] # for IOOS test 17
+        self.max_rate_of_change = 20
+        self.prev_value = True # for IOOS test 20
+        self.five_count_list = list()
+        self.data_end_date = self.convert_milliseconds_to_datetime(self.utc_millisecond_data[::-1][0])
+        self.get_time_duration(self.utc_millisecond_data[::-1][0] - self.utc_millisecond_data[0])
+        self.test_16_stucksensor()
+        self.test_17_frequencyrange()
+        self.test_20_rateofchange()
+        
 
     def read_header(self,f):
         ''' read the header from the level troll ASCII file
@@ -80,6 +92,8 @@ class Leveltroll(Sensor):
         dt_str = raw[0]
         try:
             data_start = dt_converter(dt_str)
+            self.data_start_date = datetime.strftime(data_start, "%Y-%m-%dT%H:%M:%SZ")
+            print('Datetime', data_start, self.data_start_date)
         except Exception as e:
             raise Exception("ERROR - cannot parse first date time stamp: "+str(self.td_str)+" using format: "+dt_fmt+'\n')
         f.seek(reset_point)
@@ -102,7 +116,56 @@ class Leveltroll(Sensor):
         '''offsets seconds from specified epoch using UTC time
         '''        
         offset = self.data_start - self.epoch_start            
-        return offset.total_seconds()              
+        return offset.total_seconds()       
+    
+    def test_16_stucksensor(self):
+        self.pressure_test16_data = [self.get_16_value(x) for x in self.pressure_data]
+        
+    def test_17_frequencyrange(self):
+        self.pressure_test17_data = [self.get_17_value(x) for x in self.pressure_data]
+        
+    def test_20_rateofchange(self):
+        self.pressure_test20_data = [self.get_20_value(x) for x in self.pressure_data]
+   
+            
+            
+    def get_16_value(self,x):
+           
+           
+       
+        if len(self.five_count_list) > 5:
+            self.five_count_list.pop()
+            
+        flags = np.count_nonzero(np.equal(x,self.five_count_list))
+        self.five_count_list.insert(0,x)
+        
+        if flags <= 2:
+            return 1
+        elif flags <= 4:
+            return 3
+        else:
+            return 4  
+            
+    def get_17_value(self, x):
+        
+        if np.greater_equal(x,self.local_frequency_range[0]) and \
+        np.less_equal(x,self.local_frequency_range[1]):
+            return 1
+        elif np.greater_equal(x,self.mfg_frequency_range[0]) and \
+                            np.less_equal(x,self.mfg_frequency_range[1]):
+            return 3
+        else:
+            return 4
+        
+    def get_20_value(self, x):
+      
+        if np.isnan(self.prev_value) or \
+        np.less_equal(np.abs(np.subtract(x,self.prev_value)), self.max_rate_of_change):
+            self.prev_value = x
+            return 1
+        else:
+            self.prev_value = x
+            return 4       
 
 
 
@@ -124,6 +187,7 @@ if __name__ == "__main__":
     lt.salinity_ppm = np.float32(0.0)
     lt.z = np.float32(0.0)
     
+  
     #--get input
     #lt.get_user_input()
     
