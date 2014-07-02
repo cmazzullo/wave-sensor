@@ -5,7 +5,7 @@ Created on Jun 20, 2014
 '''
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 import pandas
 import re
@@ -46,10 +46,14 @@ class Sensor(object):
         self.epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
         self.data_start = None
         self.timezone_string = None
+        self.tz_info = pytz.timezone('US/Eastern')
         self.date_format_string = None
         self.frequency = None
         self.local_frequency_range = None
         self.mfg_frequency_range = None
+        self.data_start_date = None
+        self.data_end_date = None
+        self.data_duration_time = None
 
         self.valid_pressure_units = ["psi","pascals","atm"]
         self.valid_z_units = ["meters","feet"]
@@ -72,10 +76,27 @@ class Sensor(object):
             
     
     def convert_date_to_milliseconds(self, datestring):
-        print(datestring)
-        first_date = datetime.strptime(datestring, self.date_format_string)
-        return (pytz.utc.localize(first_date) - self.epoch_start).total_seconds() * 1000
-
+        first_date = pytz.utc.localize(datetime.strptime(datestring, self.date_format_string))
+        self.data_start_date = datetime.strftime(first_date, "%Y-%m-%dT%H:%M:%SZ")
+        print(self.data_start_date)
+        return (first_date - self.epoch_start).total_seconds() * 1000
+    
+    def convert_milliseconds_to_datetime(self, milliseconds):
+        date = datetime.fromtimestamp(milliseconds / 1000)
+        new_dt = self.tz_info.localize(date)
+        final_date = new_dt.astimezone(pytz.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+        print('lastdate',final_date)
+        return(final_date)
+        
+    def get_time_duration(self, seconds_difference):
+      
+        days = int((((seconds_difference / 1000) / 60) / 60) / 24)
+        hours =  int((((seconds_difference / 1000) / 60) / 60) % 24)
+        minutes = hours % 60
+        seconds = minutes % 60
+         
+        self.data_duration_time = "P%sDT%sH%sM%sS" % (days, hours, minutes, seconds)
+        print(self.data_duration_time)
 
     def time_var(self,ds):
         time_var = ds.createVariable("time","f8",("time",))
@@ -181,12 +202,12 @@ class Sensor(object):
         ds.time_zone = "UTC"
         ds.readme = "file created by "+sys.argv[0]+" on "+str(datetime.now())+" from source file "+self.in_filename
         ds.cdm_datatype = "station"
-        ds.comment = "not used"
+        ds.comment = "not used at this time"
         ds.contributor_name = "USGS"
         ds.contributor_role = "data collector"
-        ds.creator_email = "not used"
-        ds.creator_name = "not used"
-        ds.creator_url = "not used"
+        ds.creator_email = "not used at this time"
+        ds.creator_name = "not used at this time"
+        ds.creator_url = "not used at this time"
         ds.date_created = datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ")
         ds.date_modified = datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ")
         ds.geospatial_lat_min = "GUI"
@@ -202,8 +223,27 @@ class Sensor(object):
         ds.geospatial_vertical_units = "meters"
         ds.geospatial_vertical_resolution = "point"
         ds.geospatial_vertical_positive = "up"
-        ds.history = "not used"
-        ds.id = "not used"
+        ds.history = "not used at this time"
+        ds.id = "not used at this time"
+        ds.institution = "USGS"
+        ds.keywords = "GUI"
+        ds.keywords_vocabulary = "not used at this time"
+        ds.license = "This data may only be used upon the consent of the USGS"
+        ds.Metadata_Conventions = "Unidata Dataset Discovery v1.0"
+        ds.metadata_link = "not used at this"
+        ds.naming_authority = "not used at this time"
+        ds.processing_level = "deferred with intention to implement"
+        ds.project = "deferred with intention to implement"
+        ds.publisher_email = "deferred with intention to implement"
+        ds.publisher_name = "deferred with intention to implement"
+        ds.publisher_url = "deferred with intention to implement"
+        ds.standard_name_vocabulary = "CF-1.6"
+        ds.summary = "This is data collected by a pressure instrument used for extrapolating information regarding weather patterns"
+        ds.time_coverage_start = self.data_start_date
+        ds.time_coverage_end = self.data_end_date
+        ds.time_coverage_duration = self.data_duration_time
+        ds.time_coverage_resolution = "ISO 8601"
+        ds.title = "GUI"
         print('done write')
 
 #     def inrange(self,val,limits):

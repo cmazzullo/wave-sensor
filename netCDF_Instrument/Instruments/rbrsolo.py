@@ -39,8 +39,9 @@ class RBRSolo(Sensor):
         '''load the data from in_filename
         only parse the initial datetime = much faster
         '''
+        self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 4
-        self.local_frequency_range = [11, 19] # for IOOS test17
+        self.local_frequency_range = [11, 19] # for IOOS test 17
         self.mfg_frequency_range = [10, 20] # for IOOS test 17
         self.max_rate_of_change = 20
         self.prev_value = True # for IOOS test 20
@@ -56,11 +57,12 @@ class RBRSolo(Sensor):
                 break
         
         self.pressure_data = [x[1] for x in df[2][:-1].iteritems()]
-        for x in range(0,100):
-            print(self.pressure_data[x])
+        self.data_end_date = self.convert_milliseconds_to_datetime(self.utc_millisecond_data[::-1][0])
+        self.get_time_duration(self.utc_millisecond_data[::-1][0] - self.utc_millisecond_data[0])
         self.test_16_stucksensor()
         self.test_17_frequencyrange()
         self.test_20_rateofchange()
+    
                 
     def test_16_stucksensor(self):
         self.pressure_test16_data = [self.get_16_value(x) for x in self.pressure_data]
