@@ -1,0 +1,12 @@
+Greg
+greg@greg.com
+1
+1
+1
+1
+US/Eastern
+RBRSolo
+psi
+Test
+C:/Users/Gregory/Documents/GitHub/wave-sensor/netCDF_Instrument/Instruments/benchmark/RBR_RSK.txt
+C:/Users/Gregory/Documents/GitHub/wave-sensor/netCDF_Instrument/Instruments/benchmark/Davide.nc
