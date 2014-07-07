@@ -190,7 +190,6 @@ class Sensor(object):
         #--create variables and assign data
         ds = netCDF4.Dataset(self.out_filename,'w',format="NETCDF4_CLASSIC")
         time_dimen = ds.createDimension("time",len(self.pressure_data))   
-        print(len(self.pressure_data))  
         time_var = self.time_var(ds)
         latitude_var = self.latitude_var(ds)
         longitude_var = self.longitude_var(ds)
@@ -202,7 +201,7 @@ class Sensor(object):
         ds.salinity_ppm = np.float32(self.salinity_ppm)        
         ds.time_zone = "UTC"
         ds.readme = "file created by "+sys.argv[0]+" on "+str(datetime.now())+" from source file "+self.in_filename
-        ds.cdm_datatype = "station"
+        ds.cdm_data_type = "station"
         ds.comment = "not used at this time"
         ds.contributor_name = "USGS"
         ds.contributor_role = "data collector"
@@ -227,7 +226,7 @@ class Sensor(object):
         ds.history = "not used at this time"
         ds.id = "not used at this time"
         ds.institution = "USGS"
-        # ds.keywords = "GUI"
+        # ds.keywords = TBD
         ds.keywords_vocabulary = "not used at this time"
         ds.license = "This data may only be used upon the consent of the USGS"
         ds.Metadata_Conventions = "Unidata Dataset Discovery v1.0"
@@ -248,13 +247,6 @@ class Sensor(object):
         ' from the date range of %s to %s' % (self.latitude, self.longitude, self.z,self.creator_name, \
                                                    self.data_start_date, self.data_end_date)
         print('done write')
-
-#     def inrange(self,val,limits):
-#         if val >= limits[0] and val <= limits[1]:
-#             return True
-#         else:
-#             return False
-
 
     def read(self):
         raise Exception("read() must be implemented in the derived classes")
