@@ -1,4 +1,7 @@
-# import numpy as np
+# import numpy as npfrom pytz import all_timezones
+import pytz
+for tz in pytz.all_timezones:   
+    print(tz)
 # from datetime import datetime
 # import pytz
 # 

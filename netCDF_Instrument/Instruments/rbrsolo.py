@@ -10,6 +10,7 @@ from datetime import datetime
 import pytz
 import pandas
 import re
+import netCDF4
 
 
 #--python 3 compatibility
@@ -62,7 +63,7 @@ class RBRSolo(Sensor):
         self.test_16_stucksensor()
         self.test_17_frequencyrange()
         self.test_20_rateofchange()
-    
+        self.get_15_value()
                 
     def test_16_stucksensor(self):
         self.pressure_test16_data = [self.get_16_value(x) for x in self.pressure_data]
@@ -74,7 +75,12 @@ class RBRSolo(Sensor):
         self.pressure_test20_data = [self.get_20_value(x) for x in self.pressure_data]
    
             
-            
+    def get_15_value(self):
+        print('start mean')
+        print('mean', np.mean(self.pressure_data))
+        print('mean', np.mean(self.pressure_data))
+        
+               
     def get_16_value(self,x):
            
            
@@ -143,7 +149,7 @@ if __name__ == "__main__":
     lt = RBRSolo()        
     
     #--for testing
-    lt.in_filename = os.path.join("benchmark","RBR_RSK_Test.txt")
+    lt.in_filename = os.path.join("benchmark","RBR_RSK.txt")
     lt.out_filename = os.path.join("benchmark","RBR.csv.nc")
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)
