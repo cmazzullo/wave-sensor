@@ -36,12 +36,8 @@ class RBRSolo(Sensor):
     def __init__(self):
         self.timezone_marker = "time zone"      
         super(RBRSolo,self).__init__()
-    
-
-    def read(self):
-        '''load the data from in_filename
-        only parse the initial datetime = much faster
-        '''
+        self.five_count_list = list()
+        
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 4
         self.local_frequency_range = [11, 19] # for IOOS test 17
@@ -49,8 +45,15 @@ class RBRSolo(Sensor):
         self.max_rate_of_change = 20
         self.prev_value = True # for IOOS test 20
         self.date_format_string = '%d-%b-%Y %H:%M:%S.%f'  
+        
+    
+
+    def read(self):
+        '''load the data from in_filename
+        only parse the initial datetime = much faster
+        '''
         skip_index = self.read_start('^[0-9]{2}-[A-Z]{1}[a-z]{2,8}-[0-9]{4}$',' ')
-        self.five_count_list = list() #for skipping lines in case there is calibration header data
+        #for skipping lines in case there is calibration header data
         df= pandas.read_csv(self.in_filename,skiprows=skip_index, delim_whitespace=True, \
                             header=None, engine='c', usecols=[0,1,2])
         for x in df[0:1].itertuples():
@@ -149,7 +152,9 @@ if __name__ == "__main__":
     
     #--create an instance    
     lt = RBRSolo()        
-    
+    lt.creator_email = "a@aol.com"
+    lt.creator_name = "Jurgen Klinnsmen"
+    lt.creator_url = "www.test.com"
     #--for testing
     lt.in_filename = os.path.join("benchmark","RBR_RSK.txt")
     lt.out_filename = os.path.join("benchmark","RBR.csv.nc")

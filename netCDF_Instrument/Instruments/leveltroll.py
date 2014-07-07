@@ -27,8 +27,16 @@ class Leveltroll(Sensor):
     def __init__(self):
         self.numpy_dtype = np.dtype([("seconds",np.float32),("pressure",np.float32)])
         self.record_start_marker = "date and time,seconds"
-        self.timezone_marker = "time zone"        
+        self.timezone_marker = "time zone" 
         super(Leveltroll,self).__init__()
+        
+         # added for tests and other attributes
+        self.local_frequency_range = [11, 19] # for IOOS test 17
+        self.mfg_frequency_range = [10, 20] # for IOOS test 17
+        self.max_rate_of_change = 20
+        self.prev_value = True # for IOOS test 20
+        self.five_count_list = list()
+       
 
     def read(self):
         '''load the data from in_filename
@@ -47,12 +55,8 @@ class Leveltroll(Sensor):
 
         self.pressure_data = data["pressure"]
         
-        # added for tests and other attributes
-        self.local_frequency_range = [11, 19] # for IOOS test 17
-        self.mfg_frequency_range = [10, 20] # for IOOS test 17
-        self.max_rate_of_change = 20
-        self.prev_value = True # for IOOS test 20
-        self.five_count_list = list()
+       
+        
         self.data_end_date = self.convert_milliseconds_to_datetime(self.utc_millisecond_data[::-1][0])
         self.get_time_duration(self.utc_millisecond_data[::-1][0] - self.utc_millisecond_data[0])
         self.test_16_stucksensor()
@@ -173,6 +177,9 @@ if __name__ == "__main__":
     #--create an instance    
     lt = Leveltroll()        
     
+    lt.creator_email = "a@aol.com"
+    lt.creator_name = "Jurgen Klinnsmen"
+    lt.creator_url = "www.test.com"
     #--for testing
     lt.in_filename = os.path.join("benchmark","baro.csv")
     lt.out_filename = os.path.join("benchmark","baro.csv.nc")
