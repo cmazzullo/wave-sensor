@@ -213,8 +213,20 @@ class Wavegui:
                        .grid(column=3, row=row, sticky=W)
 
     def process_files(self):
+
         for datafile in self.datafiles:
             self.process_file(datafile)
+        d = MessageDialog(root, message="Success! File saved.",
+                          title='Success!')
+        
+        try:
+            #root.wait_window(d.top)
+            root.destroy()
+        except:
+            d.top.destroy()
+            d = MessageDialog(root, message="Input Error! Please " +
+                              "double check your form entries.",
+                              title='Error!')
             
     def process_file(self, datafile):
 
@@ -249,7 +261,7 @@ class Wavegui:
 
         device.read()
 
-        d.top.destroy()
+
         #e = EmbeddedPlot(root, device.pressure_data[:100])
         #root.wait_window(e.top)
         #start_time = e.get_start_time()
@@ -260,18 +272,6 @@ class Wavegui:
         device.write()
         print('Wrote to %s.' % out_file)
         d.top.destroy()
-        d = MessageDialog(root, message="Success! File saved " +
-                          "in:\n%s." % out_file,
-                          title='Success!')
-        
-        try:
-            #root.wait_window(d.top)
-            root.destroy()
-        except:
-            d.top.destroy()
-            d = MessageDialog(root, message="Input Error! Please " +
-                              "double check your form entries.",
-                              title='Error!')
 
 class MessageDialog:
 
