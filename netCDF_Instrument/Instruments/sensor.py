@@ -93,8 +93,8 @@ class Sensor(object):
       
         days = int((((seconds_difference / 1000) / 60) / 60) / 24)
         hours =  int((((seconds_difference / 1000) / 60) / 60) % 24)
-        minutes = hours % 60
-        seconds = minutes % 60
+        minutes =  int(((seconds_difference / 1000) / 60)  % 60)
+        seconds = (seconds_difference / 1000) % 60
          
         self.data_duration_time = "P%sDT%sH%sM%sS" % (days, hours, minutes, seconds)
         print(self.data_duration_time)
