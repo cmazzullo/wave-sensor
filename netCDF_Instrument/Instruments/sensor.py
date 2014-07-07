@@ -227,7 +227,7 @@ class Sensor(object):
         ds.history = "not used at this time"
         ds.id = "not used at this time"
         ds.institution = "USGS"
-        ds.keywords = "GUI"
+        # ds.keywords = "GUI"
         ds.keywords_vocabulary = "not used at this time"
         ds.license = "This data may only be used upon the consent of the USGS"
         ds.Metadata_Conventions = "Unidata Dataset Discovery v1.0"
