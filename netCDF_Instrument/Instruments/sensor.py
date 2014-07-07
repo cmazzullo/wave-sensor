@@ -64,7 +64,7 @@ class Sensor(object):
         self.valid_pressure = (np.float32(-10000),np.float32(10000))
 
         self.fill_value = np.float32(-1.0e+10)
-        self.creator_name = "Tim Howard"
+        self.creator_name = None
         
         self.pressure_test16_data = None
         self.pressure_test17_data = None
@@ -206,9 +206,9 @@ class Sensor(object):
         ds.comment = "not used at this time"
         ds.contributor_name = "USGS"
         ds.contributor_role = "data collector"
-        ds.creator_email = "not used at this time"
-        ds.creator_name = "not used at this time"
-        ds.creator_url = "not used at this time"
+        ds.creator_email = self.creator_email
+        ds.creator_name = self.creator_name
+        ds.creator_url = self.creator_url
         ds.date_created = datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ")
         ds.date_modified = datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ")
         ds.geospatial_lat_min = self.latitude
