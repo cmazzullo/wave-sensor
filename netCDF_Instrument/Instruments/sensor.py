@@ -54,6 +54,7 @@ class Sensor(object):
         self.data_duration_time = None
 
         self.valid_pressure_units = ["psi","pascals","atm"]
+        self.valid_z_units = ["meters","feet"]
         self.valid_latitude = (np.float32(-90),np.float32(90))
         self.valid_longitude = (np.float32(-180),np.float32(180))
         self.valid_z = (np.float32(-10000),np.float32(10000))

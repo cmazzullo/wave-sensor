@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import matplotlib
 matplotlib.use('TkAgg')
-import collections
+from collections import OrderedDict
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
@@ -24,23 +24,22 @@ from Instruments.house import House
 
 class Variable:
 
-    def __init__(self, name_in_device=None, label=None,
-                 docs=None, options=None, required=True,
-                 filename=False, default_value='',
-                 valtype=str):
+    def __init__(self, name, name_in_device=None, label=None,
+                 doc=None, options=None, required=True,
+                 filename=False, valtype=str):
 
+        self.name = name
         self.name_in_device = name_in_device
         self.label = label
-        self.docs = docs
+        self.doc = doc
         self.options = options
         self.stringvar = StringVar()
+        self.stringvar.set('')
         self.required = required
         self.filename = filename
-        self.default_value = default_value
-        self.stringvar.set(default_value)
         self.valtype = valtype
 
-    def getvalue(self):
+    def get(self):
 
         val = self.stringvar.get()
         return self.valtype(val)
@@ -49,47 +48,49 @@ class Datafile:
 
     def __init__(self, filename, instruments):
 
-        self.instruments = instruments
-        self.fields = fields = collections.OrderedDict()
-        fields['latitude'] = \
-            Variable(name_in_device='latitude',
-                     label='Latitude:',
-                     valtype=np.float32)
-        fields['longitude'] = \
-            Variable(name_in_device='longitude',
-                     label='Longitude:',
-                     valtype=np.float32)
-        fields['altitude'] = \
-            Variable(name_in_device='z',
-                     label='Altitude:',
-                     docs="Altitude in meters with respect to the "\
-                         " WGS 84 ellipsoid.", valtype=np.float32)
-        fields['salinity'] = \
-            Variable(name_in_device='salinity',
-                     label='Salinity:', valtype=np.float32)
-        fields['timezone'] = \
-            Variable(name_in_device='tzinfo',
-                     label='Timezone:',
-                     options=("US/Central", "US/Eastern"),
-                     valtype=timezone)
-        fields['instrument'] = \
-            Variable(options=self.instruments.keys(),
-                     label='Instrument:')
-        fields['pressure_units'] = \
-            Variable(name_in_device='pressure_units',
-                     label='Pressure units:',
-                     options=("atm", "bar", "psi"))
-        fields['in_filename'] = \
-            Variable(name_in_device='in_filename',
-                     label='Input filename:',
-                     filename='in')
-        fields['out_filename'] = \
-            Variable(name_in_device='out_filename',
-                     label='Output filename:',
-                     filename='out')
+        l = [ Variable('latitude',
+                       name_in_device='latitude',
+                       label='Latitude:',
+                       valtype=np.float32),
+              Variable('longitude',
+                       name_in_device='longitude',
+                       label='Longitude:',
+                       valtype=np.float32),
+              Variable('altitude',
+                       name_in_device='z',
+                       label='Altitude:',
+                       doc="Altitude in meters with respect to the "\
+                           " WGS 84 ellipsoid.", 
+                       valtype=np.float32),
+              Variable('salinity',
+                       name_in_device='salinity',
+                       label='Salinity:', 
+                       valtype=np.float32),
+              Variable('timezone',
+                       name_in_device='tzinfo',
+                       label='Timezone:',
+                       options=("US/Central", "US/Eastern"),
+                       valtype=timezone),
+              Variable('instrument',
+                       options=instruments.keys(),
+                       label='Instrument:'),
+              Variable('pressure_units',
+                       name_in_device='pressure_units',
+                       label='Pressure units:',
+                       options=("atm", "bar", "psi")),
+              Variable('in_filename',
+                       name_in_device='in_filename',
+                       label='Input filename:',
+                       filename='in'),
+              Variable('out_filename',
+                       name_in_device='out_filename',
+                       label='Output filename:',
+                       filename='out') ]
 
-        fields['in_filename'].stringvar.set(filename)
-        fields['out_filename'].stringvar.set(filename + '.nc')
+        self.fields = OrderedDict([(v.name, v) for v in l])
+
+        self.fields['in_filename'].stringvar.set(filename)
+        self.fields['out_filename'].stringvar.set(filename + '.nc')
 
 class Wavegui:
     """A graphical interface to the netCDF conversion program. Prompts
@@ -99,98 +100,70 @@ class Wavegui:
 
     def __init__(self, root):
 
-        self.log_file = 'wavegui_log.txt'
-
         self.instruments = {'LevelTroll' : Leveltroll(),
                             'RBRSolo' : RBRSolo(),
                             'Wave Guage' : Waveguage(),
                             'USGS Homebrew' : House()}
- 
-        generic_sensor = Sensor()
-        fill_value = str(generic_sensor.fill_value)
-
-        # Contains attributes applicable to all files
-
-        self.global_fields = global_fields = collections.OrderedDict()
-
-        global_fields['username'] =\
-            Variable(label='Your full name:',
-                     name_in_device='creator_name')
-        global_fields['email'] = \
-            Variable(label='Your email address:',
-                     name_in_device='creator_email')
-        global_fields['url'] = \
-            Variable(label='Your personal url:',
-                     name_in_device='creator_url')
-        global_fields['project'] = Variable(label='Project name:')
+        
+        self.global_fields = global_fields = self.make_global_fields()
 
         self.root = root
-
-        self.buttonframe = self.setup_buttonframe(root)
-
-        self.mainframe = self.setup_mainframe(root, global_fields)
-
-        for row, var in enumerate(global_fields.values()):
-            self.make_widget(self.mainframe, var, row)
-
-
-        self.bookframe = self.setup_bookframe(root)
-
-
-
-        self.book = ttk.Notebook(self.bookframe)
-
-        self.book.grid(column=0, row=0)
-
-    def setup_mainframe(self, root, global_fields):
-
-        mainframe = ttk.Frame(root, padding="3 3 12 12",
-                              relief='groove')
-        mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
         root.title("USGS Wave Data")
-        mainframe.bind('<Return>', self.process_file)
-        return mainframe
 
-    def setup_bookframe(self, root):
-
-        bookframe = ttk.Frame(root, padding="3 3 12 12",
-                              relief='groove')
+        bookframe = ttk.Frame(root, padding="3 3 12 12")
         bookframe.grid(column=0, row=1, sticky=(N, W, E, S))
-        return bookframe
-
-    def setup_buttonframe(self, root):
+        book = ttk.Notebook(bookframe)
+        book.grid(column=0, row=0)
 
         buttonframe = ttk.Frame(root, padding="3 3 12 12")
-
         b1 = ttk.Button(buttonframe, text="Process File(s)",
                         command=self.process_files)
         b1.grid(column=0, row=0)
-        
         b2 = ttk.Button(buttonframe, text="Quit",
-                        command=lambda: root.destroy())
+                        command=root.destroy)
         b2.grid(column=1, row=0)
-        
         b3 = ttk.Button(buttonframe, text="Select File(s)",
-                        command=self.get_files)
+                        command=lambda: 
+                        self.get_files(bookframe, book))
         b3.grid(column=2, row=0)
-
         buttonframe.grid(column=0, row=2, sticky=(N, W, E, S))
-        return buttonframe
-
-    def get_files(self):
         
-        for tab in self.book.tabs(): self.book.forget(tab) 
+        mainframe = ttk.Frame(root, padding="3 3 12 12")
+        mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
+
+        for row, var in enumerate(global_fields.values()):
+            self.make_widget(mainframe, var, row)
+
+    def make_global_fields(self):
+
+        l = [ Variable('username',
+                       label='Your full name:',
+                       name_in_device='creator_name'),
+              Variable('email',
+                       label='Your email address:',
+                       name_in_device='creator_email'),
+              Variable('url',
+                       label='Your personal url:',
+                       name_in_device='creator_url'),
+              Variable('project',
+                       label='Project name:') ]
+
+        d = OrderedDict([(v.name, v) for v in l])
+        return d
+
+    def get_files(self, bookframe, book):
+        
+        for tab in book.tabs(): book.forget(tab) 
         fnames = filedialog.askopenfilename(multiple=True)
         self.datafiles = [Datafile(fname, self.instruments) \
                               for fname in fnames]
         for datafile in self.datafiles:
-            tab =  ttk.Frame(self.bookframe)
+            tab =  ttk.Frame(bookframe)
             for row, var in enumerate(datafile.fields.values()):
                 self.make_widget(tab, var, row)
             fname = datafile.fields['in_filename'].stringvar.get()
             fname = os.path.basename(fname)
-            self.book.add(tab, text=fname)
-        self.bookframe.update()
+            book.add(tab, text=fname)
         self.root.update()
 
     def make_widget(self, frame, var, row):
@@ -199,6 +172,7 @@ class Wavegui:
         # label = ('(*) ' if var.required else '') + label
         ttk.Label(frame, text=label).\
             grid(column=1, row=row, sticky=W)
+
         if var.filename:
             fname = os.path.basename(var.stringvar.get())
             w = ttk.Label(frame, text=fname)
@@ -211,16 +185,23 @@ class Wavegui:
             w = ttk.Entry(frame, width=20,
                               textvariable=var.stringvar)
             w.grid(column=2, row=row, sticky=(W, E))
-        if row == 0 and frame == self.mainframe: w.focus_set()
 
-        def display_help(docs):
-            d = MessageDialog(root, message=docs, title='Help')
-        if var.docs:
-            ttk.Button(frame, text='Help',
-                       command=lambda: display_help(var.docs))\
-                       .grid(column=3, row=row, sticky=W)
+        if var.doc:
+            c = lambda: MessageDialog(root, message=var.doc, 
+                                      title='Help')
+
+            ttk.Button(frame, text='Help', command=c).\
+                grid(column=3, row=row, sticky=W)
 
     def process_files(self):
+        
+        if not hasattr(self, 'datafiles'):
+            
+            d = MessageDialog(self.root, 
+                              message='No file selected! Please ' +
+                              'select the file that you\'d like to ' +
+                              'convert.', title='Error!')
+            return
         
         success = False
         for datafile in self.datafiles:
@@ -237,41 +218,36 @@ class Wavegui:
                         
     def process_file(self, datafile):
 
-        root = self.root
         fields = self.global_fields
         fields.update(datafile.fields)
         for var in fields.values():
             if var.required and var.stringvar.get() == '':
-                d = MessageDialog(root, message="Incomplete "\
+                d = MessageDialog(self.root, message="Incomplete "\
                                       "entries, please fill out all "\
                                       "fields.", title='Incomplete!')
-                root.wait_window(d.top)
+                self.root.wait_window(d.top)
                 return False
 
-        device = self.instruments[fields['instrument'].\
-                                      getvalue()]
+        device = self.instruments[fields['instrument'].get()]
 
-        d = MessageDialog(root, message="Processing file. "
+        d = MessageDialog(self.root, message="Processing file. "
                           "This may take a few minutes.",
                           title='Processing...', nobutton=True)
 
         for var in fields.values():
             if var.name_in_device:
-                setattr(device, var.name_in_device, var.getvalue())
-
-        device.z_units = 'meters'
+                setattr(device, var.name_in_device, var.get())
 
         device.read()
 
-        #e = EmbeddedPlot(root, device.pressure_data[:100])
-        #root.wait_window(e.top)
+        #e = EmbeddedPlot(self.root, device.pressure_data[:100])
+        #self.root.wait_window(e.top)
         #start_time = e.get_start_time()
 
-        out_file = fields['out_filename'].getvalue()
+        out_file = fields['out_filename'].get()
         if os.path.isfile(out_file): os.remove(out_file)
 
         device.write()
-        print('Wrote to %s.' % out_file)
         d.top.destroy()
         return True
 
@@ -291,6 +267,7 @@ class MessageDialog:
         parent.grab_set()
 
     def ok(self):
+
         self.top.destroy()
 
 class EmbeddedPlot:
@@ -329,8 +306,7 @@ class EmbeddedPlot:
         return self.xdata
 
 if __name__ == "__main__":
+
     root = Tk()
-    root["height"] = 400;
-    root["width"] = 500;
     gui = Wavegui(root)
     root.mainloop()
