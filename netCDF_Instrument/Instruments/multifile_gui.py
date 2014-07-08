@@ -119,12 +119,14 @@ class Wavegui:
             Variable(label='Your personal url:',
                      name_in_device='creator_url')
         global_fields['project'] = Variable(label='Project name:')
+
         self.setup_buttonframe(root)
         self.setup_mainframe(root)
         for row, var in enumerate(global_fields.values()):
             self.make_widget(self.mainframe, var, row)
 
         fnames = filedialog.askopenfilename(multiple=True)
+
         datafiles = [Datafile(fname, self.instruments) \
                          for fname in fnames]
         self.datafiles = datafiles
@@ -170,28 +172,6 @@ class Wavegui:
 
         buttonframe.grid(column=0, row=2, sticky=(N, W, E, S))
 
-    def get_filename(self, frame, var, row):
-
-        ttk.Label(frame, text=var.label).\
-            grid(column=1, row=row, sticky=W)
-        def select_infile():
-            fname = filedialog.askopenfilename()
-            var.stringvar.set(fname)
-        def select_outfile():
-            fname = filedialog.asksaveasfilename(
-                defaultextension='.nc')
-            var.stringvar.set(fname)
-        if var.filename == 'in':
-            command = select_infile
-        else:
-            command = select_outfile
-
-        entry = ttk.Entry(frame, width=7,
-                          textvariable=var.stringvar)
-        entry.grid(column=2, row=row, sticky=(W, E))
-        ttk.Button(frame, text="Browse",
-                   command=command).grid(column=3, row=row, sticky=W)
-
     def make_widget(self, frame, var, row):
 
         label = var.label
@@ -218,21 +198,20 @@ class Wavegui:
                        .grid(column=3, row=row, sticky=W)
 
     def process_files(self):
-
-        for datafile in self.datafiles:
-            self.process_file(datafile)
-        d = MessageDialog(root, message="Success! File saved.",
-                          title='Success!')
         
-        try:
-            #root.wait_window(d.top)
-            root.destroy()
-        except:
+        success = False
+        for datafile in self.datafiles:
+            success = self.process_file(datafile)
+            if not success: break
+
+        if success:
+            d = MessageDialog(root, message="Success! File saved.",
+                              title='Success!')
+
+            root.wait_window(d.top)
             d.top.destroy()
-            d = MessageDialog(root, message="Input Error! Please " +
-                              "double check your form entries.",
-                              title='Error!')
-            
+            root.destroy()
+                        
     def process_file(self, datafile):
 
         root = self.root
@@ -244,7 +223,7 @@ class Wavegui:
                                       "entries, please fill out all "\
                                       "fields.", title='Incomplete!')
                 root.wait_window(d.top)
-                return
+                return False
 
         device = self.instruments[fields['instrument'].\
                                       getvalue()]
@@ -266,7 +245,6 @@ class Wavegui:
 
         device.read()
 
-
         #e = EmbeddedPlot(root, device.pressure_data[:100])
         #root.wait_window(e.top)
         #start_time = e.get_start_time()
@@ -277,6 +255,7 @@ class Wavegui:
         device.write()
         print('Wrote to %s.' % out_file)
         d.top.destroy()
+        return True
 
 class MessageDialog:
 

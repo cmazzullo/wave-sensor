@@ -1,4 +1,9 @@
 '''
+Created on Jul 7, 2014
+
+@author: Gregory
+'''
+'''
 Created on Jun 20, 2014
 
 @author: Gregory
@@ -12,8 +17,6 @@ import pandas
 import re
 import netCDF4
 
-import sys
-sys.path.append('..')
 
 #--python 3 compatibility
 pyver = sys.version_info
@@ -30,45 +33,57 @@ try:
 except:
     raise Exception("netCDF4 is required")        
 
-class RBRSolo(Sensor):
-    '''derived class for leveltroll ascii files
+class House(Sensor):
+    '''derived class for house ascii files
     '''
     def __init__(self):
-        self.timezone_marker = "time zone"      
-        super(RBRSolo,self).__init__()
-        self.five_count_list = list()
-        
+        self.timezone_marker = "time zone"   
+        self.temperature_data = None   
+        self.five_count_list = list() #for skipping lines in case there is calibration header data  
+        super(House,self).__init__()
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 4
         self.local_frequency_range = [11, 19] # for IOOS test 17
         self.mfg_frequency_range = [10, 20] # for IOOS test 17
         self.max_rate_of_change = 20
         self.prev_value = True # for IOOS test 20
-        self.date_format_string = '%d-%b-%Y %H:%M:%S.%f'  
-        
+        self.date_format_string = '%Y.%m.%d %H:%M:%S '
     
 
     def read(self):
         '''load the data from in_filename
         only parse the initial datetime = much faster
         '''
-        skip_index = self.read_start('^[0-9]{2}-[A-Z]{1}[a-z]{2,8}-[0-9]{4}$',' ')
-        #for skipping lines in case there is calibration header data
-        df= pandas.read_csv(self.in_filename,skiprows=skip_index, delim_whitespace=True, \
-                            header=None, engine='c', usecols=[0,1,2])
-        for x in df[0:1].itertuples():
-            if x[0] == 0:
-                self.utc_millisecond_data = self.convert_to_milliseconds(df.shape[0] - 1, \
-                                                                         ('%s %s' % (x[1],x[2])))
-                break
+       
+        skip_index = self.read_start('^[0-9]{4},[0-9]{4}$',' ') 
+        df = pandas.read_table(self.in_filename,skiprows=skip_index, header=None, engine='c', sep=',', names=('a','b'))
         
-        self.pressure_data = [x[1] for x in df[2][:-1].iteritems()]
+        #convert al to strings
+        df.a = [str(x) for x in df.a]
+        df.b = [str(x) for x in df.b]
+        
+        self.pressure_data = [self.pressure_convert(np.float64(x)) for x in df.a if x.strip() and x != 'nan']
+        self.temperature_data = [self.temperature_convert(np.float64(x)) for x in df.b if x.strip() and x != 'nan']
+            
+        with open(self.in_filename, 'r') as wavelog:
+            for x in wavelog:
+                if re.match('^[0-9]{4}.[0-9]{2}.[0-9]{2}', x):
+                    self.utc_millisecond_data = self.convert_to_milliseconds(len(self.pressure_data), x) #second arg has extra space that is unnecessary
+                    break
+       
         self.data_end_date = self.convert_milliseconds_to_datetime(self.utc_millisecond_data[::-1][0])
+        print('time', self.utc_millisecond_data[::-1][0], self.utc_millisecond_data[0])
         self.get_time_duration(self.utc_millisecond_data[::-1][0] - self.utc_millisecond_data[0])
         self.test_16_stucksensor()
         self.test_17_frequencyrange()
         self.test_20_rateofchange()
         self.get_15_value()
+        
+    def pressure_convert(self, x):
+        return x * (30 / 8184) - 6
+    
+    def temperature_convert(self, x):
+        return x * (168 / 8184)
                 
     def test_16_stucksensor(self):
         self.pressure_test16_data = [self.get_16_value(x) for x in self.pressure_data]
@@ -151,13 +166,13 @@ class RBRSolo(Sensor):
 if __name__ == "__main__":
     
     #--create an instance    
-    lt = RBRSolo()        
+    lt = House()        
     lt.creator_email = "a@aol.com"
     lt.creator_name = "Jurgen Klinnsmen"
     lt.creator_url = "www.test.com"
     #--for testing
-    lt.in_filename = os.path.join("benchmark","RBR_RSK.txt")
-    lt.out_filename = os.path.join("benchmark","RBR.csv.nc")
+    lt.in_filename = os.path.join("benchmark","WaveLog.csv")
+    lt.out_filename = os.path.join("benchmark","Wavelog.nc")
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)
     lt.is_baro = True
