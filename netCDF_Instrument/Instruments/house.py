@@ -9,6 +9,7 @@ Created on Jun 20, 2014
 @author: Gregory
 '''
 from Instruments.sensor import Sensor
+from Instruments.InstrumentTests import PressureTests
 import os
 import sys
 from datetime import datetime
@@ -16,7 +17,6 @@ import pytz
 import pandas
 import re
 import netCDF4
-
 
 #--python 3 compatibility
 pyver = sys.version_info
@@ -33,20 +33,16 @@ try:
 except:
     raise Exception("netCDF4 is required")        
 
-class House(Sensor):
+class House(Sensor, PressureTests):
     '''derived class for house ascii files
     '''
     def __init__(self):
         self.timezone_marker = "time zone"   
         self.temperature_data = None   
-        self.five_count_list = list() #for skipping lines in case there is calibration header data  
         super(House,self).__init__()
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 4
-        self.local_frequency_range = [11, 19] # for IOOS test 17
-        self.mfg_frequency_range = [10, 20] # for IOOS test 17
-        self.max_rate_of_change = 20
-        self.prev_value = True # for IOOS test 20
+       
         self.date_format_string = '%Y.%m.%d %H:%M:%S '
     
 
@@ -84,73 +80,6 @@ class House(Sensor):
     
     def temperature_convert(self, x):
         return x * (168 / 8184)
-                
-    def test_16_stucksensor(self):
-        self.pressure_test16_data = [self.get_16_value(x) for x in self.pressure_data]
-        
-    def test_17_frequencyrange(self):
-        self.pressure_test17_data = [self.get_17_value(x) for x in self.pressure_data]
-        
-    def test_20_rateofchange(self):
-        self.pressure_test20_data = [self.get_20_value(x) for x in self.pressure_data]
-   
-            
-    def get_15_value(self):
-        print('start mean')
-        print('mean', np.mean(self.pressure_data))
-        print('mean', np.mean(self.pressure_data))
-        
-               
-    def get_16_value(self,x):
-           
-           
-       
-        if len(self.five_count_list) > 5:
-            self.five_count_list.pop()
-            
-        flags = np.count_nonzero(np.equal(x,self.five_count_list))
-        self.five_count_list.insert(0,x)
-        
-        if flags <= 2:
-            return 1
-        elif flags <= 4:
-            return 3
-        else:
-            return 4  
-            
-    def get_17_value(self, x):
-        
-        if np.greater_equal(x,self.local_frequency_range[0]) and \
-        np.less_equal(x,self.local_frequency_range[1]):
-            return 1
-        elif np.greater_equal(x,self.mfg_frequency_range[0]) and \
-                            np.less_equal(x,self.mfg_frequency_range[1]):
-            return 3
-        else:
-            return 4
-        
-    def get_20_value(self, x):
-      
-        if np.isnan(self.prev_value) or \
-        np.less_equal(np.abs(np.subtract(x,self.prev_value)), self.max_rate_of_change):
-            self.prev_value = x
-            return 1
-        else:
-            self.prev_value = x
-            return 4
-        
-        
-#         mfg_check1 = np.less(self.pressure_data, self.mfg_frequency_range[0])
-#         mfg_check2 = np.greater(self.pressure_data, self.mfg_frequency_range[1])
-#         mfg_check = [np.maximum(x, y) for x in mfg_check1 for y in mfg_check2]
-#         
-#         for x in range(0,10):
-#             print(mfg_check[x])
-#         
-#         local_check1 = np.less(self.pressure_data, self.local_frequency_range[0])
-#         local_check2 = np.greater(self.pressure_data, self.local_frequency_range[1])
-#         local_check = [np.maximum(x, y) for x in local_check1 for y in local_check2]
-                
         
     def read_start(self, expression, delimeter):
         skip_index = 0;
@@ -172,7 +101,7 @@ if __name__ == "__main__":
     lt.creator_url = "www.test.com"
     #--for testing
     lt.in_filename = os.path.join("benchmark","WaveLog.csv")
-    lt.out_filename = os.path.join("benchmark","Wavelog.nc")
+    lt.out_filename = os.path.join("benchmark","WaveLog.nc")
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)
     lt.is_baro = True
