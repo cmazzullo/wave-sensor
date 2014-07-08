@@ -142,7 +142,6 @@ class Wavegui:
 
         self.book.grid(column=0, row=0)
 
-
     def setup_mainframe(self, root, global_fields):
 
         mainframe = ttk.Frame(root, padding="3 3 12 12",
@@ -179,11 +178,11 @@ class Wavegui:
         return buttonframe
 
     def get_files(self):
-
+        
+        for tab in self.book.tabs(): self.book.forget(tab) 
         fnames = filedialog.askopenfilename(multiple=True)
         self.datafiles = [Datafile(fname, self.instruments) \
                               for fname in fnames]
-
         for datafile in self.datafiles:
             tab =  ttk.Frame(self.bookframe)
             for row, var in enumerate(datafile.fields.values()):
@@ -195,6 +194,7 @@ class Wavegui:
         self.root.update()
 
     def make_widget(self, frame, var, row):
+
         label = var.label
         # label = ('(*) ' if var.required else '') + label
         ttk.Label(frame, text=label).\
