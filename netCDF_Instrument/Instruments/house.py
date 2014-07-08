@@ -53,13 +53,9 @@ class House(Sensor, PressureTests):
        
         skip_index = self.read_start('^[0-9]{4},[0-9]{4}$',' ') 
         df = pandas.read_table(self.in_filename,skiprows=skip_index, header=None, engine='c', sep=',', names=('a','b'))
-        
-        #convert al to strings
-        df.a = [str(x) for x in df.a]
-        df.b = [str(x) for x in df.b]
-        
-        self.pressure_data = [self.pressure_convert(np.float64(x)) for x in df.a if x.strip() and x != 'nan']
-        self.temperature_data = [self.temperature_convert(np.float64(x)) for x in df.b if x.strip() and x != 'nan']
+       
+        self.pressure_data = [self.pressure_convert(np.float64(x)) for x in df[df.b.isnull() == False].a]
+        self.temperature_data = [self.temperature_convert(np.float64(x)) for x in df[df.b.isnull() == False].b]
             
         with open(self.in_filename, 'r') as wavelog:
             for x in wavelog:
@@ -76,6 +72,7 @@ class House(Sensor, PressureTests):
         self.get_15_value()
         
     def pressure_convert(self, x):
+        print('item', x)
         return x * (30 / 8184) - 6
     
     def temperature_convert(self, x):
@@ -100,7 +97,8 @@ if __name__ == "__main__":
     lt.creator_name = "Jurgen Klinnsmen"
     lt.creator_url = "www.test.com"
     #--for testing
-    lt.in_filename = os.path.join("benchmark","WaveLog.csv")
+    lt.in_filename = 'C:\\Users\\Gregory\\Documents\\GitHub\\wave-sensor\\WaveLog.csv'
+    #os.path.join("benchmark","WaveLog.csv")
     lt.out_filename = os.path.join("benchmark","WaveLog.nc")
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)

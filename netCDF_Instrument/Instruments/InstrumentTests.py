@@ -11,10 +11,10 @@ class PressureTests(object):
     pressure_test16_data = None
     pressure_test17_data = None
     pressure_test20_data = None
-    five_count_list = list()
+    five_count_list = list() # for IOOS test 16
     local_frequency_range = [11, 19] # for IOOS test 17
     mfg_frequency_range = [10, 20] # for IOOS test 17
-    max_rate_of_change = 20
+    max_rate_of_change = 20 # for IOOS test 20
     prev_value = True # for IOOS test 20
         
     def __init__(self):
