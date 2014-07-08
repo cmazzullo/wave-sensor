@@ -103,12 +103,14 @@ class Wavegui:
         self.instruments = {'LevelTroll' : Leveltroll(),
                             'RBRSolo' : RBRSolo(),
                             'Wave Guage' : Waveguage()}
-        self.root = root
+ 
         generic_sensor = Sensor()
         fill_value = str(generic_sensor.fill_value)
 
         # Contains attributes applicable to all files
+
         self.global_fields = global_fields = collections.OrderedDict()
+
         global_fields['username'] =\
             Variable(label='Your full name:',
                      name_in_device='creator_name')
@@ -120,44 +122,50 @@ class Wavegui:
                      name_in_device='creator_url')
         global_fields['project'] = Variable(label='Project name:')
 
-        fnames = filedialog.askopenfilename(multiple=True)
+        self.root = root
 
-        self.setup_buttonframe(root)
-        self.setup_mainframe(root)
+        self.buttonframe = self.setup_buttonframe(root)
+
+        self.mainframe = self.setup_mainframe(root, global_fields)
+
         for row, var in enumerate(global_fields.values()):
             self.make_widget(self.mainframe, var, row)
+
+
+        self.bookframe = self.setup_bookframe(root)
+
+        fnames = filedialog.askopenfilename(multiple=True)
 
         datafiles = [Datafile(fname, self.instruments) \
                          for fname in fnames]
         self.datafiles = datafiles
-        self.setup_bookframe(root, datafiles)
 
-    def setup_mainframe(self, root):
+        book = ttk.Notebook(self.bookframe)
+        for datafile in datafiles:
+            tab =  ttk.Frame(self.bookframe)
+            for row, var in enumerate(datafile.fields.values()):
+                self.make_widget(tab, var, row)
+            fname = datafile.fields['in_filename'].stringvar.get()
+            fname = os.path.basename(fname)
+            book.add(tab, text=fname)
+        book.grid(column=0, row=0)
+
+
+    def setup_mainframe(self, root, global_fields):
 
         mainframe = ttk.Frame(root, padding="3 3 12 12",
                               relief='groove')
         mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
         root.title("USGS Wave Data")
         mainframe.bind('<Return>', self.process_file)
-        self.mainframe = mainframe
+        return mainframe
 
-    def setup_bookframe(self, root, datafiles):
+    def setup_bookframe(self, root):
 
         bookframe = ttk.Frame(root, padding="3 3 12 12",
                               relief='groove')
-
-        book = ttk.Notebook(bookframe)
-
-        for datafile in datafiles:
-            tab =  ttk.Frame(bookframe)
-            for row, var in enumerate(datafile.fields.values()):
-                self.make_widget(tab, var, row)
-            fname = datafile.fields['in_filename'].stringvar.get()
-            fname = os.path.basename(fname)
-            book.add(tab, text=fname)
-
-        book.grid(column=0, row=0)
         bookframe.grid(column=0, row=1, sticky=(N, W, E, S))
+        return bookframe
 
     def setup_buttonframe(self, root):
 
@@ -171,6 +179,7 @@ class Wavegui:
         b2.grid(column=1, row=0)
 
         buttonframe.grid(column=0, row=2, sticky=(N, W, E, S))
+        return buttonframe
 
     def make_widget(self, frame, var, row):
         label = var.label
@@ -313,5 +322,7 @@ class EmbeddedPlot:
 
 if __name__ == "__main__":
     root = Tk()
+    root["height"] = 400;
+    root["width"] = 500;
     gui = Wavegui(root)
     root.mainloop()
