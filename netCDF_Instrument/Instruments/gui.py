@@ -20,6 +20,7 @@ from Instruments.sensor import Sensor
 from Instruments.rbrsolo import RBRSolo
 from Instruments.leveltroll import Leveltroll
 from Instruments.waveguage import Waveguage
+from Instruments.house import House
 
 class Variable:
     def __init__(self, name_in_device=None, label=None,
@@ -51,7 +52,8 @@ class Wavegui:
 
         self.instruments = {'LevelTroll' : Leveltroll(),
                             'RBRSolo' : RBRSolo(),
-                            'Wave Guage' : Waveguage()}
+                            'Wave Guage' : Waveguage(),
+                            'USGS Homebrew' : House()}
         self.root = root
         generic_sensor = Sensor()
         fill_value = str(generic_sensor.fill_value)
