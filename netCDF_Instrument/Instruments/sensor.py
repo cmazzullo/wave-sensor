@@ -49,8 +49,6 @@ class Sensor(object):
         self.tz_info = pytz.timezone('US/Eastern')
         self.date_format_string = None
         self.frequency = None
-        self.local_frequency_range = None
-        self.mfg_frequency_range = None
         self.data_start_date = None
         self.data_end_date = None
         self.data_duration_time = None
