@@ -35,7 +35,7 @@ class Sensor(object):
         self.out_filename = None
         self.is_baro = None
         self.pressure_units = None
-        self.z_units = None
+        self.z_units = 'meters'
         self.latitude = None
         self.longitude = None
         self.z = None
@@ -54,7 +54,6 @@ class Sensor(object):
         self.data_duration_time = None
 
         self.valid_pressure_units = ["psi","pascals","atm"]
-        self.valid_z_units = ["meters","feet"]
         self.valid_latitude = (np.float32(-90),np.float32(90))
         self.valid_longitude = (np.float32(-180),np.float32(180))
         self.valid_z = (np.float32(-10000),np.float32(10000))

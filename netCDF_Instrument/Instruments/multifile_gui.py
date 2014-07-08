@@ -254,16 +254,11 @@ class Wavegui:
         d = MessageDialog(root, message="Processing file. "
                           "This may take a few minutes.",
                           title='Processing...', nobutton=True)
+
         for var in fields.values():
             if var.name_in_device:
                 setattr(device, var.name_in_device, var.getvalue())
 
-        device.geospatial_lat_min = device.latitude
-        device.geospatial_lat_max = device.latitude
-        device.geospatial_lon_min = device.longitude
-        device.geospatial_lon_max = device.longitude
-        device.geospatial_vertical_min = device.z
-        device.geospatial_vertical_max = device.z
         device.z_units = 'meters'
 
         device.read()
