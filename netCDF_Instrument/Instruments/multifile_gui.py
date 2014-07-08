@@ -60,7 +60,7 @@ class Datafile:
                        name_in_device='z',
                        label='Altitude:',
                        doc="Altitude in meters with respect to the "\
-                           " WGS 84 ellipsoid.", 
+                           "NAVD88 geoid.", 
                        valtype=np.float32),
               Variable('salinity',
                        name_in_device='salinity',
