@@ -120,12 +120,12 @@ class Wavegui:
                      name_in_device='creator_url')
         global_fields['project'] = Variable(label='Project name:')
 
+        fnames = filedialog.askopenfilename(multiple=True)
+
         self.setup_buttonframe(root)
         self.setup_mainframe(root)
         for row, var in enumerate(global_fields.values()):
             self.make_widget(self.mainframe, var, row)
-
-        fnames = filedialog.askopenfilename(multiple=True)
 
         datafiles = [Datafile(fname, self.instruments) \
                          for fname in fnames]
@@ -173,23 +173,24 @@ class Wavegui:
         buttonframe.grid(column=0, row=2, sticky=(N, W, E, S))
 
     def make_widget(self, frame, var, row):
-
         label = var.label
         # label = ('(*) ' if var.required else '') + label
         ttk.Label(frame, text=label).\
             grid(column=1, row=row, sticky=W)
         if var.filename:
             fname = os.path.basename(var.stringvar.get())
-            label = ttk.Label(frame, text=fname)
-            label.grid(column=2, row=row, sticky=W)
+            w = ttk.Label(frame, text=fname)
+            w.grid(column=2, row=row, sticky=W)
         elif var.options:
-            menu = OptionMenu(frame, var.stringvar,
+            w = OptionMenu(frame, var.stringvar,
                               *var.options)
-            menu.grid(column=2, row=row, sticky=(W, E))
+            w.grid(column=2, row=row, sticky=(W, E))
         else:
-            entry = ttk.Entry(frame, width=20,
+            w = ttk.Entry(frame, width=20,
                               textvariable=var.stringvar)
-            entry.grid(column=2, row=row, sticky=(W, E))
+            w.grid(column=2, row=row, sticky=(W, E))
+        if row == 0 and frame == self.mainframe: w.focus_set()
+
         def display_help(docs):
             d = MessageDialog(root, message=docs, title='Help')
         if var.docs:
