@@ -20,6 +20,7 @@ from Instruments.sensor import Sensor
 from Instruments.rbrsolo import RBRSolo
 from Instruments.leveltroll import Leveltroll
 from Instruments.waveguage import Waveguage
+from Instruments.house import House
 
 class Variable:
 
@@ -102,7 +103,8 @@ class Wavegui:
 
         self.instruments = {'LevelTroll' : Leveltroll(),
                             'RBRSolo' : RBRSolo(),
-                            'Wave Guage' : Waveguage()}
+                            'Wave Guage' : Waveguage(),
+                            'USGS Homebrew' : House()}
  
         generic_sensor = Sensor()
         fill_value = str(generic_sensor.fill_value)
@@ -134,21 +136,11 @@ class Wavegui:
 
         self.bookframe = self.setup_bookframe(root)
 
-        fnames = filedialog.askopenfilename(multiple=True)
 
-        datafiles = [Datafile(fname, self.instruments) \
-                         for fname in fnames]
-        self.datafiles = datafiles
 
-        book = ttk.Notebook(self.bookframe)
-        for datafile in datafiles:
-            tab =  ttk.Frame(self.bookframe)
-            for row, var in enumerate(datafile.fields.values()):
-                self.make_widget(tab, var, row)
-            fname = datafile.fields['in_filename'].stringvar.get()
-            fname = os.path.basename(fname)
-            book.add(tab, text=fname)
-        book.grid(column=0, row=0)
+        self.book = ttk.Notebook(self.bookframe)
+
+        self.book.grid(column=0, row=0)
 
 
     def setup_mainframe(self, root, global_fields):
@@ -174,12 +166,33 @@ class Wavegui:
         b1 = ttk.Button(buttonframe, text="Process File(s)",
                         command=self.process_files)
         b1.grid(column=0, row=0)
+        
         b2 = ttk.Button(buttonframe, text="Quit",
                         command=lambda: root.destroy())
         b2.grid(column=1, row=0)
+        
+        b3 = ttk.Button(buttonframe, text="Select File(s)",
+                        command=self.get_files)
+        b3.grid(column=2, row=0)
 
         buttonframe.grid(column=0, row=2, sticky=(N, W, E, S))
         return buttonframe
+
+    def get_files(self):
+
+        fnames = filedialog.askopenfilename(multiple=True)
+        self.datafiles = [Datafile(fname, self.instruments) \
+                              for fname in fnames]
+
+        for datafile in self.datafiles:
+            tab =  ttk.Frame(self.bookframe)
+            for row, var in enumerate(datafile.fields.values()):
+                self.make_widget(tab, var, row)
+            fname = datafile.fields['in_filename'].stringvar.get()
+            fname = os.path.basename(fname)
+            self.book.add(tab, text=fname)
+        self.bookframe.update()
+        self.root.update()
 
     def make_widget(self, frame, var, row):
         label = var.label
