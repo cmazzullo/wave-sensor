@@ -243,7 +243,7 @@ class Sensor(object):
         ds.time_coverage_end = self.data_end_date
         ds.time_coverage_duration = self.data_duration_time
         ds.time_coverage_resolution = "P0.25S"
-        ds.title = 'Measure of pressure at %s degrees latitude, %s degrees longitude, %s alittude by %s' \
+        ds.title = 'Measure of pressure at %s degrees latitude, %s degrees longitude, %s altitude by %s' \
         ' from the date range of %s to %s' % (self.latitude, self.longitude, self.z,self.creator_name, \
                                                    self.data_start_date, self.data_end_date)
         print('done write')

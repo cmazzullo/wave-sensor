@@ -112,7 +112,12 @@ class Wavegui:
         global_fields['username'] =\
             Variable(label='Your full name:',
                      name_in_device='creator_name')
-        global_fields['email'] = Variable(label='Your email address:')
+        global_fields['email'] = \
+            Variable(label='Your email address:',
+                     name_in_device='creator_email')
+        global_fields['url'] = \
+            Variable(label='Your personal url:',
+                     name_in_device='creator_url')
         global_fields['project'] = Variable(label='Project name:')
         self.setup_buttonframe(root)
         self.setup_mainframe(root)
