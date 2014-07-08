@@ -1,0 +1,13 @@
+asdf
+asdf
+asdf
+asdf
+2
+5
+2
+5
+US/Central
+RBRSolo
+bar
+/home/chris/wave-sensor/netCDF_Instrument/Instruments/CWPT_clean.cdl
+/home/chris/wave-sensor/netCDF_Instrument/Instruments/CWPT_clean.cdl.nc

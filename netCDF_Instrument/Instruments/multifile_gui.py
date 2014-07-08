@@ -105,6 +105,7 @@ class Wavegui:
                             'Wave Guage' : Waveguage(),
                             'USGS Homebrew' : House()}
         
+        self.log_file = 'logfile.txt'
         self.global_fields = global_fields = self.make_global_fields()
 
         self.root = root
@@ -126,6 +127,10 @@ class Wavegui:
                         command=lambda: 
                         self.get_files(bookframe, book))
         b3.grid(column=2, row=0)
+        b4 = ttk.Button(buttonframe, text="Load (in all tabs)",
+                        command=self.load_template)
+        b4.grid(column=3, row=0)
+
         buttonframe.grid(column=0, row=2, sticky=(N, W, E, S))
         
         mainframe = ttk.Frame(root, padding="3 3 12 12")
@@ -150,17 +155,45 @@ class Wavegui:
 
         d = OrderedDict([(v.name, v) for v in l])
         return d
+    
+    def save_template(self, datafile):
 
-    def get_files(self, bookframe, book):
+        with open(self.log_file, 'w') as f:
+            for var in self.global_fields.values():
+                f.write(var.stringvar.get() + '\n')
+            for var in datafile.fields.values():
+                f.write(var.stringvar.get() + '\n')
+
+    def load_template(self):
+
+        for datafile in self.datafiles:
+
+            l = [v for v in self.global_fields.values()]
+            l += [v for v in datafile.fields.values()]
+
+            if os.path.isfile(self.log_file):
+                with open(self.log_file, 'r') as f:
+                    for line, var in zip(f, l):
+                        var.stringvar.set(line.rstrip())
+
+    def get_files(self, frame, book):
         
         for tab in book.tabs(): book.forget(tab) 
         fnames = filedialog.askopenfilename(multiple=True)
         self.datafiles = [Datafile(fname, self.instruments) \
                               for fname in fnames]
         for datafile in self.datafiles:
-            tab =  ttk.Frame(bookframe)
+            tab =  ttk.Frame(frame)
             for row, var in enumerate(datafile.fields.values()):
                 self.make_widget(tab, var, row)
+            row += 1
+            
+            save = lambda: self.save_template(datafile)
+            ttk.Button(tab, text='Save as Template', command=save).\
+                grid(column=1, row=row, sticky=W)
+            load = lambda: self.load_template()
+            ttk.Button(tab, text='Load Template', command=load).\
+                grid(column=2, row=row, sticky=W)
             fname = datafile.fields['in_filename'].stringvar.get()
             fname = os.path.basename(fname)
             book.add(tab, text=fname)
