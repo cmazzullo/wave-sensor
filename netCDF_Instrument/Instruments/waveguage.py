@@ -75,7 +75,7 @@ class Waveguage(Sensor, PressureTests):
         data = data[:-1]
         data.p = [np.float64(string.strip()) for string in data.p]
         data_array = np.array(data.p, dtype='float64')
-        return data_array
+        return np.multiply(data_array, 100000)
     
 if __name__ == '__main__':
     # Just for testing!

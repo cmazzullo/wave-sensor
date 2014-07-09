@@ -1,3 +1,6 @@
+# Ignore net cdf files
+*.nc
+
 # Eclipse metadata
 .metadata/
 
