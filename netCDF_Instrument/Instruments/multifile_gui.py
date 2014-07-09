@@ -2,7 +2,8 @@
 import matplotlib
 matplotlib.use('TkAgg')
 from collections import OrderedDict
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import NavigationToolbar2TkAgg
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
 from tkinter import *
@@ -59,7 +60,7 @@ class Datafile:
               Variable('altitude',
                        name_in_device='z',
                        label='Altitude:',
-                       doc="Altitude in meters with respect to the "\
+                       doc="Altitude in meters with respect to the "
                            "NAVD88 geoid.", 
                        valtype=np.float32),
               Variable('salinity',
@@ -85,7 +86,30 @@ class Datafile:
               Variable('out_filename',
                        name_in_device='out_filename',
                        label='Output filename:',
-                       filename='out') ]
+                       filename='out'),
+              Variable('sea_name',
+                       name_in_device='sea_name',
+                       label='Sea Name:',
+                       options=('Chesapeake Bay',
+                                'Great Lakes',
+                                'Gulf of Alaska',
+                                'Gulf of California',
+                                'Gulf of Maine',
+                                'Gulf of Mexico',
+                                'Hudson Bay',
+                                'Massachusetts Bay',
+                                'NE Atlantic (limit-40 W)',
+                                'NE Pacific (limit-180)',
+                                'North American Coastline-North',
+                                'North American Coastline-South',
+                                'North Atlantic Ocean',
+                                'North Pacific Ocean',
+                                'NW Atlantic (limit-40 W)',
+                                'NW Pacific (limit-180)',
+                                'SE Atlantic (limit-20 W)',
+                                'SE Pacific (limit-140 W)',
+                                'SW Atlantic (limit-20 W)',
+                                'SW Pacific (limit-147 E to 140 W)'))]
 
         self.fields = OrderedDict([(v.name, v) for v in l])
 
@@ -105,7 +129,8 @@ class Wavegui:
                             'Wave Guage' : Waveguage(),
                             'USGS Homebrew' : House()}
         
-        self.log_file = 'logfile.txt'
+        self.log_file = 'autoload.txt'
+#        self.autoload()
         self.global_fields = global_fields = self.make_global_fields()
 
         self.root = root
@@ -164,6 +189,7 @@ class Wavegui:
             for var in datafile.fields.values():
                 f.write(var.stringvar.get() + '\n')
 
+
     def load_template(self):
 
         for datafile in self.datafiles:
@@ -175,7 +201,7 @@ class Wavegui:
                 with open(self.log_file, 'r') as f:
                     for line, var in zip(f, l):
                         var.stringvar.set(line.rstrip())
-
+    
     def get_files(self, frame, book):
         
         for tab in book.tabs(): book.forget(tab) 
@@ -228,11 +254,13 @@ class Wavegui:
 
     def process_files(self):
         
+#        self.autosave()
+
         if not hasattr(self, 'datafiles'):
             
             d = MessageDialog(self.root, 
-                              message='No file selected! Please ' +
-                              'select the file that you\'d like to ' +
+                              message='No file selected! Please '
+                              'select the file that you\'d like to '
                               'convert.', title='Error!')
             return
         
@@ -255,9 +283,9 @@ class Wavegui:
         fields.update(datafile.fields)
         for var in fields.values():
             if var.required and var.stringvar.get() == '':
-                d = MessageDialog(self.root, message="Incomplete "\
-                                      "entries, please fill out all "\
-                                      "fields.", title='Incomplete!')
+                d = MessageDialog(self.root, message="Incomplete "
+                                  "entries, please fill out all "
+                                  "fields.", title='Incomplete!')
                 self.root.wait_window(d.top)
                 return False
 
@@ -273,9 +301,9 @@ class Wavegui:
 
         device.read()
 
-        #e = EmbeddedPlot(self.root, device.pressure_data[:100])
-        #self.root.wait_window(e.top)
-        #start_time = e.get_start_time()
+        # e = EmbeddedPlot(self.root, device.pressure_data)
+        # self.root.wait_window(e.top)
+        # start_time = e.get_start_time()
 
         out_file = fields['out_filename'].get()
         if os.path.isfile(out_file): os.remove(out_file)
@@ -283,6 +311,7 @@ class Wavegui:
         device.write()
         d.top.destroy()
         return True
+
 
 class MessageDialog:
 
@@ -311,6 +340,7 @@ class EmbeddedPlot:
         f = Figure(figsize=(5,4), dpi=100)
         self.a = a = f.add_subplot(111)
         a.plot(data)
+        a.plot(np.arange(len(data)), 100000 * np.ones(len(data)))
 
         self.canvas = canvas = FigureCanvasTkAgg(f, master=top)
         canvas.show()
@@ -330,8 +360,9 @@ class EmbeddedPlot:
 
     def onclick(self, event):
 
-        print('button=%d, x=%d, y=%d, xdata=%f, ydata=%f ' % (
-                event.button, event.x, event.y, event.xdata, event.ydata))
+        print('button=%d, x=%d, y=%d, xdata=%f, ydata=%f ' % 
+              (event.button, event.x, event.y, event.xdata, 
+               event.ydata))
         self.xdata = event.xdata
 
     def get_start_time(self):
