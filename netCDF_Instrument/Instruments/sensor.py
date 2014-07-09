@@ -63,7 +63,7 @@ class Sensor(object):
         self.valid_temp = (np.float32(-10000), np.float32(10000))
         self.fill_value = np.float32(-1.0e+10)
         self.creator_name = None
-        
+        self.sea_name = None
         self.pressure_test16_data = None
         self.pressure_test17_data = None
         self.pressure_test20_data = None
@@ -168,7 +168,7 @@ class Sensor(object):
         return pressure_var
 
     def temp_var(self,ds):
-        temp_var = ds.createVariable("temp", "f8", ("time",), 
+        temp_var = ds.createVariable("temperature", "f8", ("time",), 
                                      fill_value=self.fill_value)
         temp_var.long_name = "sensor temperature record"
         temp_var.standard_name = "temperature"    
@@ -180,7 +180,7 @@ class Sensor(object):
         temp_var.max = self.valid_temp[1]
         temp_var.ancillary_variables = ''
         temp_var.coordinates = "time latitude longitude z"
-        temp_var[:] = self.temp_data
+        temp_var[:] = self.temperature_data
         return temp_var
 
     def pressure_test16(self,ds):
@@ -202,8 +202,11 @@ class Sensor(object):
     def write(self):
         #assert not os.path.exists(self.out_filename),"out_filename already exists"
         #--create variables and assign data
-        ds = netCDF4.Dataset(self.out_filename,'w',format="NETCDF4_CLASSIC")
-        time_dimen = ds.createDimension("time",len(self.pressure_data))   
+        print('hello world')
+        ds = netCDF4.Dataset(self.out_filename, 'w',
+                             format="NETCDF4_CLASSIC")
+        time_dimen = ds.createDimension("time", 
+                                        len(self.pressure_data))   
         time_var = self.time_var(ds)
         latitude_var = self.latitude_var(ds)
         longitude_var = self.longitude_var(ds)
@@ -213,7 +216,13 @@ class Sensor(object):
         pressure_test17 = self.pressure_test17(ds)
         pressure_test20 = self.pressure_test20(ds)
 
-#        temp_var = self.temp_var(ds)
+        print('In the write method')
+        if hasattr(self, 'temperature_data'):
+            temp_var = self.temp_var(ds)
+            print('Adding temperature data. This should only happen '
+                  'for the USGS Homebrew instrument.')
+        else: print('No temperature data found.')
+
 
         ds.salinity_ppm = np.float32(self.salinity_ppm)        
         ds.time_zone = "UTC"

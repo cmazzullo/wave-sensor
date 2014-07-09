@@ -64,7 +64,7 @@ class House(Sensor, PressureTests):
                     break
        
         self.data_end_date = self.convert_milliseconds_to_datetime(self.utc_millisecond_data[::-1][0])
-        print('time', self.utc_millisecond_data[::-1][0], self.utc_millisecond_data[0])
+#        print('time', self.utc_millisecond_data[::-1][0], self.utc_millisecond_data[0])
         self.get_time_duration(self.utc_millisecond_data[::-1][0] - self.utc_millisecond_data[0])
         self.test_16_stucksensor()
         self.test_17_frequencyrange()
@@ -72,8 +72,10 @@ class House(Sensor, PressureTests):
         self.get_15_value()
         
     def pressure_convert(self, x):
-        print('item', x)
-        return x * (30 / 8184) - 6
+        print('Original: ', x)
+        x = (x * (30 / 8184) - 6 + 14.7) * 6894.76
+        print('Processed: ', x)
+        return x
     
     def temperature_convert(self, x):
         return x * (168 / 8184)
@@ -84,7 +86,7 @@ class House(Sensor, PressureTests):
             for x in fileText:
                 file_string = x.split(delimeter)[0]
                 if re.match(expression, file_string):
-                    print('Success! Index %s' % skip_index)
+#                    print('Success! Index %s' % skip_index)
                     break
                 skip_index += 1   
         return skip_index  

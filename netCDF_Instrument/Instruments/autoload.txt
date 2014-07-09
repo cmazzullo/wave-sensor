@@ -1,13 +1,13 @@
-lkj
-lkj
-lkj
-lkj
-56
-56
-56
-56
+asdf
+asdf
+asdf
+asdf
+12
+12
+12
+12
 US/Central
-RBRSolo
+USGS Homebrew
 atm
 /home/chris/WaveLog.csv
 /home/chris/WaveLog.csv.nc
