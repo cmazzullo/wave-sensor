@@ -67,7 +67,7 @@ class Sensor(object):
         self.pressure_test16_data = None
         self.pressure_test17_data = None
         self.pressure_test20_data = None
-        
+        print('Done with initialization')
     
     def convert_to_milliseconds(self, series_length, datestring):
         return  np.arange(series_length, dtype='int64') * (1000 / self.frequency)\
