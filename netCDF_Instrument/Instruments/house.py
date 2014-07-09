@@ -72,12 +72,15 @@ class House(Sensor, PressureTests):
         self.get_15_value()
         
     def pressure_convert(self, x):
-        print('item', x)
-        return x * (30 / 8184) - 6
+        # gets volt to psig
+        # gets psig to pascals
+        return ((x * (30 / 8184) - 6) + 14.7) * 6894.75729
     
     def temperature_convert(self, x):
-        return x * (168 / 8184)
-        
+        # gets volts to farenheit
+        # gets farenheit to celsius
+        return (x * (168 / 8184) - 32) * (5.0/9)
+    
     def read_start(self, expression, delimeter):
         skip_index = 0;
         with open(self.in_filename,'r') as fileText:
@@ -97,7 +100,7 @@ if __name__ == "__main__":
     lt.creator_name = "Jurgen Klinnsmen"
     lt.creator_url = "www.test.com"
     #--for testing
-    lt.in_filename = 'C:\\Users\\Gregory\\Documents\\GitHub\\wave-sensor\\WaveLog.csv'
+    lt.in_filename = 'C:\\Users\\Gregory\\Documents\\GitHub\\WaveLog.csv'
     #os.path.join("benchmark","WaveLog.csv")
     lt.out_filename = os.path.join("benchmark","WaveLog.nc")
     if os.path.exists(lt.out_filename):

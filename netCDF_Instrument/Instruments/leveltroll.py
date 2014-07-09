@@ -45,7 +45,7 @@ class Leveltroll(Sensor, PressureTests):
         long_seconds = data["seconds"]
         self.utc_millisecond_data = (long_seconds + np.float64(self.offset_seconds)) * 1000
 
-        self.pressure_data = data["pressure"]
+        self.pressure_data = np.multiply(data["pressure"], 6894.75729)
         
         self.data_end_date = self.convert_milliseconds_to_datetime(self.utc_millisecond_data[::-1][0])
         self.get_time_duration(self.utc_millisecond_data[::-1][0] - self.utc_millisecond_data[0])
