@@ -63,7 +63,11 @@ class MeasureSysLogger(Sensor, PressureTests):
 #                 break
         
         self.pressure_data = [x / 14.5037738 for x in df[5]]
-       # self.temperature_data = [x for x in df[6]]
+        print(df[6][0])
+        print(len(str(df[6][0])))
+        if re.match('^[0-9]{1,3}.[0-9]+$', str(df[6][0])):
+            self.temperature_data = [x for x in df[6]]
+            
         self.data_end_date = self.convert_milliseconds_to_datetime(self.utc_millisecond_data[::-1][0])
        
         self.get_time_duration(self.utc_millisecond_data[::-1][0] - self.utc_millisecond_data[0])
@@ -71,7 +75,7 @@ class MeasureSysLogger(Sensor, PressureTests):
         self.test_17_frequencyrange()
         self.test_20_rateofchange()
         self.get_15_value()
-        print('length', len(self.pressure_data))
+        
         
     def read_start(self, expression, delimeter):
         skip_index = 0;
@@ -99,7 +103,7 @@ if __name__ == "__main__":
     lt.creator_name = "Jurgen Klinnsmen"
     lt.creator_url = "www.test.com"
     #--for testing
-    lt.in_filename = os.path.join("benchmark","logger2.csv")
+    lt.in_filename = os.path.join("benchmark","logger1.csv")
     lt.out_filename = os.path.join("benchmark","infosys2.nc")
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)
