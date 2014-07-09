@@ -34,6 +34,7 @@ class PressureTests(object):
         print('start mean')
         print('mean', np.mean(self.pressure_data))
         print('mean', np.mean(self.pressure_data))
+        print('std' , np.std(self.pressure_data))
         
                
     def get_16_value(self,x):

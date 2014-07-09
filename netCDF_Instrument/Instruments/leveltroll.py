@@ -52,6 +52,7 @@ class Leveltroll(Sensor, PressureTests):
         self.test_16_stucksensor()
         self.test_17_frequencyrange()
         self.test_20_rateofchange()
+        self.get_15_value()
         
 
     def read_header(self,f):
