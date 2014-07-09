@@ -11,6 +11,7 @@ class PressureTests(object):
     pressure_test16_data = None
     pressure_test17_data = None
     pressure_test20_data = None
+    pressure_test15_data = None
     five_count_list = list() # for IOOS test 16
     local_frequency_range = [11, 19] # for IOOS test 17
     mfg_frequency_range = [10, 20] # for IOOS test 17
@@ -29,6 +30,8 @@ class PressureTests(object):
     def test_20_rateofchange(self):
         self.pressure_test20_data = [self.get_20_value(x) for x in self.pressure_data]
    
+    def test_15_acceptable(self):
+        
             
     def get_15_value(self):
         print('start mean')

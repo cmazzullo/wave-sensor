@@ -64,12 +64,12 @@ class Sensor(object):
         self.valid_temp = (np.float32(-10000), np.float32(10000))
         self.fill_value = np.float32(-1.0e+10)
         self.creator_name = None
-<<<<<<< HEAD
+
         self.sea_name = "The Red Sea"
         
-=======
+
         self.sea_name = None
->>>>>>> origin/master
+
         self.pressure_test16_data = None
         self.pressure_test17_data = None
         self.pressure_test20_data = None
@@ -127,11 +127,11 @@ class Sensor(object):
         time_var.axis = 't'
         time_var.ancillary_variables = ''
         time_var.comment = "Original time zone: "+str(self.timezone_string)
-<<<<<<< HEAD
+
         time_var.ioos_category = "Time" ;
-=======
+
         time_var.sea_name = self.sea_name
->>>>>>> origin/master
+ 
         time_var[:] = self.utc_millisecond_data
         return time_var
 
@@ -142,15 +142,15 @@ class Sensor(object):
         longitude_var.standard_name = "longitude"
         longitude_var.units = "degrees east"
         longitude_var.axis = 'X'
-        longitude_var.min = self.valid_longitude[0]
-        longitude_var.max = self.valid_longitude[1]
+        longitude_var.valid_min = self.valid_longitude[0]
+        longitude_var.valid_max = self.valid_longitude[1]
         longitude_var.ancillary_variables = ''
         longitude_var.comment = "longitude 0 equals prime meridian"
-<<<<<<< HEAD
+
         longitude_var.ioos_category = "Location" ;
-=======
+
         longitude_var.sea_name = self.sea_name
->>>>>>> origin/master
+
         longitude_var[:] = self.longitude
         return longitude_var
 
@@ -161,16 +161,13 @@ class Sensor(object):
         latitude_var.standard_name = "latitude"
         latitude_var.units = "degrees north"
         latitude_var.axis = 'Y'
-        latitude_var.min = self.valid_latitude[0]
-        latitude_var.max = self.valid_latitude[1]
+        latitude_var.valid_min = self.valid_latitude[0]
+        latitude_var.valid_max = self.valid_latitude[1]
         latitude_var.ancillary_variables = ''
-<<<<<<< HEAD
         latitude_var.comment = "latitude 0 equals equator"    
         latitude_var.ioos_category = "Location" ;    
-=======
         latitude_var.comment = "latitude 0 equals equator"
         latitude_var.sea_name = self.sea_name
->>>>>>> origin/master
         latitude_var[:] = self.latitude
         return latitude_var
 
@@ -181,15 +178,13 @@ class Sensor(object):
         z_var.standard_name = "altitude"
         z_var.units = self.z_units
         z_var.axis = 'Z'
-        z_var.min = self.valid_z[0]
-        z_var.max = self.valid_z[1]
+        z_var.valid_min = self.valid_z[0]
+        z_var.valid_max = self.valid_z[1]
         z_var.ancillary_variables = ''
         z_var.comment = "altitude above NAVD88"
-<<<<<<< HEAD
         z_var.ioos_category = "Location" ;
-=======
         z_var.sea_name = self.sea_name
->>>>>>> origin/master
+
         z_var[:] = self.z
         return z_var
 
@@ -197,26 +192,26 @@ class Sensor(object):
     def pressure_var(self,ds):
         pressure_var = ds.createVariable("pressure","f8",("time",),fill_value=self.fill_value)#fill_value is the default
         pressure_var.long_name = "sensor pressure record"
-<<<<<<< HEAD
+
         pressure_var.standard_name = "pressure"    
         pressure_var.nodc_name = "pressure".upper()    
         pressure_var.units = "pascals"
-=======
+
         pressure_var.standard_name = "pressure"
         pressure_var.nodc_name = "pressure".upper()
         pressure_var.units = self.pressure_units
->>>>>>> origin/master
+
         pressure_var.scale_factor = np.float32(1.0)
         pressure_var.add_offset = np.float32(0.0)
         pressure_var.min = self.valid_pressure[0]
         pressure_var.max = self.valid_pressure[1]
         pressure_var.ancillary_variables = ''
         pressure_var.coordinates = "time latitude longitude z"
-<<<<<<< HEAD
+
         pressure_var.ioos_category = "Pressure" ;
-=======
+
         pressure_var.sea_name = self.sea_name
->>>>>>> origin/master
+
         pressure_var[:] = self.pressure_data
         return pressure_var
 
@@ -256,17 +251,17 @@ class Sensor(object):
     def write(self):
         #assert not os.path.exists(self.out_filename),"out_filename already exists"
         #--create variables and assign data
-<<<<<<< HEAD
+
         ds = netCDF4.Dataset(self.out_filename,'w',format="NETCDF4_CLASSIC")
         time_dimen = ds.createDimension("time",len(self.pressure_data))
         instrument_var = self.instrument_var(ds)
-=======
+
         print('hello world')
         ds = netCDF4.Dataset(self.out_filename, 'w',
                              format="NETCDF4_CLASSIC")
         time_dimen = ds.createDimension("time",
                                         len(self.pressure_data))
->>>>>>> origin/master
+
         time_var = self.time_var(ds)
         latitude_var = self.latitude_var(ds)
         longitude_var = self.longitude_var(ds)
