@@ -31,7 +31,7 @@ class PressureTests(object):
         self.pressure_test20_data = [self.get_20_value(x) for x in self.pressure_data]
    
     def test_15_acceptable(self):
-        
+        pass
             
     def get_15_value(self):
         print('start mean')

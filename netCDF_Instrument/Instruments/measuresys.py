@@ -4,11 +4,6 @@ Created on Jul 9, 2014
 @author: Gregory
 '''
 '''
-Created on Jul 7, 2014
-
-@author: Gregory
-'''
-'''
 Created on Jun 20, 2014
 
 @author: Gregory
@@ -22,6 +17,9 @@ import pytz
 import pandas
 import re
 import netCDF4
+
+import sys
+sys.path.append('..')
 
 #--python 3 compatibility
 pyver = sys.version_info
@@ -38,54 +36,43 @@ try:
 except:
     raise Exception("netCDF4 is required")        
 
-class House(Sensor, PressureTests):
-    '''derived class for house ascii files
+class MeasureSysLogger(Sensor, PressureTests):
+    '''derived class for leveltroll ascii files
     '''
     def __init__(self):
-        self.timezone_marker = "time zone"   
-        self.temperature_data = None   
-        super(House,self).__init__()
+        self.timezone_marker = "time zone"      
+        super(MeasureSysLogger,self).__init__()
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 4
-       
-        self.date_format_string = '%Y.%m.%d %H:%M:%S '
-    
-
+        self.date_format_string = '%m/%d/%Y %H:%M:%S.%f %p'  
+        
     def read(self):
         '''load the data from in_filename
         only parse the initial datetime = much faster
         '''
+        skip_index = self.read_start('^ID$',',')
+        #for skipping lines in case there is calibration header data
+        df = pandas.read_table(self.in_filename,skiprows=skip_index + 1, header=None, engine='c', sep=',', usecols=[3,4,5,6])
        
-        skip_index = self.read_start('^[0-9]{4},[0-9]{4}$',' ') 
-        df = pandas.read_table(self.in_filename,skiprows=skip_index, header=None, engine='c', sep=',', names=('a','b'))
+        first_date = df[3][0][1:]
+        self.data_start = self.convert_date_to_milliseconds(first_date)
+        self.utc_millisecond_data = [(x * 1000) + self.data_start for x in df[4]]
        
-        self.pressure_data = [self.pressure_convert(np.float64(x)) for x in df[df.b.isnull() == False].a]
-        self.temperature_data = [self.temperature_convert(np.float64(x)) for x in df[df.b.isnull() == False].b]
-            
-        with open(self.in_filename, 'r') as wavelog:
-            for x in wavelog:
-                if re.match('^[0-9]{4}.[0-9]{2}.[0-9]{2}', x):
-                    self.utc_millisecond_data = self.convert_to_milliseconds(len(self.pressure_data), x) #second arg has extra space that is unnecessary
-                    break
-       
+#         self.utc_millisecond_data = self.convert_to_milliseconds(df.shape - 1, \
+#                                                                          ('%s %s' % (x[1],x[2])))
+#                 break
+        
+        self.pressure_data = [x / 14.5037738 for x in df[5]]
+       # self.temperature_data = [x for x in df[6]]
         self.data_end_date = self.convert_milliseconds_to_datetime(self.utc_millisecond_data[::-1][0])
-        print('time', self.utc_millisecond_data[::-1][0], self.utc_millisecond_data[0])
+       
         self.get_time_duration(self.utc_millisecond_data[::-1][0] - self.utc_millisecond_data[0])
         self.test_16_stucksensor()
         self.test_17_frequencyrange()
         self.test_20_rateofchange()
         self.get_15_value()
+        print('length', len(self.pressure_data))
         
-    def pressure_convert(self, x):
-        # gets volt to psig
-        # gets psig to pascals
-        return ((x * (30 / 8184) - 6) + 14.7) / 14.5037738
-    
-    def temperature_convert(self, x):
-        # gets volts to farenheit
-        # gets farenheit to celsius
-        return (x * (168 / 8184) - 32) * (5.0/9)
-    
     def read_start(self, expression, delimeter):
         skip_index = 0;
         with open(self.in_filename,'r') as fileText:
@@ -95,19 +82,25 @@ class House(Sensor, PressureTests):
                     print('Success! Index %s' % skip_index)
                     break
                 skip_index += 1   
-        return skip_index  
+        return skip_index 
+    
+    @property    
+    def offset_seconds(self):
+        '''offsets seconds from specified epoch using UTC time
+        '''        
+        offset = self.data_start - self.epoch_start            
+        return offset.total_seconds()      
 
 if __name__ == "__main__":
     
     #--create an instance    
-    lt = House()        
+    lt = MeasureSysLogger()        
     lt.creator_email = "a@aol.com"
     lt.creator_name = "Jurgen Klinnsmen"
     lt.creator_url = "www.test.com"
     #--for testing
-    lt.in_filename = 'C:\\Users\\Gregory\\Documents\\GitHub\\WaveLog.csv'
-    #os.path.join("benchmark","WaveLog.csv")
-    lt.out_filename = os.path.join("benchmark","WaveLog.nc")
+    lt.in_filename = os.path.join("benchmark","logger2.csv")
+    lt.out_filename = os.path.join("benchmark","infosys2.nc")
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)
     lt.is_baro = True

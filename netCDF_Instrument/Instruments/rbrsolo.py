@@ -56,7 +56,7 @@ class RBRSolo(Sensor, PressureTests):
                                                                          ('%s %s' % (x[1],x[2])))
                 break
         
-        self.pressure_data = [x[1] * 10000 for x in df[2][:-1].iteritems()]
+        self.pressure_data = [x[1] for x in df[2][:-1].iteritems()]
         self.data_end_date = self.convert_milliseconds_to_datetime(self.utc_millisecond_data[::-1][0])
         self.get_time_duration(self.utc_millisecond_data[::-1][0] - self.utc_millisecond_data[0])
         self.test_16_stucksensor()
