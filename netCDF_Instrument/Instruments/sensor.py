@@ -99,7 +99,6 @@ class Sensor(object):
 
     def instrument_var(self,ds):
         instr_var = ds.createVariable("instrument1","i4")
-        instr_var.standard_name = ''
         instr_var.long_name = 'Attributes for instrument 1'
         instr_var.make_model = ''
         instr_var.serial_number = ''
@@ -108,7 +107,7 @@ class Sensor(object):
         instr_var.user_calibrated = ''
         instr_var.calibration_report = ''
         instr_var.accuracy = ''
-        instr_var.valid_range = ''
+        instr_var.valid_range = 0
         instr_var.precision = ''
         instr_var.comment = ''
         instr_var.ancillary_variables = ''
@@ -135,7 +134,7 @@ class Sensor(object):
         longitude_var = ds.createVariable("longitude","f4",fill_value=self.fill_value)
         longitude_var.long_name = "longitude of sensor"
         longitude_var.standard_name = "longitude"
-        longitude_var.units = "degrees east"
+        longitude_var.units = "degrees_east"
         longitude_var.axis = 'X'
         longitude_var.valid_min = self.valid_longitude[0]
         longitude_var.valid_max = self.valid_longitude[1]
@@ -153,14 +152,13 @@ class Sensor(object):
         latitude_var = ds.createVariable("latitude","f4",fill_value=self.fill_value)
         latitude_var.long_name = "latitude of sensor"
         latitude_var.standard_name = "latitude"
-        latitude_var.units = "degrees north"
+        latitude_var.units = "degrees_north"
         latitude_var.axis = 'Y'
         latitude_var.valid_min = self.valid_latitude[0]
         latitude_var.valid_max = self.valid_latitude[1]
         latitude_var.ancillary_variables = ''
         latitude_var.comment = "latitude 0 equals equator"    
         latitude_var.ioos_category = "Location" ;    
-        latitude_var.comment = "latitude 0 equals equator"
         latitude_var.sea_name = self.sea_name
         latitude_var.add_offset = 0
         latitude_var.scale_factor = 1
@@ -202,7 +200,7 @@ class Sensor(object):
         pressure_var.min = self.valid_pressure[0]
         pressure_var.max = self.valid_pressure[1]
         pressure_var.ancillary_variables = ''
-        pressure_var.coordinates = "time latitude longitude z"
+        pressure_var.coordinates = "time latitude longitude altitude"
         pressure_var.ioos_category = "Pressure" ;
         pressure_var[:] = self.pressure_data
         return pressure_var
@@ -219,7 +217,7 @@ class Sensor(object):
         temp_var.min = self.valid_temp[0]
         temp_var.max = self.valid_temp[1]
         temp_var.ancillary_variables = ''
-        temp_var.coordinates = "time latitude longitude z"
+        temp_var.coordinates = "time latitude longitude altitude"
         temp_var.sea_name = self.sea_name
         temp_var.add_offset = 0
         temp_var.scale_factor = 1
@@ -233,14 +231,14 @@ class Sensor(object):
         pressure_test16.flag_meanings = "pass_less_than_3_vals_identical suspicious_last_3_to_4_vals_identical, fail_last_5_vals_identical"
         pressure_test16[:] = self.pressure_test16_data
         return pressure_test16
-
+ 
     def pressure_test17(self,ds):
         pressure_test17 = ds.createVariable("pressure_valid_range_qc","b",("time",))
         pressure_test17.flag_values = [1, 4]
         pressure_test17.flag_meanings = "pass_data_within_local_range fail_data_not_within_local_range"
         pressure_test17[:] = self.pressure_test17_data
         return pressure_test17
-
+ 
     def pressure_test20(self,ds):
         pressure_test20 = ds.createVariable("pressure_valid_rate_of_change_qc","b",("time",))
         pressure_test20.flag_values = [1, 4]
@@ -276,7 +274,7 @@ class Sensor(object):
         ds.comment = "not used at this time"
         ds.contributor_name = "USGS"
         ds.contributor_role = "data collector"
-        ds.conventions = "CF-1.6"
+        ds.Conventions = "CF-1.6"
         ds.creator_email = self.creator_email
         ds.creator_name = self.creator_name
         ds.creator_url = self.creator_url
