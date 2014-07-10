@@ -275,17 +275,23 @@ class Wavegui:
                               'select the file that you\'d like to '
                               'convert.', title='Error!')
             return
+        
+        devices = [self.read_file(datafile) for datafile in
+                   self.datafiles]
 
-        success = all([self.process_file(datafile) for datafile
-                       in self.datafiles])
+        if not all(devices):
+            return
 
-        if success:
-            d = MessageDialog(root, message="Success! Files saved.",
-                              title='Success!')
+        start_points = [self.plot_pressure(d) for d in devices]
 
-            root.wait_window(d.top)
-            d.top.destroy()
-            root.destroy()
+        [self.write_file(d, s) for d, s in zip(devices, start_points)]
+        
+        d = MessageDialog(root, message="Success! Files saved.",
+                          title='Success!')
+        
+        root.wait_window(d.top)
+        d.top.destroy()
+        root.destroy()
 
     def plot_pressure(self, device):
 
