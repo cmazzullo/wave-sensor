@@ -99,7 +99,6 @@ class Sensor(object):
 
     def instrument_var(self,ds):
         instr_var = ds.createVariable("instrument1","i4")
-        instr_var.standard_name = ''
         instr_var.long_name = 'Attributes for instrument 1'
         instr_var.make_model = ''
         instr_var.serial_number = ''
@@ -108,7 +107,7 @@ class Sensor(object):
         instr_var.user_calibrated = ''
         instr_var.calibration_report = ''
         instr_var.accuracy = ''
-        instr_var.valid_range = ''
+        instr_var.valid_range = 0
         instr_var.precision = ''
         instr_var.comment = ''
         instr_var.ancillary_variables = ''
@@ -120,11 +119,13 @@ class Sensor(object):
         time_var.standard_name = "time"
         time_var.units = "milliseconds since "+self.epoch_start.strftime("%Y-%m-%d %H:%M:%S")
         time_var.calendar = "gregorian"
-        time_var.axis = 't'
+        time_var.axis = 'T'
         time_var.ancillary_variables = ''
         time_var.comment = "Original time zone: "+str(self.timezone_string)
         time_var.ioos_category = "Time" ;
-
+        time_var.add_offset = 0
+        time_var.scale_factor = 1
+        time_var.compression = "not used at this time"
         time_var[:] = self.utc_millisecond_data
         return time_var
 
@@ -133,7 +134,7 @@ class Sensor(object):
         longitude_var = ds.createVariable("longitude","f4",fill_value=self.fill_value)
         longitude_var.long_name = "longitude of sensor"
         longitude_var.standard_name = "longitude"
-        longitude_var.units = "degrees east"
+        longitude_var.units = "degrees_east"
         longitude_var.axis = 'X'
         longitude_var.valid_min = self.valid_longitude[0]
         longitude_var.valid_max = self.valid_longitude[1]
@@ -141,7 +142,8 @@ class Sensor(object):
         longitude_var.comment = "longitude 0 equals prime meridian"
         longitude_var.ioos_category = "Location" ;
         longitude_var.add_offset = 0
-        longitude_var.scale_factor = 0
+        longitude_var.scale_factor = 1
+        longitude_var.compression = "not used at this time"
         longitude_var[:] = self.longitude
         return longitude_var
 
@@ -150,15 +152,17 @@ class Sensor(object):
         latitude_var = ds.createVariable("latitude","f4",fill_value=self.fill_value)
         latitude_var.long_name = "latitude of sensor"
         latitude_var.standard_name = "latitude"
-        latitude_var.units = "degrees north"
+        latitude_var.units = "degrees_north"
         latitude_var.axis = 'Y'
         latitude_var.valid_min = self.valid_latitude[0]
         latitude_var.valid_max = self.valid_latitude[1]
         latitude_var.ancillary_variables = ''
         latitude_var.comment = "latitude 0 equals equator"    
         latitude_var.ioos_category = "Location" ;    
-        latitude_var.comment = "latitude 0 equals equator"
         latitude_var.sea_name = self.sea_name
+        latitude_var.add_offset = 0
+        latitude_var.scale_factor = 1
+        latitude_var.compression = "not used at this time"
         latitude_var[:] = self.latitude
         return latitude_var
 
@@ -174,6 +178,9 @@ class Sensor(object):
         z_var.ancillary_variables = ''
         z_var.comment = "altitude above NAVD88"
         z_var.ioos_category = "Location" ;
+        z_var.add_offset = 0
+        z_var.scale_factor = 1
+        z_var.compression = "not used at this time"
         z_var[:] = self.z
         return z_var
 
@@ -189,10 +196,11 @@ class Sensor(object):
         pressure_var.units = self.pressure_units
         pressure_var.scale_factor = np.float32(1.0)
         pressure_var.add_offset = np.float32(0.0)
+        pressure_var.compression = "not used at this time"
         pressure_var.min = self.valid_pressure[0]
         pressure_var.max = self.valid_pressure[1]
         pressure_var.ancillary_variables = ''
-        pressure_var.coordinates = "time latitude longitude z"
+        pressure_var.coordinates = "time latitude longitude altitude"
         pressure_var.ioos_category = "Pressure" ;
         pressure_var[:] = self.pressure_data
         return pressure_var
@@ -209,8 +217,11 @@ class Sensor(object):
         temp_var.min = self.valid_temp[0]
         temp_var.max = self.valid_temp[1]
         temp_var.ancillary_variables = ''
-        temp_var.coordinates = "time latitude longitude z"
+        temp_var.coordinates = "time latitude longitude altitude"
         temp_var.sea_name = self.sea_name
+        temp_var.add_offset = 0
+        temp_var.scale_factor = 1
+        temp_var.compression = "not used at this time"
         temp_var[:] = self.temperature_data
         return temp_var
     
@@ -220,14 +231,14 @@ class Sensor(object):
         pressure_test16.flag_meanings = "pass_less_than_3_vals_identical suspicious_last_3_to_4_vals_identical, fail_last_5_vals_identical"
         pressure_test16[:] = self.pressure_test16_data
         return pressure_test16
-
+ 
     def pressure_test17(self,ds):
         pressure_test17 = ds.createVariable("pressure_valid_range_qc","b",("time",))
         pressure_test17.flag_values = [1, 4]
         pressure_test17.flag_meanings = "pass_data_within_local_range fail_data_not_within_local_range"
         pressure_test17[:] = self.pressure_test17_data
         return pressure_test17
-
+ 
     def pressure_test20(self,ds):
         pressure_test20 = ds.createVariable("pressure_valid_rate_of_change_qc","b",("time",))
         pressure_test20.flag_values = [1, 4]
@@ -258,20 +269,15 @@ class Sensor(object):
             print('Adding temperature data. This should only happen '
                   'for the USGS Homebrew instrument.')
         else: print('No temperature data found.')
-
-
-        ds.salinity_ppm = np.float32(self.salinity_ppm)
-        ds.time_zone = "UTC"
-        ds.readme = "file created by "+sys.argv[0]+" on "+str(datetime.now())+" from source file "+self.in_filename
+ 
         ds.cdm_data_type = "station"
         ds.comment = "not used at this time"
         ds.contributor_name = "USGS"
         ds.contributor_role = "data collector"
-        ds.conventions = "CF-1.6"
+        ds.Conventions = "CF-1.6"
         ds.creator_email = self.creator_email
         ds.creator_name = self.creator_name
         ds.creator_url = self.creator_url
-
         ds.date_created = datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ")
         ds.date_modified = datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ")
         ds.geospatial_lat_min = self.latitude
@@ -290,7 +296,7 @@ class Sensor(object):
         ds.history = "not used at this time"
         ds.id = "not used at this time"
         ds.institution = "USGS"
-        # ds.keywords = TBD
+        ds.keywords = "not used at this time"
         ds.keywords_vocabulary = "not used at this time"
         ds.license = "This data may only be used upon the consent of the USGS"
         ds.Metadata_Conventions = "Unidata Dataset Discovery v1.0"
@@ -301,6 +307,8 @@ class Sensor(object):
         ds.publisher_email = "deferred with intention to implement"
         ds.publisher_name = "deferred with intention to implement"
         ds.publisher_url = "deferred with intention to implement"
+        ds.readme = "file created by "+sys.argv[0]+" on "+str(datetime.now())+" from source file "+self.in_filename
+        ds.salinity_ppm = np.float32(self.salinity_ppm)
         ds.sea_name = self.sea_name
         ds.standard_name_vocabulary = "CF-1.6"
         ds.summary = "This is data collected by a pressure instrument used for extrapolating information regarding weather patterns"
@@ -308,6 +316,7 @@ class Sensor(object):
         ds.time_coverage_end = self.data_end_date
         ds.time_coverage_duration = self.data_duration_time
         ds.time_coverage_resolution = "P0.25S"
+        ds.time_zone = "UTC"
         ds.title = 'Measure of pressure at %s degrees latitude, %s degrees longitude, %s altitude by %s' \
         ' from the date range of %s to %s' % (self.latitude, self.longitude, self.z,self.creator_name, \
                                                    self.data_start_date, self.data_end_date)
