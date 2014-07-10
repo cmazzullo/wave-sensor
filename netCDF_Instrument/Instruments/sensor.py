@@ -107,7 +107,7 @@ class Sensor(object):
         instr_var.user_calibrated = ''
         instr_var.calibration_report = ''
         instr_var.accuracy = ''
-        instr_var.valid_range = 0
+        instr_var.valid_range = [0,1]
         instr_var.precision = ''
         instr_var.comment = ''
         instr_var.ancillary_variables = ''
@@ -119,12 +119,12 @@ class Sensor(object):
         time_var.standard_name = "time"
         time_var.units = "milliseconds since "+self.epoch_start.strftime("%Y-%m-%d %H:%M:%S")
         time_var.calendar = "gregorian"
-        time_var.axis = 'T'
+#         time_var.axis = 'T'
         time_var.ancillary_variables = ''
         time_var.comment = "Original time zone: "+str(self.timezone_string)
         time_var.ioos_category = "Time" ;
-        time_var.add_offset = 0
-        time_var.scale_factor = 1
+        time_var.add_offset = 0.0
+        time_var.scale_factor = 1.0
         time_var.compression = "not used at this time"
         time_var[:] = self.utc_millisecond_data
         return time_var
@@ -134,15 +134,15 @@ class Sensor(object):
         longitude_var = ds.createVariable("longitude","f4",fill_value=self.fill_value)
         longitude_var.long_name = "longitude of sensor"
         longitude_var.standard_name = "longitude"
-        longitude_var.units = "degrees_east"
+        longitude_var.units = "degrees"
         longitude_var.axis = 'X'
         longitude_var.valid_min = self.valid_longitude[0]
         longitude_var.valid_max = self.valid_longitude[1]
         longitude_var.ancillary_variables = ''
         longitude_var.comment = "longitude 0 equals prime meridian"
         longitude_var.ioos_category = "Location" ;
-        longitude_var.add_offset = 0
-        longitude_var.scale_factor = 1
+        longitude_var.add_offset = 0.0
+        longitude_var.scale_factor = 1.0
         longitude_var.compression = "not used at this time"
         longitude_var[:] = self.longitude
         return longitude_var
@@ -152,7 +152,7 @@ class Sensor(object):
         latitude_var = ds.createVariable("latitude","f4",fill_value=self.fill_value)
         latitude_var.long_name = "latitude of sensor"
         latitude_var.standard_name = "latitude"
-        latitude_var.units = "degrees_north"
+        latitude_var.units = "degrees"
         latitude_var.axis = 'Y'
         latitude_var.valid_min = self.valid_latitude[0]
         latitude_var.valid_max = self.valid_latitude[1]
@@ -160,8 +160,8 @@ class Sensor(object):
         latitude_var.comment = "latitude 0 equals equator"    
         latitude_var.ioos_category = "Location" ;    
         latitude_var.sea_name = self.sea_name
-        latitude_var.add_offset = 0
-        latitude_var.scale_factor = 1
+        latitude_var.add_offset = 0.0
+        latitude_var.scale_factor = 1.0
         latitude_var.compression = "not used at this time"
         latitude_var[:] = self.latitude
         return latitude_var
@@ -178,15 +178,15 @@ class Sensor(object):
         z_var.ancillary_variables = ''
         z_var.comment = "altitude above NAVD88"
         z_var.ioos_category = "Location" ;
-        z_var.add_offset = 0
-        z_var.scale_factor = 1
+        z_var.add_offset = 0.0
+        z_var.scale_factor = 1.0
         z_var.compression = "not used at this time"
         z_var[:] = self.z
         return z_var
 
 #MR SNAKES  MR NOT OSMR CMBDIS LB MR SNAKES
     def pressure_var(self,ds):
-        pressure_var = ds.createVariable("pressure","f8",("time",),fill_value=self.fill_value)#fill_value is the default
+        pressure_var = ds.createVariable("sea_water_pressure","f8",("time",),fill_value=self.fill_value)#fill_value is the default
         pressure_var.long_name = "sensor pressure record"
         pressure_var.standard_name = "sea_water_pressure"    
         pressure_var.nodc_name = "pressure".upper()    
