@@ -120,11 +120,13 @@ class Sensor(object):
         time_var.standard_name = "time"
         time_var.units = "milliseconds since "+self.epoch_start.strftime("%Y-%m-%d %H:%M:%S")
         time_var.calendar = "gregorian"
-        time_var.axis = 't'
+        time_var.axis = 'T'
         time_var.ancillary_variables = ''
         time_var.comment = "Original time zone: "+str(self.timezone_string)
         time_var.ioos_category = "Time" ;
-
+        time_var.add_offset = 0
+        time_var.scale_factor = 1
+        time_var.compression = "not used at this time"
         time_var[:] = self.utc_millisecond_data
         return time_var
 
@@ -141,7 +143,8 @@ class Sensor(object):
         longitude_var.comment = "longitude 0 equals prime meridian"
         longitude_var.ioos_category = "Location" ;
         longitude_var.add_offset = 0
-        longitude_var.scale_factor = 0
+        longitude_var.scale_factor = 1
+        longitude_var.compression = "not used at this time"
         longitude_var[:] = self.longitude
         return longitude_var
 
@@ -159,6 +162,9 @@ class Sensor(object):
         latitude_var.ioos_category = "Location" ;    
         latitude_var.comment = "latitude 0 equals equator"
         latitude_var.sea_name = self.sea_name
+        latitude_var.add_offset = 0
+        latitude_var.scale_factor = 1
+        latitude_var.compression = "not used at this time"
         latitude_var[:] = self.latitude
         return latitude_var
 
@@ -174,6 +180,9 @@ class Sensor(object):
         z_var.ancillary_variables = ''
         z_var.comment = "altitude above NAVD88"
         z_var.ioos_category = "Location" ;
+        z_var.add_offset = 0
+        z_var.scale_factor = 1
+        z_var.compression = "not used at this time"
         z_var[:] = self.z
         return z_var
 
@@ -189,6 +198,7 @@ class Sensor(object):
         pressure_var.units = self.pressure_units
         pressure_var.scale_factor = np.float32(1.0)
         pressure_var.add_offset = np.float32(0.0)
+        pressure_var.compression = "not used at this time"
         pressure_var.min = self.valid_pressure[0]
         pressure_var.max = self.valid_pressure[1]
         pressure_var.ancillary_variables = ''
@@ -211,6 +221,9 @@ class Sensor(object):
         temp_var.ancillary_variables = ''
         temp_var.coordinates = "time latitude longitude z"
         temp_var.sea_name = self.sea_name
+        temp_var.add_offset = 0
+        temp_var.scale_factor = 1
+        temp_var.compression = "not used at this time"
         temp_var[:] = self.temperature_data
         return temp_var
     
@@ -258,11 +271,7 @@ class Sensor(object):
             print('Adding temperature data. This should only happen '
                   'for the USGS Homebrew instrument.')
         else: print('No temperature data found.')
-
-
-        ds.salinity_ppm = np.float32(self.salinity_ppm)
-        ds.time_zone = "UTC"
-        ds.readme = "file created by "+sys.argv[0]+" on "+str(datetime.now())+" from source file "+self.in_filename
+ 
         ds.cdm_data_type = "station"
         ds.comment = "not used at this time"
         ds.contributor_name = "USGS"
@@ -271,7 +280,6 @@ class Sensor(object):
         ds.creator_email = self.creator_email
         ds.creator_name = self.creator_name
         ds.creator_url = self.creator_url
-
         ds.date_created = datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ")
         ds.date_modified = datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ")
         ds.geospatial_lat_min = self.latitude
@@ -290,7 +298,7 @@ class Sensor(object):
         ds.history = "not used at this time"
         ds.id = "not used at this time"
         ds.institution = "USGS"
-        # ds.keywords = TBD
+        ds.keywords = "not used at this time"
         ds.keywords_vocabulary = "not used at this time"
         ds.license = "This data may only be used upon the consent of the USGS"
         ds.Metadata_Conventions = "Unidata Dataset Discovery v1.0"
@@ -301,6 +309,8 @@ class Sensor(object):
         ds.publisher_email = "deferred with intention to implement"
         ds.publisher_name = "deferred with intention to implement"
         ds.publisher_url = "deferred with intention to implement"
+        ds.readme = "file created by "+sys.argv[0]+" on "+str(datetime.now())+" from source file "+self.in_filename
+        ds.salinity_ppm = np.float32(self.salinity_ppm)
         ds.sea_name = self.sea_name
         ds.standard_name_vocabulary = "CF-1.6"
         ds.summary = "This is data collected by a pressure instrument used for extrapolating information regarding weather patterns"
@@ -308,6 +318,7 @@ class Sensor(object):
         ds.time_coverage_end = self.data_end_date
         ds.time_coverage_duration = self.data_duration_time
         ds.time_coverage_resolution = "P0.25S"
+        ds.time_zone = "UTC"
         ds.title = 'Measure of pressure at %s degrees latitude, %s degrees longitude, %s altitude by %s' \
         ' from the date range of %s to %s' % (self.latitude, self.longitude, self.z,self.creator_name, \
                                                    self.data_start_date, self.data_end_date)
