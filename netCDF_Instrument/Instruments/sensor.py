@@ -67,6 +67,7 @@ class Sensor(object):
         self.pressure_test16_data = None
         self.pressure_test17_data = None
         self.pressure_test20_data = None
+        self.user_data_start_flag = None
         print('Done with initialization')
 
     def convert_to_milliseconds(self, series_length, datestring):
