@@ -113,14 +113,15 @@ class Sensor(object):
         instr_var.comment = ''
         instr_var.ancillary_variables = ''
         return instr_var
-        
+
     def time_var(self,ds):
         time_var = ds.createVariable("time","f8",("time",))
-        time_var.long_name = ''
+        time_var.long_name = 'Time'
+        time_var.short_name = 'time'
         time_var.standard_name = "time"
         time_var.units = "milliseconds since "+self.epoch_start.strftime("%Y-%m-%d %H:%M:%S")
         time_var.calendar = "gregorian"
-#         time_var.axis = 'T'
+        time_var.axis = 'T'
         time_var.ancillary_variables = ''
         time_var.comment = "Original time zone: "+str(self.timezone_string)
         time_var.ioos_category = "Time" ;
@@ -158,8 +159,8 @@ class Sensor(object):
         latitude_var.valid_min = self.valid_latitude[0]
         latitude_var.valid_max = self.valid_latitude[1]
         latitude_var.ancillary_variables = ''
-        latitude_var.comment = "latitude 0 equals equator"    
-        latitude_var.ioos_category = "Location" ;    
+        latitude_var.comment = "latitude 0 equals equator"
+        latitude_var.ioos_category = "Location" ;
         latitude_var.sea_name = self.sea_name
         latitude_var.add_offset = 0.0
         latitude_var.scale_factor = 1.0
@@ -169,8 +170,10 @@ class Sensor(object):
 
 
     def z_var(self,ds):
-        z_var = ds.createVariable("altitude","f4",fill_value=self.fill_value)
+        z_var = ds.createVariable("altitude", "f4",
+                                  fill_value=self.fill_value)
         z_var.long_name = "altitude of sensor"
+        z_var.short_name = 'altitude'
         z_var.standard_name = "altitude"
         z_var.units = self.z_units
         z_var.axis = 'Z'
@@ -189,8 +192,9 @@ class Sensor(object):
     def pressure_var(self,ds):
         pressure_var = ds.createVariable("sea_water_pressure","f8",("time",),fill_value=self.fill_value)#fill_value is the default
         pressure_var.long_name = "sensor pressure record"
-        pressure_var.standard_name = "sea_water_pressure"    
-        pressure_var.nodc_name = "pressure".upper()    
+        pressure_var.standard_name = "sea_water_pressure"
+        pressure_var.short_name = "pressure"
+        pressure_var.nodc_name = "pressure".upper()
         pressure_var.units = "decibar"
         pressure_var.standard_name = "pressure"
         pressure_var.nodc_name = "pressure".upper()
@@ -211,6 +215,7 @@ class Sensor(object):
                                      fill_value=self.fill_value)
         temp_var.long_name = "sensor temperature record"
         temp_var.standard_name = "temperature"
+        temp_var.short_name = "temp"
         temp_var.nodc_name = "TEMPERATURE"
         temp_var.units = 'degree_Celsius'
         temp_var.scale_factor = np.float32(1.0)
@@ -219,27 +224,26 @@ class Sensor(object):
         temp_var.max = self.valid_temp[1]
         temp_var.ancillary_variables = ''
         temp_var.coordinates = "time latitude longitude altitude"
-        temp_var.sea_name = self.sea_name
         temp_var.add_offset = 0
         temp_var.scale_factor = 1
         temp_var.compression = "not used at this time"
         temp_var[:] = self.temperature_data
         return temp_var
-    
+
     def pressure_test16(self,ds):
         pressure_test16 = ds.createVariable("pressure_stuck_sensor_qc","b",("time",))
         pressure_test16.flag_values = [1, 3, 4]
         pressure_test16.flag_meanings = "pass_less_than_3_vals_identical suspicious_last_3_to_4_vals_identical, fail_last_5_vals_identical"
         pressure_test16[:] = self.pressure_test16_data
         return pressure_test16
- 
+
     def pressure_test17(self,ds):
         pressure_test17 = ds.createVariable("pressure_valid_range_qc","b",("time",))
         pressure_test17.flag_values = [1, 4]
         pressure_test17.flag_meanings = "pass_data_within_local_range fail_data_not_within_local_range"
         pressure_test17[:] = self.pressure_test17_data
         return pressure_test17
- 
+
     def pressure_test20(self,ds):
         pressure_test20 = ds.createVariable("pressure_valid_rate_of_change_qc","b",("time",))
         pressure_test20.flag_values = [1, 4]
@@ -270,7 +274,7 @@ class Sensor(object):
             print('Adding temperature data. This should only happen '
                   'for the USGS Homebrew instrument.')
         else: print('No temperature data found.')
- 
+
         ds.cdm_data_type = "station"
         ds.comment = "not used at this time"
         ds.contributor_name = "USGS"
