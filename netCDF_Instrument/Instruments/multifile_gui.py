@@ -23,6 +23,7 @@ from Instruments.leveltroll import Leveltroll
 from Instruments.waveguage import Waveguage
 from Instruments.house import House
 from Instruments.measuresys import MeasureSysLogger
+
 class Variable:
 
     def __init__(self, name, name_in_device=None, label=None,
@@ -195,15 +196,15 @@ class Wavegui:
 
         with open(self.log_file, 'w') as f:
 
-            [f.write(var.stringvar.get() + '\n')
-             for var in self.global_fields.values()
-             if var.autosave]
-            
-            [f.write(var.stringvar.get() + '\n') 
-             for var in datafile.fields.values()
-             if var.autosave]
-            
+            for var in self.global_fields.values():
+                if var.autosave:
+                    print(var.stringvar.get())
+                    f.write(var.stringvar.get() + '\n')
 
+            for var in datafile.fields.values():
+                if var.autosave:
+                    print(var.stringvar.get())
+                    f.write(var.stringvar.get() + '\n')
 
     def load_template(self):
 
@@ -275,7 +276,7 @@ class Wavegui:
                               'select the file that you\'d like to '
                               'convert.', title='Error!')
             return
-        
+
         devices = [self.read_file(datafile) for datafile in
                    self.datafiles]
 
@@ -285,10 +286,10 @@ class Wavegui:
         start_points = [self.plot_pressure(d) for d in devices]
 
         [self.write_file(d, s) for d, s in zip(devices, start_points)]
-        
+
         d = MessageDialog(root, message="Success! Files saved.",
                           title='Success!')
-        
+
         root.wait_window(d.top)
         d.top.destroy()
         root.destroy()
