@@ -33,71 +33,93 @@ class Wavegui:
     def __init__(self, root):
 
         self.root = root
+        self.per_file_history = 'gui_per_file_history.txt'
+        self.global_history = 'gui_global_history.txt'
         root.title("USGS Wave Data")
         self.global_fields = self.make_global_fields()
         self.initialize_nofiles(root)
-        
+
     def initialize_nofiles(self, root):
 
-        self.global_frame = self.create_global_frame_nofiles(root)
+        try:
+            self.global_frame.destroy()
+            self.file_frame.destroy()
+        except AttributeError:
+            pass
+
+        self.global_frame = self.make_global_frame(root, files=False)
+        self.global_frame.grid(row=0, column=0, sticky=(N, W, E, S))
+
+        root.update()
+        root.minsize(root.winfo_width(), root.winfo_height())
 
     def initialize_somefiles(self, root):
 
-        for frame in root.grid_slaves():
-            frame.destroy()
+        self.global_frame.destroy()
 
-        self.global_frame.forget()
-            
-        self.global_frame = self.create_global_frame_somefiles(root)
-        self.file_frame = self.create_file_frame(root)
+        self.global_frame = self.make_global_frame(root, files=True)
+        self.global_frame.grid(row=1, column=0, sticky=(N,W,E,S))
 
-    def create_file_frame(self, root):
+        self.file_frame = self.make_file_frame(root)
+        self.file_frame.grid(row=0, column=0, sticky=(N,W,E,S))
 
-        f = ttk.Frame(root, padding="3 3 12 12", relief='groove')
+        root.update()
+        root.minsize(root.winfo_width(), root.winfo_height())
+        
+    def make_file_frame(self, root):
+
+        f = ttk.Frame(root, padding="3 3 12 12")
 
         # Populate file_frame
         section_header = ttk.Label(f,
                                    text='File specific settings:')
         section_header.pack(fill=BOTH, expand=1)
 
-        tabs = ttk.Frame(f, padding="3 3 12 12",
-                         relief='sunken')
-        book = ttk.Notebook(tabs)
+        tabs = ttk.Frame(f, padding="3 3 12 12")
+        book = ttk.Notebook(tabs, width=50)
 
         for datafile in self.datafiles:
             tab =  ttk.Frame(tabs)
-            widgets = ttk.Frame(tab, padding="3 3 12 12",
-                                relief='sunken')
+            widgets = ttk.Frame(tab, padding="3 3 12 12")
+
             for row, var in enumerate(datafile.fields.values()):
                 self.make_widget(widgets, var, row)
 
             widgets.pack(fill=BOTH, expand=1)
 
-            buttons = ttk.Frame(tab, padding="3 3 12 12",
-                                relief='sunken')
+            buttons = ttk.Frame(tab, padding="3 3 12 12")
 
             save = lambda: self.save_entries(datafile)
             ttk.Button(buttons, text='Save Entries', command=save).\
                 grid(column=1, row=0, sticky=W)
 
-            load = lambda: self.remove_file(datafile)
-            ttk.Button(buttons, text='Remove File', command=load).\
+            rm = lambda: self.remove_file(datafile)
+            ttk.Button(buttons, text='Remove File', command=rm).\
                 grid(column=2, row=0, sticky=W)
 
-            load = lambda: self.load_default(datafile)
-            ttk.Button(buttons, text='Load Default', command=load).\
-                grid(column=3, row=0, sticky=W)
+            load = lambda: self.load_entries(datafile)
+            ttk.Button(buttons, text='Load Default',
+                       command=load).\
+                       grid(column=3, row=0, sticky=W)
             buttons.pack(fill=BOTH, expand=1)
-            book.add(tab, text='hello')
+            fname = datafile.fields['in_filename'].stringvar.get()
+            fname = os.path.basename(fname)
+            maxlen = 7
+            if len(fname) > maxlen:
+                fname = fname[:maxlen] + '...'
+            book.add(tab, text=fname)
 
+        book.enable_traversal()
         book.pack(fill=BOTH, expand=1)
         tabs.pack(fill=BOTH, expand=1)
-        f.grid(row=1, column=0, sticky=(N, W, E, S))
+
+        f.update()
+
         return f
 
-    def create_global_frame_nofiles(self, root):
+    def make_global_frame(self, root, files=False):
 
-        f = ttk.Frame(root, padding="3 3 12 12", relief='groove')
+        f = ttk.Frame(root, padding="3 3 12 12")
 
         section_header = ttk.Label(f, text='Global settings:')
         section_header.pack(fill=BOTH, expand=1)
@@ -111,69 +133,57 @@ class Wavegui:
 
         entries.pack(fill=BOTH, expand=1)
 
-        buttons = self.make_global_buttons_nofile(f)
-        buttons.pack(fill=BOTH, expand=1)
+        if files:
+            buttons = self.make_global_buttons_somefiles(f)
+        else:
+            buttons = self.make_global_buttons_nofile(f)
 
-        f.grid(row=2, column=0, sticky=(N, W, E, S))
+        buttons.pack(fill=BOTH, expand=1)
+        f.update()
         return f
 
-    def create_global_frame_somefiles(self, root):
-
-        f = ttk.Frame(root, padding="3 3 12 12", relief='groove')
-
-        section_header = ttk.Label(f, text='Global settings:')
-        section_header.pack(fill=BOTH, expand=1)
-
-        entries = ttk.Frame(f, padding="3 3 12 12", relief='sunken')
-
-        for row, var in enumerate(self.global_fields.values()):
-            self.make_widget(entries, var, row)
-
-        entries.pack(fill=BOTH, expand=1)
-
-        buttons = self.make_global_buttons_somefiles(f)
-        buttons.pack(fill=BOTH, expand=1)
-
-        f.grid(row=2, column=0, sticky=(N, W, E, S))
-        return f
 
     def make_global_buttons_nofile(self, f):
-        """This creates the frame containing buttons and populates it.
-This is for the case when there are no files selected by the 
-user."""
+        """This makes the frame containing buttons and populates it.
+        This is for the case when there are no files selected by the
+        user."""
 
-        buttons = ttk.Frame(f, padding="3 3 12 12", relief='sunken')
+        buttons = ttk.Frame(f, padding="3 3 12 12")
 
-        b1 = ttk.Button(buttons, text="Select File(s)",
-                        command=self.select_files)
-        b1.grid(column=0, row=0)
-        b2 = ttk.Button(buttons, text="Save Globals",
-                        command=lambda: 0)
-        b2.grid(column=1, row=0)
-        b3 = ttk.Button(buttons, text="Quit", command=root.destroy)
-        b3.grid(column=2, row=0)
+        ttk.Button(buttons, text="Select File(s)",
+                   command=self.select_files).grid(column=0, row=0)
+        ttk.Button(buttons, text="Save Globals",
+                   command=self.save_globals).grid(column=1, row=0)
+        ttk.Button(buttons, text="Load Globals",
+                   command=self.load_globals).grid(column=2, row=0)
+        ttk.Button(buttons, text="Quit",
+                   command=root.destroy).grid(column=3, row=0)
+
         return buttons
 
     def make_global_buttons_somefiles(self, f):
-        """This creates the frame containing buttons and populates it.
-This is for the case when there are some files selected by the 
-user."""
+        """This makes the frame containing buttons and populates it.
+        This is for the case when there are some files selected by the
+        user."""
 
-        buttons = ttk.Frame(f, padding="3 3 12 12", relief='sunken')
+        b = ttk.Frame(f, padding="3 3 12 12")
 
-        ttk.Button(buttons, text="Add File(s)",
+        ttk.Button(b, text="Add File(s)",
                    command=self.add_files).grid(column=0, row=0)
-        ttk.Button(buttons, text="Save Globals",
+        ttk.Button(b, text="Save Globals",
                    command=self.save_globals).grid(column=1, row=0)
-        ttk.Button(buttons, text="Remove All Files",
-                   command=self.remove_files).grid(column=2, row=0)
-        ttk.Button(buttons, text="Load Previous Entries",
-                   command=self.load_entries).grid(column=3, row=0)
-        ttk.Button(buttons, text="Quit",
-                   command=root.destroy).grid(column=4, row=0)
-        
-        return buttons
-    
+        ttk.Button(b, text="Load Globals",
+                   command=self.load_globals).grid(column=2, row=0)
+        ttk.Button(b, text="Remove All Files",
+                   command=self.remove_all_files).\
+                   grid(column=3, row=0)
+        ttk.Button(b, text="Load Default in All Files",
+                   command=self.load_per_file).grid(column=4, row=0)
+        ttk.Button(b, text="Quit",
+                   command=root.destroy).grid(column=5, row=0)
+
+        return b
+
     def make_global_fields(self):
 
         l = [ Variable('username',
@@ -205,37 +215,79 @@ user."""
 
         fnames = filedialog.askopenfilename(multiple=True)
 
-        self.new_datafiles = [Datafile(fname) for fname in fnames]
-        self.datafiles.append(new_datafiles)
-        self.file_frame = self.create_file_frame(self.root)
-    
-    def remove_files(self):
-        pass
-    
-    def load_entries(self):
-        pass
+        new_datafiles = [Datafile(fname) for fname in fnames]
+        self.datafiles += new_datafiles
+        print(self.datafiles)
+        self.initialize_somefiles(self.root)
+
+    def remove_all_files(self):
+        self.datafiles = []
+        self.initialize_nofiles(self.root)
+
+    def load_per_file(self):
+        
+        for datafile in self.datafiles:
+
+            l = [v for v in datafile.fields.values() if v.autosave]
+
+            if os.path.isfile(self.per_file_history):
+                with open(self.per_file_history, 'r') as f:
+                    for line, var in zip(f, l):
+                        var.stringvar.set(line.rstrip())
 
     def save_globals(self):
-        pass
+                            
+        with open(self.global_history, 'w') as f:
 
-    def quit(self):
-        pass
+            for var in self.global_fields.values():
+                if var.autosave:
+                    print(var.stringvar.get())
+                    f.write(var.stringvar.get() + '\n')
+
+    def load_globals(self):
+        
+        l = [v for v in self.global_fields.values() if v.autosave]
+
+        if os.path.isfile(self.global_history):
+            with open(self.global_history, 'r') as f:
+                for line, var in zip(f, l):
+                    var.stringvar.set(line.rstrip())
 
 # Per-file
 
-    def save_entries(self, f):
-        pass
+    def load_entries(self, datafile):
 
-    def remove_file(self, f):
-        pass
+        l = [v for v in datafile.fields.values() if v.autosave]
 
-    def load_default(self, f):
-        pass
+        if os.path.isfile(self.per_file_history):
+            with open(self.per_file_history, 'r') as f:
+                for line, var in zip(f, l):
+                    var.stringvar.set(line.rstrip())
 
+    def save_entries(self, datafile):
+
+        with open(self.per_file_history, 'w') as f:
+
+            for var in datafile.fields.values():
+                if var.autosave:
+                    print(var.stringvar.get())
+                    f.write(var.stringvar.get() + '\n')
+
+    def remove_file(self, datafile):
+        print('before = ')
+        print(self.datafiles)
+        self.datafiles.remove(datafile)
+        print('after = ')
+        print(self.datafiles)
+        
+        if self.datafiles:
+            self.initialize_somefiles(self.root)
+        else:
+            self.initialize_nofiles(self.root)
+            
     def make_widget(self, frame, var, row):
 
         label = var.label
-        # label = ('(*) ' if var.required else '') + label
         ttk.Label(frame, text=label).\
             grid(column=1, row=row, sticky=W)
 
@@ -269,7 +321,17 @@ class Datafile:
                        'USGS Homebrew': House(),
                        'Measurement Systems': MeasureSysLogger()}
 
-        l = [ Variable('latitude',
+        l = [ Variable('in_filename',
+                       name_in_device='in_filename',
+                       label='Input filename:',
+                       filename='in',
+                       autosave=False),
+              Variable('out_filename',
+                       name_in_device='out_filename',
+                       label='Output filename:',
+                       filename='out',
+                       autosave=False),
+              Variable('latitude',
                        name_in_device='latitude',
                        label='Latitude:',
                        valtype=np.float32,
@@ -303,16 +365,6 @@ class Datafile:
               #          name_in_device='pressure_units',
               #          label='Pressure units:',
               #          options=("atm", "bar", "psi")),
-              Variable('in_filename',
-                       name_in_device='in_filename',
-                       label='Input filename:',
-                       filename='in',
-                       autosave=False),
-              Variable('out_filename',
-                       name_in_device='out_filename',
-                       label='Output filename:',
-                       filename='out',
-                       autosave=False),
               Variable('sea_name',
                        name_in_device='sea_name',
                        label='Sea Name:',

@@ -1,18 +1,3 @@
-#!/usr/bin/env python3
-import matplotlib
-matplotlib.use('TkAgg')
-from collections import OrderedDict
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.backends.backend_tkagg import NavigationToolbar2TkAgg
-from matplotlib.backend_bases import key_press_handler
-from matplotlib.figure import Figure
-from tkinter import *
-from tkinter import ttk
-from tkinter import filedialog
-from pytz import timezone
-import os
-import numpy as np
-import time
 
 import sys
 sys.path.append('..')
@@ -24,105 +9,6 @@ from Instruments.waveguage import Waveguage
 from Instruments.house import House
 from Instruments.measuresys import MeasureSysLogger
 
-class Variable:
-
-    def __init__(self, name, name_in_device=None, label=None,
-                 doc=None, options=None, required=True,
-                 filename=False, valtype=str, autosave=True):
-
-        self.name = name
-        self.name_in_device = name_in_device
-        self.label = label
-        self.doc = doc
-        self.options = options
-        self.stringvar = StringVar()
-        self.stringvar.set('')
-        self.required = required
-        self.filename = filename
-        self.valtype = valtype
-        self.autosave = autosave
-
-    def get(self):
-
-        val = self.stringvar.get()
-        return self.valtype(val)
-
-class Datafile:
-
-    def __init__(self, filename, instruments):
-
-        l = [ Variable('latitude',
-                       name_in_device='latitude',
-                       label='Latitude:',
-                       valtype=np.float32,
-                       autosave=False),
-              Variable('longitude',
-                       name_in_device='longitude',
-                       label='Longitude:',
-                       valtype=np.float32,
-                       autosave=False),
-              Variable('altitude',
-                       name_in_device='z',
-                       label='Altitude:',
-                       doc="Altitude in meters with respect to the "
-                           "NAVD88 geoid.",
-                       valtype=np.float32,
-                       autosave=False),
-              Variable('salinity',
-                       name_in_device='salinity',
-                       label='Salinity:',
-                       valtype=np.float32,
-                       autosave=False),
-              Variable('timezone',
-                       name_in_device='tzinfo',
-                       label='Timezone:',
-                       options=("US/Central", "US/Eastern"),
-                       valtype=timezone),
-              Variable('instrument',
-                       options=instruments.keys(),
-                       label='Instrument:'),
-              Variable('pressure_units',
-                       name_in_device='pressure_units',
-                       label='Pressure units:',
-                       options=("atm", "bar", "psi")),
-              Variable('in_filename',
-                       name_in_device='in_filename',
-                       label='Input filename:',
-                       filename='in',
-                       autosave=False),
-              Variable('out_filename',
-                       name_in_device='out_filename',
-                       label='Output filename:',
-                       filename='out',
-                       autosave=False),
-              Variable('sea_name',
-                       name_in_device='sea_name',
-                       label='Sea Name:',
-                       options=('Chesapeake Bay',
-                                'Great Lakes',
-                                'Gulf of Alaska',
-                                'Gulf of California',
-                                'Gulf of Maine',
-                                'Gulf of Mexico',
-                                'Hudson Bay',
-                                'Massachusetts Bay',
-                                'NE Atlantic (limit-40 W)',
-                                'NE Pacific (limit-180)',
-                                'North American Coastline-North',
-                                'North American Coastline-South',
-                                'North Atlantic Ocean',
-                                'North Pacific Ocean',
-                                'NW Atlantic (limit-40 W)',
-                                'NW Pacific (limit-180)',
-                                'SE Atlantic (limit-20 W)',
-                                'SE Pacific (limit-140 W)',
-                                'SW Atlantic (limit-20 W)',
-                                'SW Pacific (limit-147 E to 140 W)'))]
-
-        self.fields = OrderedDict([(v.name, v) for v in l])
-
-        self.fields['in_filename'].stringvar.set(filename)
-        self.fields['out_filename'].stringvar.set(filename + '.nc')
 
 class Wavegui:
     """A graphical interface to the netCDF conversion program. Prompts
@@ -175,6 +61,7 @@ class Wavegui:
 
         self.data = None
 
+    
     def make_global_fields(self):
 
         l = [ Variable('username',
@@ -344,6 +231,106 @@ class Wavegui:
         start_point = self.plot_pressure(device)
         self.write_file(device, start_point)
         return True
+
+class Variable:
+
+    def __init__(self, name, name_in_device=None, label=None,
+                 doc=None, options=None, required=True,
+                 filename=False, valtype=str, autosave=True):
+
+        self.name = name
+        self.name_in_device = name_in_device
+        self.label = label
+        self.doc = doc
+        self.options = options
+        self.stringvar = StringVar()
+        self.stringvar.set('')
+        self.required = required
+        self.filename = filename
+        self.valtype = valtype
+        self.autosave = autosave
+
+    def get(self):
+
+        val = self.stringvar.get()
+        return self.valtype(val)
+
+class Datafile:
+
+    def __init__(self, filename, instruments):
+
+        l = [ Variable('latitude',
+                       name_in_device='latitude',
+                       label='Latitude:',
+                       valtype=np.float32,
+                       autosave=False),
+              Variable('longitude',
+                       name_in_device='longitude',
+                       label='Longitude:',
+                       valtype=np.float32,
+                       autosave=False),
+              Variable('altitude',
+                       name_in_device='z',
+                       label='Altitude:',
+                       doc="Altitude in meters with respect to the "
+                           "NAVD88 geoid.",
+                       valtype=np.float32,
+                       autosave=False),
+              Variable('salinity',
+                       name_in_device='salinity',
+                       label='Salinity:',
+                       valtype=np.float32,
+                       autosave=False),
+              Variable('timezone',
+                       name_in_device='tzinfo',
+                       label='Timezone:',
+                       options=("US/Central", "US/Eastern"),
+                       valtype=timezone),
+              Variable('instrument',
+                       options=instruments.keys(),
+                       label='Instrument:'),
+              # Variable('pressure_units',
+              #          name_in_device='pressure_units',
+              #          label='Pressure units:',
+              #          options=("atm", "bar", "psi")),
+              Variable('in_filename',
+                       name_in_device='in_filename',
+                       label='Input filename:',
+                       filename='in',
+                       autosave=False),
+              Variable('out_filename',
+                       name_in_device='out_filename',
+                       label='Output filename:',
+                       filename='out',
+                       autosave=False),
+              Variable('sea_name',
+                       name_in_device='sea_name',
+                       label='Sea Name:',
+                       options=('Chesapeake Bay',
+                                'Great Lakes',
+                                'Gulf of Alaska',
+                                'Gulf of California',
+                                'Gulf of Maine',
+                                'Gulf of Mexico',
+                                'Hudson Bay',
+                                'Massachusetts Bay',
+                                'NE Atlantic (limit-40 W)',
+                                'NE Pacific (limit-180)',
+                                'North American Coastline-North',
+                                'North American Coastline-South',
+                                'North Atlantic Ocean',
+                                'North Pacific Ocean',
+                                'NW Atlantic (limit-40 W)',
+                                'NW Pacific (limit-180)',
+                                'SE Atlantic (limit-20 W)',
+                                'SE Pacific (limit-140 W)',
+                                'SW Atlantic (limit-20 W)',
+                                'SW Pacific (limit-147 E to 140 W)'))]
+
+        self.fields = OrderedDict([(v.name, v) for v in l])
+
+        self.fields['in_filename'].stringvar.set(filename)
+        self.fields['out_filename'].stringvar.set(filename + '.nc')
 
 class MessageDialog:
 
