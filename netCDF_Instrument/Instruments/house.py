@@ -21,7 +21,7 @@ from datetime import datetime
 import pytz
 import pandas
 import re
-import netCDF4
+
 
 #--python 3 compatibility
 pyver = sys.version_info
