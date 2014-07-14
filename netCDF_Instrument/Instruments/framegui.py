@@ -276,7 +276,11 @@ class Wavegui:
     def remove_file(self, datafile):
         print('before = ')
         print(self.datafiles)
+
+        for d in datafiles:
+            if d.
         self.datafiles.remove(datafile)
+
         print('after = ')
         print(self.datafiles)
         
