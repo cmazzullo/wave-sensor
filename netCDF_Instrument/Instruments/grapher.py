@@ -42,13 +42,6 @@ class Grapher(NetCDFReader):
         if min < self.ymin:
             self.ymin = min
             
-        if name == "benchmark\RBRsolo1.nc":
-            times = [x + datetime.timedelta(hours=1) for x in series.index[::skipIndex]]
-            print(times[0])
-            return plt.plot(times,series[::skipIndex], \
-                  color=self.colors.pop(), linewidth="3.0", linestyle="-")
-            
-            
         return plt.plot(series.index[::skipIndex],series[::skipIndex], \
                   color=self.colors.pop(), linewidth="3.0", linestyle="-")
         
