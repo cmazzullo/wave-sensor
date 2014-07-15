@@ -175,7 +175,6 @@ class Wavegui:
                 grid(column=3, row=row, sticky=W)
 
     def process_files(self):
-
         if not hasattr(self, 'datafiles'):
             d = MessageDialog(self.root,
                               message='No file selected! Please '
@@ -374,7 +373,6 @@ class EmbeddedPlot:
         f = Figure(figsize=(5,4), dpi=100)
         self.a = a = f.add_subplot(111)
         a.plot(data)
-#        a.plot(np.arange(len(data)), 100000 * np.ones(len(data)))
 
         self.canvas = canvas = FigureCanvasTkAgg(f, master=top)
         canvas.show()

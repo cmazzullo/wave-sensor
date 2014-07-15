@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from functools import partial
 import matplotlib
 matplotlib.use('TkAgg')
 from collections import OrderedDict
@@ -31,7 +32,11 @@ from Instruments.measuresys import MeasureSysLogger
 class Wavegui:
 
     def __init__(self, root):
-
+        self.instruments = {'LevelTroll': Leveltroll(),
+                            'RBRSolo': RBRSolo(),
+                            'Wave Guage': Waveguage(),
+                            'USGS Homebrew': House(),
+                            'Measurement Systems': MeasureSysLogger()}
         self.root = root
         self.per_file_history = 'gui_per_file_history.txt'
         self.global_history = 'gui_global_history.txt'
@@ -65,7 +70,7 @@ class Wavegui:
 
         root.update()
         root.minsize(root.winfo_width(), root.winfo_height())
-        
+
     def make_file_frame(self, root):
 
         f = ttk.Frame(root, padding="3 3 12 12")
@@ -89,15 +94,15 @@ class Wavegui:
 
             buttons = ttk.Frame(tab, padding="3 3 12 12")
 
-            save = lambda: self.save_entries(datafile)
+            save = partial(self.save_entries, datafile)
             ttk.Button(buttons, text='Save Entries', command=save).\
                 grid(column=1, row=0, sticky=W)
 
-            rm = lambda: self.remove_file(datafile)
+            rm = partial(self.remove_file, datafile)
             ttk.Button(buttons, text='Remove File', command=rm).\
                 grid(column=2, row=0, sticky=W)
 
-            load = lambda: self.load_entries(datafile)
+            load = partial(self.load_entries, datafile)
             ttk.Button(buttons, text='Load Default',
                        command=load).\
                        grid(column=3, row=0, sticky=W)
@@ -179,8 +184,10 @@ class Wavegui:
                    grid(column=3, row=0)
         ttk.Button(b, text="Load Default in All Files",
                    command=self.load_per_file).grid(column=4, row=0)
+        ttk.Button(b, text="Process Files",
+                   command=self.process_files).grid(column=5, row=0)
         ttk.Button(b, text="Quit",
-                   command=root.destroy).grid(column=5, row=0)
+                   command=root.destroy).grid(column=6, row=0)
 
         return b
 
@@ -205,29 +212,146 @@ class Wavegui:
 # Global
 
     def select_files(self):
-
         fnames = filedialog.askopenfilename(multiple=True)
-
-        self.datafiles = [Datafile(fname) for fname in fnames]
-        self.initialize_somefiles(self.root)
+        if fnames:
+            self.datafiles = [Datafile(fname, self.instruments)
+                              for fname in fnames]
+            self.initialize_somefiles(self.root)
 
     def add_files(self):
+        old_fnames = [d.fields['in_filename'].get()
+                      for d in self.datafiles]
+        print(old_fnames)
+        new_fnames = filedialog.askopenfilename(multiple=True)
+        new_fnames = [f for f in new_fnames if not f in old_fnames]
 
-        fnames = filedialog.askopenfilename(multiple=True)
+        new_datafiles = [Datafile(fname, self.instruments)
+                         for fname in new_fnames]
 
-        new_datafiles = [Datafile(fname) for fname in fnames]
         self.datafiles += new_datafiles
-        print(self.datafiles)
         self.initialize_somefiles(self.root)
 
     def remove_all_files(self):
         self.datafiles = []
         self.initialize_nofiles(self.root)
 
-    def load_per_file(self):
-        
-        for datafile in self.datafiles:
+    def proceed(self, datafiles):
+        message = 'This will overwrite your entries. Are you sure?'
+        d = MessageDialog(root, message=message, title='Confirm',
+                          buttons=2)
 
+        self.root.wait_window(d.top)
+        return d.boolean
+
+    def process_files(self):
+        devices = [self.read_file(datafile) for datafile in
+                   self.datafiles]
+
+        if not all(devices): return
+
+        start_points = [self.plot_pressure(d) for d in devices]
+
+        [self.write_file(d, s) for d, s in zip(devices, start_points)]
+
+        d = MessageDialog(self.root, message="Success! Files saved.",
+                          title='Success!')
+
+        self.root.wait_window(d.top)
+        d.top.destroy()
+        self.root.destroy()
+
+    def plot_pressure(self, device):
+
+        e = EmbeddedPlot(self.root, device.pressure_data[:])
+        self.root.wait_window(e.top)
+        return e.xdata
+
+    def read_file(self, datafile):
+
+        fields = self.global_fields
+        fields.update(datafile.fields)
+        for var in fields.values():
+            if var.required and var.stringvar.get() == '':
+                d = MessageDialog(self.root, message="Incomplete "
+                                  "entries, please fill out all "
+                                  "fields.", title='Incomplete!')
+                self.root.wait_window(d.top)
+                return False
+
+        device = self.instruments[fields['instrument'].get()]
+        message = ('Processing file:\n\n%s\n\n'
+                   'This may take a few minutes.')
+        fname = datafile.fields['in_filename'].get()
+        message = message % os.path.basename(fname)
+        d = MessageDialog(self.root, message=message,
+                          title='Processing...', buttons=0)
+
+        for var in fields.values():
+            if var.name_in_device:
+                setattr(device, var.name_in_device, var.get())
+        print('filename: %s' % device.in_filename)
+        device.read()
+        d.top.destroy()
+        return device
+
+    def write_file(self, device, start_point):
+        device.user_data_start_flag = start_point
+        out_file = device.out_filename
+        if os.path.isfile(out_file):
+            os.remove(out_file)
+        device.write()
+
+    def process_file(self, datafile):
+
+        device = self.read_file(datafile)
+        if not device:
+            return device
+
+        start_point = self.plot_pressure(device)
+        self.write_file(device, start_point)
+        return True
+
+
+    def load_per_file(self):
+        # if none of the entries have been filled out...
+        b =  not any(v.stringvar.get() for d in self.datafiles
+                     for v in d.fields.values() if not v.filename)
+
+        if b or self.proceed(self.datafiles):
+            for datafile in self.datafiles:
+                l = [v for v in datafile.fields.values() if v.autosave]
+                    
+                if os.path.isfile(self.per_file_history):
+                    with open(self.per_file_history, 'r') as f:
+                        for line, var in zip(f, l):
+                            var.stringvar.set(line.rstrip())
+
+    def save_globals(self):
+        with open(self.global_history, 'w') as f:
+            for var in self.global_fields.values():
+                if var.autosave:
+                    print(var.stringvar.get())
+                    f.write(var.stringvar.get() + '\n')
+
+    def load_globals(self):
+        b =  not any(v.stringvar.get()
+                     for v in self.global_fields.values()
+                     if not v.filename)
+                    
+        if b or self.proceed(self.global_fields):
+            l = [v for v in self.global_fields.values() if v.autosave]
+
+            if os.path.isfile(self.global_history):
+                with open(self.global_history, 'r') as f:
+                    for line, var in zip(f, l):
+                        var.stringvar.set(line.rstrip())
+
+    def load_entries(self, datafile):
+        b =  not any(v.stringvar.get()
+                     for v in datafile.fields.values()
+                     if not v.filename)
+
+        if b or self.proceed([datafile]):
             l = [v for v in datafile.fields.values() if v.autosave]
 
             if os.path.isfile(self.per_file_history):
@@ -235,63 +359,21 @@ class Wavegui:
                     for line, var in zip(f, l):
                         var.stringvar.set(line.rstrip())
 
-    def save_globals(self):
-                            
-        with open(self.global_history, 'w') as f:
-
-            for var in self.global_fields.values():
-                if var.autosave:
-                    print(var.stringvar.get())
-                    f.write(var.stringvar.get() + '\n')
-
-    def load_globals(self):
-        
-        l = [v for v in self.global_fields.values() if v.autosave]
-
-        if os.path.isfile(self.global_history):
-            with open(self.global_history, 'r') as f:
-                for line, var in zip(f, l):
-                    var.stringvar.set(line.rstrip())
-
-# Per-file
-
-    def load_entries(self, datafile):
-
-        l = [v for v in datafile.fields.values() if v.autosave]
-
-        if os.path.isfile(self.per_file_history):
-            with open(self.per_file_history, 'r') as f:
-                for line, var in zip(f, l):
-                    var.stringvar.set(line.rstrip())
-
     def save_entries(self, datafile):
-
         with open(self.per_file_history, 'w') as f:
-
             for var in datafile.fields.values():
                 if var.autosave:
                     print(var.stringvar.get())
                     f.write(var.stringvar.get() + '\n')
 
     def remove_file(self, datafile):
-        print('before = ')
-        print(self.datafiles)
-
-        for d in datafiles:
-            if d.fields['in_filename'] == datafile.fields['in_filename']:
-                datafiles.remove(d)
-
-
-        print('after = ')
-        print(self.datafiles)
-        
+        self.datafiles.remove(datafile)
         if self.datafiles:
             self.initialize_somefiles(self.root)
         else:
             self.initialize_nofiles(self.root)
-            
-    def make_widget(self, frame, var, row):
 
+    def make_widget(self, frame, var, row):
         label = var.label
         ttk.Label(frame, text=label).\
             grid(column=1, row=row, sticky=W)
@@ -318,13 +400,7 @@ class Wavegui:
 
 class Datafile:
 
-    def __init__(self, filename):
-
-        instruments = {'LevelTroll': Leveltroll(),
-                       'RBRSolo': RBRSolo(),
-                       'Wave Guage': Waveguage(),
-                       'USGS Homebrew': House(),
-                       'Measurement Systems': MeasureSysLogger()}
+    def __init__(self, filename, instruments):
 
         l = [ Variable('in_filename',
                        name_in_device='in_filename',
@@ -366,10 +442,6 @@ class Datafile:
               Variable('instrument',
                        options=instruments.keys(),
                        label='Instrument:'),
-              # Variable('pressure_units',
-              #          name_in_device='pressure_units',
-              #          label='Pressure units:',
-              #          options=("atm", "bar", "psi")),
               Variable('sea_name',
                        name_in_device='sea_name',
                        label='Sea Name:',
@@ -395,16 +467,43 @@ class Datafile:
                                 'SW Pacific (limit-147 E to 140 W)'))]
 
         self.fields = OrderedDict([(v.name, v) for v in l])
-
         self.fields['in_filename'].stringvar.set(filename)
         self.fields['out_filename'].stringvar.set(filename + '.nc')
+
+class MessageDialog:
+
+    def __init__(self, parent, message="", title="",  buttons=1):
+        top = self.top = Toplevel(parent)
+        top.transient(parent)
+        top.title(title)
+        Label(top, text=message).pack()
+
+        if buttons == 1:
+            b = Button(top, text="OK", command=top.destroy)
+            b.pack(pady=5)
+            top.initial_focus = top
+        elif buttons == 2:
+            buttonframe = ttk.Frame(top, padding="3 3 12 12")
+            def event(boolean):
+                self.boolean = boolean
+                top.destroy()
+            b1 = Button(buttonframe, text='YES',
+                        command=lambda: event(True))
+            b1.grid(row=0, column=0)
+            b2 = Button(buttonframe, text='NO',
+                        command=lambda: event(False))
+            b2.grid(row=0, column=1)
+            buttonframe.pack()
+            top.initial_focus = top
+
+        parent.update()
+        parent.grab_set()
 
 class Variable:
 
     def __init__(self, name, name_in_device=None, label=None,
                  doc=None, options=None, required=True,
                  filename=False, valtype=str, autosave=True):
-
         self.name = name
         self.name_in_device = name_in_device
         self.label = label
@@ -418,9 +517,36 @@ class Variable:
         self.autosave = autosave
 
     def get(self):
-
         val = self.stringvar.get()
         return self.valtype(val)
+
+class EmbeddedPlot:
+
+    def __init__(self, root, data):
+
+        top = self.top = Toplevel(root)
+        f = Figure(figsize=(5,4), dpi=100)
+        self.a = a = f.add_subplot(111)
+        a.plot(data)
+
+        self.canvas = canvas = FigureCanvasTkAgg(f, master=top)
+        canvas.show()
+        canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
+        self.toolbar = toolbar = NavigationToolbar2TkAgg(canvas, top)
+        toolbar.update()
+        canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=1)
+        canvas.mpl_connect('button_press_event',
+                           self.onclick)
+        button = Button(master=top, text='Accept',
+                        command=self.top.destroy)
+        button.pack(side=BOTTOM)
+
+    def onclick(self, event):
+
+        print('button=%d, x=%d, y=%d, xdata=%f, ydata=%f ' %
+              (event.button, event.x, event.y, event.xdata,
+               event.ydata))
+        self.xdata = event.xdata
 
 if __name__ == "__main__":
 
