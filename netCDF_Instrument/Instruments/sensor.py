@@ -198,7 +198,7 @@ class Sensor(object):
         pressure_var.units = "decibar"
         pressure_var.standard_name = "pressure"
         pressure_var.nodc_name = "pressure".upper()
-        pressure_var.units = self.pressure_units
+        pressure_var.units = 'bar'
         pressure_var.scale_factor = np.float32(1.0)
         pressure_var.add_offset = np.float32(0.0)
         pressure_var.compression = "not used at this time"

@@ -1,3 +1,22 @@
+#!/usr/bin/env python3
+import matplotlib
+matplotlib.use('TkAgg')
+from collections import OrderedDict
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import NavigationToolbar2TkAgg
+from matplotlib.backend_bases import key_press_handler
+from matplotlib.figure import Figure
+from tkinter import *
+from tkinter import ttk
+from tkinter import filedialog
+from pytz import timezone
+import os
+import numpy as np
+import time
+
+from tkinter import *
+from tkinter import ttk
+from tkinter import filedialog
 
 import sys
 sys.path.append('..')
@@ -183,7 +202,7 @@ class Wavegui:
 
     def plot_pressure(self, device):
 
-        e = EmbeddedPlot(self.root, device.pressure_data[:100])
+        e = EmbeddedPlot(self.root, device.pressure_data[:])
         self.root.wait_window(e.top)
         return e.xdata
 

@@ -278,8 +278,9 @@ class Wavegui:
         print(self.datafiles)
 
         for d in datafiles:
-            if d.
-        self.datafiles.remove(datafile)
+            if d.fields['in_filename'] == datafile.fields['in_filename']:
+                datafiles.remove(d)
+
 
         print('after = ')
         print(self.datafiles)
