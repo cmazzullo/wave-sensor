@@ -79,7 +79,7 @@ class House(Sensor, PressureTests):
     def pressure_convert(self, x):
         # gets volt to psig
         # gets psig to pascals
-        return ((x * (30 / 8184) - 6) + 14.7) / 14.5037738
+        return ((x * (30 / 8184) - 6) + 14.7) / 1.45037738
     
     def temperature_convert(self, x):
         # gets volts to farenheit
