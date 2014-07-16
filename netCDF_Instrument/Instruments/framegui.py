@@ -131,7 +131,7 @@ class Wavegui:
 
         # Subframes
 
-        entries = ttk.Frame(f, padding="3 3 12 12", relief='sunken')
+        entries = ttk.Frame(f, padding="3 3 12 12", relief='raised')
 
         for row, var in enumerate(self.global_fields.values()):
             self.make_widget(entries, var, row)
@@ -496,8 +496,7 @@ class MessageDialog:
             buttonframe.pack()
             top.initial_focus = top
 
-        parent.update()
-        parent.grab_set()
+        top.grab_set()
 
 class Variable:
 
@@ -523,8 +522,13 @@ class Variable:
 class EmbeddedPlot:
 
     def __init__(self, root, data):
-
         top = self.top = Toplevel(root)
+        message = ('Please select the point that you think is the '
+                   'start of the useful data - probably when the '
+                   'device was put in the water.')
+        header = ttk.Label(top, text=message)
+        header.pack(fill=BOTH, expand=1)
+
         f = Figure(figsize=(5,4), dpi=100)
         self.a = a = f.add_subplot(111)
         a.plot(data)
@@ -540,9 +544,14 @@ class EmbeddedPlot:
         button = Button(master=top, text='Accept',
                         command=self.top.destroy)
         button.pack(side=BOTTOM)
+        top.update()
+        top.grab_set()
+        self.dot = None
 
     def onclick(self, event):
-
+        if self.dot: 
+        self.dot = self.a.plot(event.xdata, event.ydata, 'ro')
+        self.canvas.show()
         print('button=%d, x=%d, y=%d, xdata=%f, ydata=%f ' %
               (event.button, event.x, event.y, event.xdata,
                event.ydata))
