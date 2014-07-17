@@ -21,9 +21,9 @@ class NetCDFReader(object):
         self.dataframe = None
         
         
-    def read_file(self,x,pressure_bool, series_bool):
+    def read_file(self,file_name,pressure_bool = True, series_bool = True):
         
-        nc = netCDF4.Dataset(x)
+        nc = netCDF4.Dataset(file_name)
         times = nc.variables['time']
         
         temperature = None
@@ -45,9 +45,12 @@ class NetCDFReader(object):
             if temperature != None:
                 data = {'pressure': pd.Series(pressure,index=time_convert), \
                         'temperature': pd.Series(temperature,index=time_convert)}
+                nc.close()
                 return pd.DataFrame(data)
             else:
-                return pd.DataFrame({'pressure': pd.Series(pressure,index=time_convert)})
+                data = pd.DataFrame({'pressure': pd.Series(pressure,index=time_convert)})
+                nc.close()
+                return data
         
     def get_series(self, filename):
         return self.read_file(filename)
@@ -70,9 +73,56 @@ class NetCDFReader(object):
         for x in self.file_names:
             self.dataframe_vals[x] = self.read_file(x, False, True)
         self.temperature_frame = pd.DataFrame(self.dataframe_vals)
+
+class NEtCDFEditor(object):
+    
+    def __init__(self):
+        self.dataset = None
+        self.datetime_data = None
+        self.pressure_data = None
+        self.temperature_data = None
+        self.in_file_name = os.path.join("benchmark","Neag2-1.nc")
+    
+    def readedit_file(self, file_name):
+        print(file_name)
+        nc = netCDF4.Dataset(file_name,mode = 'r+',format = 'NETCDF4_CLASSIC')
+        self.dataset = nc
+        times = nc.variables['time']
+        
+        self.pressure_data = nc.variables['sea_water_pressure']
+        #checks to see if there is temperature or not
+        if str(nc.variables.keys).find('temperature_at_transducer') != -1:
+                self.temperature_data = nc.variables['temperature_at_transducer']
+      
+        #this method converts the milliseconds in to date times
+        self.datetime_data = netCDF4.num2date(times[:],times.units)
+        
+    def edit_pressure(self, pressure_change_dict = dict()):
+        if(len(pressure_change_dict) > 0):
+            for x in pressure_change_dict:
+                self.pressure_data[x] = pressure_change_dict[x]
+                
+    def edit_temperature(self, temperature_change_dict = dict()):
+        if(len(temperature_change_dict) > 0):
+            for x in temperature_change_dict:
+                self.temperature_data[x] = temperature_change_dict[x]
+        
+                
+    def close_file(self):
+        self.dataset.close()
         
 if __name__ == "__main__":
     
     #--create an instance    
-    editor = NetCDFReader()
-    editor.read_file(editor.in_file_name)
+    editor = NEtCDFEditor()
+    editor.readedit_file(editor.in_file_name)
+    print('first run through...')
+    for x in range(0,6):
+        print (x, editor.pressure_data[x])
+    print('changing values in file...')
+    change_dict = {1: np.float64(1.99), 4: np.float64(1.87)}
+    editor.edit_pressure(change_dict)
+    print('second run through...')
+    for x in range(0,6):
+        print (x, editor.pressure_data[x])
+    

@@ -29,6 +29,8 @@ class Leveltroll(Sensor, PressureTests):
         self.record_start_marker = "date and time,seconds"
         self.timezone_marker = "time zone" 
         super(Leveltroll,self).__init__()
+        self.date_format_string = "%m/%d/%Y %I:%M:%S %p "
+        self.temperature_data = None
         
     def read(self):
         '''load the data from in_filename
@@ -37,23 +39,25 @@ class Leveltroll(Sensor, PressureTests):
         f = open(self.in_filename,'rb')
         
         self.read_header(f)
-        self.data_start = self.read_datetime(f)
+        self.read_datetime(f)
 
-        data = np.genfromtxt(f,dtype=self.numpy_dtype,delimiter=',',usecols=[1,2])     
+        data = np.genfromtxt(f,dtype=self.numpy_dtype,delimiter=',',usecols=[1,2,3])     
         f.close()
         
-        long_seconds = data["seconds"]
-        self.utc_millisecond_data = (long_seconds + np.float64(self.offset_seconds)) * 1000
-
-        self.pressure_data = np.divide(data["pressure"], 14.5037738)
         
+        long_seconds = data["seconds"]
+        print(long_seconds[::-1])
+        self.utc_millisecond_data = [(x * 1000) + self.data_start for x in long_seconds]
+        
+        self.pressure_data = np.divide(data["pressure"], 14.5037738)
+        self.temperature_data = [x for x in data["temperature"]]
         self.data_end_date = self.convert_milliseconds_to_datetime(self.utc_millisecond_data[::-1][0])
         self.get_time_duration(self.utc_millisecond_data[::-1][0] - self.utc_millisecond_data[0])
         self.test_16_stucksensor()
         self.test_17_frequencyrange()
         self.test_20_rateofchange()
         self.get_15_value()
-        
+        print(len(self.pressure_data))
 
     def read_header(self,f):
         ''' read the header from the level troll ASCII file
@@ -76,8 +80,8 @@ class Leveltroll(Sensor, PressureTests):
         '''read the first datetime and cast
         '''        
         dt_fmt = "%m/%d/%Y %I:%M:%S %p "
-        dt_converter = lambda x: datetime.strptime(str(x),dt_fmt)\
-            .replace(tzinfo=self.tzinfo)
+#         dt_converter = lambda x: datetime.strptime(str(x),dt_fmt)\
+#             .replace(tzinfo=self.tzinfo)
         reset_point = f.tell()  
         bit_line = f.readline()          
         line = bit_line.decode()  
@@ -85,13 +89,13 @@ class Leveltroll(Sensor, PressureTests):
         raw = line.strip().split(',')
         dt_str = raw[0]
         try:
-            data_start = dt_converter(dt_str)
-            self.data_start_date = datetime.strftime(data_start, "%Y-%m-%dT%H:%M:%SZ")
-            print('Datetime', data_start, self.data_start_date)
+            self.data_start = self.convert_date_to_milliseconds(dt_str)
+#             self.data_start_date = datetime.strftime(self.data_start, "%Y-%m-%dT%H:%M:%SZ")
+#             print('Datetime', self.data_start, self.data_start_date)
         except Exception as e:
             raise Exception("ERROR - cannot parse first date time stamp: "+str(self.td_str)+" using format: "+dt_fmt+'\n')
         f.seek(reset_point)
-        return data_start
+        
 
 
     def set_timezone(self):
@@ -122,8 +126,8 @@ if __name__ == "__main__":
     lt.creator_name = "Jurgen Klinnsmen"
     lt.creator_url = "www.test.com"
     #--for testing
-    lt.in_filename = os.path.join("benchmark","baro.csv")
-    lt.out_filename = os.path.join("benchmark","baro.csv.nc")
+    lt.in_filename = os.path.join("benchmark","data.csv")
+    lt.out_filename = os.path.join("benchmark","data.csv.nc")
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)
     lt.is_baro = True

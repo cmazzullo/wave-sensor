@@ -75,6 +75,7 @@ class House(Sensor, PressureTests):
         self.test_17_frequencyrange()
         self.test_20_rateofchange()
         self.get_15_value()
+        print(len(self.pressure_data))
         
     def pressure_convert(self, x):
         # gets volt to psig
@@ -105,9 +106,9 @@ if __name__ == "__main__":
     lt.creator_name = "Jurgen Klinnsmen"
     lt.creator_url = "www.test.com"
     #--for testing
-    lt.in_filename = 'C:\\Users\\Gregory\\Documents\\GitHub\\WaveLog.csv'
+    lt.in_filename = os.path.join("benchmark","NEAG2_716.csv")
     #os.path.join("benchmark","WaveLog.csv")
-    lt.out_filename = os.path.join("benchmark","WaveLog.nc")
+    lt.out_filename = os.path.join("benchmark","NEAG2_716.nc")
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)
     lt.is_baro = True

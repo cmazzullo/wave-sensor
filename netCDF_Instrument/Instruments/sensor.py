@@ -272,7 +272,7 @@ class Sensor(object):
         if hasattr(self, 'temperature_data'):
             temp_var = self.temp_var(ds)
             print('Adding temperature data. This should only happen '
-                  'for the USGS Homebrew instrument.')
+                  'for the USGS Homebrew, Measure Systems, and leveltroll instruments.')
         else: print('No temperature data found.')
 
         ds.cdm_data_type = "station"
