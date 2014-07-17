@@ -63,6 +63,7 @@ class RBRSolo(Sensor, PressureTests):
         self.test_17_frequencyrange()
         self.test_20_rateofchange()
         self.get_15_value()
+        print(len(self.pressure_data))
         
     def read_start(self, expression, delimeter):
         skip_index = 0;
@@ -83,8 +84,8 @@ if __name__ == "__main__":
     lt.creator_name = "Jurgen Klinnsmen"
     lt.creator_url = "www.test.com"
     #--for testing
-    lt.in_filename = os.path.join("benchmark","RBR_RSK.txt")
-    lt.out_filename = os.path.join("benchmark","RBR.csv.nc")
+    lt.in_filename = os.path.join("benchmark","rbr_virtuoso_716.txt")
+    lt.out_filename = os.path.join("benchmark","RBRvirtuoso_716.csv.nc")
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)
     lt.is_baro = True
@@ -94,6 +95,7 @@ if __name__ == "__main__":
     lt.latitude = np.float(0.0)
     lt.salinity_ppm = np.float32(0.0)
     lt.z = np.float32(0.0)
+    
     
     #--get input
     #lt.get_user_input()

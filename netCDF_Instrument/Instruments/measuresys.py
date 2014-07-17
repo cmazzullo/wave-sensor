@@ -75,7 +75,7 @@ class MeasureSysLogger(Sensor, PressureTests):
         self.test_17_frequencyrange()
         self.test_20_rateofchange()
         self.get_15_value()
-        
+        print(len(self.pressure_data))
         
     def read_start(self, expression, delimeter):
         skip_index = 0;

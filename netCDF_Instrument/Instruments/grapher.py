@@ -8,7 +8,13 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 import datetime
-from Instruments.edit_netcdf import NetCDFReader
+
+try:
+    from Instruments.edit_netcdf import NetCDFReader
+except:
+    from edit_netcdf import NetCDFReader
+    
+
 
 # pd.set_option('display.mpl_style', 'default')
 #This is for pressure and temperature data for now, will be extended as needed
@@ -17,12 +23,18 @@ class Grapher(NetCDFReader):
     def __init__(self):
         super().__init__()
         self.pressure_data = None
-        self.file_names = [os.path.join("benchmark","RBRsolo1-1.nc"),os.path.join("benchmark","RBRsolo2-1.nc"),
-                           os.path.join("benchmark","RBRvirtuoso.nc"), os.path.join("benchmark","Neag2-1.nc")]
+        self.file_names = [ \
+#                            os.path.join("benchmark","NEAG1_716.nc"),
+#                            os.path.join("benchmark","NEAG2_716.nc"),
+                           os.path.join("benchmark","RBRsolo1_716.csv.nc"),
+                           os.path.join("benchmark","RBRsolo2_716.csv.nc"),
+                           os.path.join("benchmark","RBRvirtuoso_716.csv.nc")]
+        self.last_color = dict()
        
         self.colors = ["yellow", "orange", "purple", "green","blue", "red"]
         for x in range(6,48):
             self.colors.append(self.colors[x % 6])
+            
         self.names = []
         self.names2 = []
         self.plot_data = []
@@ -47,21 +59,34 @@ class Grapher(NetCDFReader):
             self.ymax = max
         if min < self.ymin:
             self.ymin = min
-           
+            
+        #color check for subplots to keep consistent
+        color = None
+        if len(self.last_color) <= 0:
+            color = self.colors.pop()
+            self.last_color['color'] = color
+            self.last_color['name'] = name
+        elif self.last_color['name'] == name:
+            color = self.last_color['color'] 
+        else:
+            color = self.colors.pop()
+            self.last_color['color'] = color
+            self.last_color['name'] = name
+          
         if subplot == None: 
             if zero_mean == True:
                 return plt.plot(series.index[::skipIndex],np.subtract(series[::skipIndex],mean), \
-                  color=self.colors.pop(), linewidth="3.0", linestyle="-")
+                 alpha=0.70, color=color, linewidth="3.0", linestyle="-")
             else:
                 return plt.plot(series.index[::skipIndex],series[::skipIndex], \
-                  color=self.colors.pop(), linewidth="3.0", linestyle="-")
+                 alpha=0.70, color=color, linewidth="3.0", linestyle="-")
         else:
             if zero_mean == True:
-               return subplot.plot(series.index[::skipIndex],np.subtract(series[::skipIndex],mean), \
-                  color=self.colors.pop(), linewidth="3.0", linestyle="-")
+                return subplot.plot(series.index[::skipIndex],np.subtract(series[::skipIndex],mean), \
+                  alpha=0.70,color=color, linewidth="3.0", linestyle="-")
             else:
-                 return subplot.plot(series.index[::skipIndex],series[::skipIndex], \
-                  color=self.colors.pop(), linewidth="3.0", linestyle="-")
+                return subplot.plot(series.index[::skipIndex],series[::skipIndex], \
+                  alpha=0.70,color=color, linewidth="3.0", linestyle="-")
         
     def re_initialize(self):
         self.mean_list = []
@@ -71,7 +96,7 @@ class Grapher(NetCDFReader):
         self.ymax = 0
         self.ymin = 10000000
         
-    def plot_multiple_series_graphs(self, pressure_bool, zero_mean = False):
+    def plot_multiple_series_graphs(self, pressure_bool, zero_mean = False, ylimits = None):
         self.re_initialize()
         
         fig = plt.figure(figsize=(12,4))
@@ -83,7 +108,7 @@ class Grapher(NetCDFReader):
             ax.set_ylabel('Pressure in dbars')
             if zero_mean == True:
                 plt.title("Pressure Data Zero Mean")
-            else: plt.title("Pressure Data Zero Mean")
+            else: plt.title("Pressure Data")
         else:
             self.get_temperatures_only_dataframe()
             ax.set_ylabel('Temperature in celsius')
@@ -98,7 +123,6 @@ class Grapher(NetCDFReader):
         for x in self.dataframe: 
            
             if self.dataframe[x][0] != None:
-                print(pressure_bool, x)
                 self.mean_list.append(np.mean(self.dataframe[x]))  
                 self.names.append(x)  
                 p1, = self.plot_part(self.dataframe[x], x, zero_mean = zero_mean)
@@ -120,11 +144,14 @@ class Grapher(NetCDFReader):
             p4, = plt.plot(time,np.repeat(self.ymin, len(time)), color="orange", \
                     linewidth="1.0", linestyle="--")
         
+        if ylimits != None:
+            plt.ylim(ylimits[0],ylimits[1])
+            
         plt.legend(self.plot_data, self.names,bbox_to_anchor=(.80, 1.10), loc=2, borderaxespad=0.0)
-        plt.xlim(time[0],time[::-1][0] + datetime.timedelta(minutes=5))
+   #     plt.xlim(time[0],time[::-1][0] + datetime.timedelta(minutes=5))
         plt.show()
         
-    def plot_both_together(self, zero_mean = False):
+    def plot_both_together(self, zero_mean = False, pressure_ylimits = None, temperature_ylimits = None):
         self.re_initialize()
         self.get_pressure_temperature_data()
         fig = plt.figure(figsize=(16,8))
@@ -136,7 +163,7 @@ class Grapher(NetCDFReader):
         ax2 = fig.add_subplot(223)
         ax2.set_axis_bgcolor('#f7f7f7')
         ax2.set_title('Temperature Data')
-        ax2.set_ylabel('Temperature in celisus')
+        ax2.set_ylabel('Temperature in celsius')
         ax2.grid(b=True, which='major', color='grey', linestyle="-")
         time = None
         
@@ -174,14 +201,20 @@ class Grapher(NetCDFReader):
         ax2.legend(self.plot_data2, self.names2,bbox_to_anchor=(1.05, 1.0), loc=2, borderaxespad=0.0)
         ax.set_xlim(time[0],time[::-1][0] + datetime.timedelta(minutes=5))
         ax2.set_xlim(time[0],time[::-1][0] + datetime.timedelta(minutes=5))
+        
+        if pressure_ylimits != None:
+            ax.set_ylim(pressure_ylimits[0],pressure_ylimits[1])
+        if temperature_ylimits != None:
+            ax2.set_ylim(temperature_ylimits[0],temperature_ylimits[1])
+            
+            
         plt.show()
        
-         
-        
 if __name__ == "__main__":
     
     #--create an instance    
     graph = Grapher()
+<<<<<<< HEAD
  #   graph.plot_multiple_series_graphs(True,True)
 #     graph.plot_both_together(True)
 #     graph.plot_both_together()
@@ -192,3 +225,9 @@ if __name__ == "__main__":
     graph.plot_multiple_series_graphs(False, True)
     
 >>>>>>> 163a542298f3022418e7ad99fa506bf4361a8f87
+=======
+    graph.plot_multiple_series_graphs(True)
+    #graph.plot_both_together(True)
+    
+    
+>>>>>>> 14f36a317e1e7b5c1f0a8b2daab9501b5c19894f
