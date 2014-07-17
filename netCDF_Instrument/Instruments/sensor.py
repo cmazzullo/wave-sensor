@@ -61,7 +61,7 @@ class Sensor(object):
         self.valid_salinity = (np.float32(0.0),np.float32(40000))
         self.valid_pressure = (np.float32(-10000),np.float32(10000))
         self.valid_temp = (np.float32(-10000), np.float32(10000))
-        self.fill_value = np.float32(-1.0e+10)
+        self.fill_value = np.float64(-1.0e+10)
         self.creator_name = None
         self.sea_name = "The Red Sea"
         self.pressure_test16_data = None
@@ -128,6 +128,7 @@ class Sensor(object):
         time_var.add_offset = 0.0
         time_var.scale_factor = 1.0
         time_var.compression = "not used at this time"
+        print('time var size = %d' % len(time_var))
         time_var[:] = self.utc_millisecond_data
         return time_var
 
@@ -190,15 +191,13 @@ class Sensor(object):
 
 #MR SNAKES  MR NOT OSMR CMBDIS LB MR SNAKES
     def pressure_var(self,ds):
-        pressure_var = ds.createVariable("sea_water_pressure","f8",("time",),fill_value=self.fill_value)#fill_value is the default
+        pressure_var = ds.createVariable("sea_water_pressure","f8",("time",))
         pressure_var.long_name = "sensor pressure record"
+
         pressure_var.standard_name = "sea_water_pressure"
         pressure_var.short_name = "pressure"
         pressure_var.nodc_name = "pressure".upper()
         pressure_var.units = "decibar"
-        pressure_var.standard_name = "pressure"
-        pressure_var.nodc_name = "pressure".upper()
-        pressure_var.units = 'bar'
         pressure_var.scale_factor = np.float32(1.0)
         pressure_var.add_offset = np.float32(0.0)
         pressure_var.compression = "not used at this time"
@@ -211,8 +210,8 @@ class Sensor(object):
         return pressure_var
 
     def temp_var(self,ds):
-        temp_var = ds.createVariable("temperature_at_transducer", "f8", ("time",),
-                                     fill_value=self.fill_value)
+        temp_var = ds.createVariable("temperature_at_transducer",
+                                     "f8", ("time",))
         temp_var.long_name = "sensor temperature record"
         temp_var.standard_name = "temperature"
         temp_var.short_name = "temp"
@@ -253,9 +252,6 @@ class Sensor(object):
 
 
     def write(self):
-        #assert not os.path.exists(self.out_filename),"out_filename already exists"
-        #--create variables and assign data
-
         ds = netCDF4.Dataset(self.out_filename,'w',format="NETCDF4_CLASSIC")
         time_dimen = ds.createDimension("time",len(self.pressure_data))
         instrument_var = self.instrument_var(ds)
@@ -324,7 +320,7 @@ class Sensor(object):
         ds.time_zone = "UTC"
         ds.title = 'Measure of pressure at %s degrees latitude, %s degrees longitude, %s altitude by %s' \
         ' from the date range of %s to %s' % (self.latitude, self.longitude, self.z,self.creator_name, \
-                                                   self.data_start_date, self.data_end_date)
+                                                  self.data_start_date, self.data_end_date)
         ds.uuid = str(uuid.uuid4())
         print('done write')
 
