@@ -43,7 +43,7 @@ class Depth(NetCDFReader):
     def interpolate_data(self):
         air_pressure = self.df['Air Pressure']
         nan_check = np.isnan(air_pressure)
-        
+        print(type(air_pressure.index))
         prev_index = -1
         current_index = None
         for x in range(0, len(nan_check)):
