@@ -21,19 +21,19 @@ class Depth(NetCDFReader):
         self.pressure_data = None
         self.air_pressure_data = None
         self.depth_data = None
+        self.data_frame = None
         
     def acquire_data(self, pressure_file_bool = False):
         if self.air_pressure_file == None:
             print("Weather Website Data")
         else:
-            self.pressure_data = self.read_file(self.in_file_name)
-            self.pressure_data.columns = ['Pressure']
-            self.air_pressure_data = self.read_file(self.air_pressure_file)
-            self.air_pressure_data.columns = ['Air Pressure']
-            final = pd.DataFrame({'pressure': self.pressure_data,"air pressure": self.air_pressure_data})
+            self.pressure_data = pd.DataFrame(self.read_file(self.in_file_name))
+            self.air_pressure_data = pd.DataFrame(self.read_file(self.air_pressure_file))
             
-            for x in final:
-                print ('final,',x, x['Pressure'], x['Air Pressure'])
+            self.df = pd.DataFrame.join(self.pressure_data,self.air_pressure_data,lsuffix = "a", rsuffix = "b")
+            self.df.columns = ["Pressure", "Air Pressure"]
+            
+            return self.df
                 
     def convert_pressure_to_depth(self):
         pressure = self.get_series(self.in_file_name)
