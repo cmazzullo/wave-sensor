@@ -14,6 +14,7 @@ class NetCDFReader(object):
     
     def __init__(self):
         self.in_file_name = os.path.join("benchmark","Neag2-1.nc")
+        self.file_names = None
         self.pressure_frame = None
         self.temperature_frame = None
         self.series = None
@@ -45,11 +46,9 @@ class NetCDFReader(object):
             if temperature != None:
                 data = {'pressure': pd.Series(pressure,index=time_convert), \
                         'temperature': pd.Series(temperature,index=time_convert)}
-                nc.close()
                 return pd.DataFrame(data)
             else:
                 data = pd.DataFrame({'pressure': pd.Series(pressure,index=time_convert)})
-                nc.close()
                 return data
         
     def get_series(self, filename):
