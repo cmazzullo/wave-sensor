@@ -153,7 +153,7 @@ if __name__ == '__main__':
     wg.creator_name = "Jurgen Klinnsmen"
     wg.creator_url = "www.test.com"
     wg.in_filename = 'benchmark/wave-guage-14-07-2014.csv'
-    wg.out_filename = 'wg-output2.nc'
+    wg.out_filename = 'newstuff.nc'
     wg.is_baro = True
     wg.pressure_units = "psi"
     wg.z_units = "meters"
