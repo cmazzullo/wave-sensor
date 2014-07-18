@@ -20,7 +20,7 @@ class NetCDFReader(object):
         self.series = None
         self.dataframe_vals = dict()
         self.dataframe = None
-        self.pressure
+        
         
     def read_file(self,file_name,pressure_bool = True, series_bool = True):
         
@@ -37,10 +37,10 @@ class NetCDFReader(object):
         time_convert = netCDF4.num2date(times[:],times.units)
         if series_bool == True:
             if pressure_bool == True:
-                return pd.Series(pressure,index=times[0:])
+                return pd.Series(pressure,index=time_convert)
             else:
                 if temperature != None:
-                    return pd.Series(temperature,index=times[0:])
+                    return pd.Series(temperature,index=time_convert)
                 else: return None
         else:
             if temperature != None:

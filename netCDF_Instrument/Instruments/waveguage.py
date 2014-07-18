@@ -34,7 +34,7 @@ class Waveguage(Sensor, PressureTests):
         self.data_duration_time = timestamps[-1] - timestamps[0]
         self.frequency = self._get_frequency()
         self.utc_millisecond_data = self.get_ms_data(timestamps, chunks)
-        self.pressure_data = self.make_pressure_array(timestamps, chunks)
+        self.pressure_data = np.add(self.make_pressure_array(timestamps, chunks),10.1325)
 
         #Test and utility methods
         ms = self.utc_millisecond_data[::-1][0]
