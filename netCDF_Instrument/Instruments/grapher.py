@@ -24,12 +24,15 @@ class Grapher(NetCDFReader):
         super().__init__()
         self.pressure_data = None
         self.file_names = [ \
-#                            os.path.join("benchmark","NEAG1_716.nc"),
-#                            os.path.join("benchmark","NEAG2_716.nc"),
-                           os.path.join("benchmark","RBRsolo1_716.csv.nc"),
-                           os.path.join("benchmark","RBRsolo2_716.csv.nc"),
-                           os.path.join("benchmark","RBRvirtuoso_716.csv.nc")]
+                            os.path.join("benchmark","NEAG1_716.nc"),
+                            os.path.join("benchmark","NEAG2_716.nc"),
+                            os.path.join("benchmark","RBRsolo1_716.csv.nc"),
+                            os.path.join("benchmark","RBRsolo2_716.csv.nc"),
+                            os.path.join("benchmark","RBRvirtuoso_716.csv.nc"),
+                        os.path.join("benchmark","newstuff.nc")
+                            ]
         self.last_color = dict()
+        self.fill_value_correction_bool = False
        
         self.colors = ["yellow", "orange", "purple", "green","blue", "red"]
         for x in range(6,48):
@@ -50,16 +53,17 @@ class Grapher(NetCDFReader):
             skipIndex = int(len(series) / 10000)
             if skipIndex < 100:
                 skipIndex = 100
-        
+            
         max = np.max(series[::skipIndex])   
         min = np.min(series[::skipIndex])
         mean = np.mean(series[::skipIndex])
-        
+        print(min, max, mean)
         if max > self.ymax:
             self.ymax = max
         if min < self.ymin:
             self.ymin = min
-            
+        
+       
         #color check for subplots to keep consistent
         color = None
         if len(self.last_color) <= 0:
@@ -123,6 +127,8 @@ class Grapher(NetCDFReader):
         for x in self.dataframe: 
            
             if self.dataframe[x][0] != None:
+                if self.fill_value_correction_bool == True:
+                    self.dataframe[x][self.dataframe[x] < -100] = 0
                 self.mean_list.append(np.mean(self.dataframe[x]))  
                 self.names.append(x)  
                 p1, = self.plot_part(self.dataframe[x], x, zero_mean = zero_mean)
@@ -214,16 +220,15 @@ if __name__ == "__main__":
     
     #--create an instance    
     graph = Grapher()
-
+    graph.fill_value_correction_bool = True
  #   graph.plot_multiple_series_graphs(True,True)
 #     graph.plot_both_together(True)
 #     graph.plot_both_together()
-    graph.plot_multiple_series_graphs(False)
+   
+#     graph.plot_both_together()
 
-    graph.plot_both_together()
-
-    graph.plot_multiple_series_graphs(False, True)
+#     graph.plot_multiple_series_graphs(True, True)
     
 
-    graph.plot_multiple_series_graphs(True)
+    graph.plot_multiple_series_graphs(True, ylimits = [9.5,10.0])
     #graph.plot_both_together(True)
