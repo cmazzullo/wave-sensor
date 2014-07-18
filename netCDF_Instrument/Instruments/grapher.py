@@ -214,20 +214,16 @@ if __name__ == "__main__":
     
     #--create an instance    
     graph = Grapher()
-<<<<<<< HEAD
+
  #   graph.plot_multiple_series_graphs(True,True)
 #     graph.plot_both_together(True)
 #     graph.plot_both_together()
     graph.plot_multiple_series_graphs(False)
-<<<<<<< HEAD
+
     graph.plot_both_together()
-=======
+
     graph.plot_multiple_series_graphs(False, True)
     
->>>>>>> 163a542298f3022418e7ad99fa506bf4361a8f87
-=======
+
     graph.plot_multiple_series_graphs(True)
     #graph.plot_both_together(True)
-    
-    
->>>>>>> 14f36a317e1e7b5c1f0a8b2daab9501b5c19894f
