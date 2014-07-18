@@ -5,6 +5,7 @@ Created on Jul 17, 2014
 '''
 import numpy as np
 import os
+import pandas as pd
 
 try:
     from Instruments.edit_netcdf import NetCDFReader
@@ -15,10 +16,28 @@ class Depth(NetCDFReader):
     
     def __init__(self):
         self.latitude = 30
-        self.in_file_name = os.path.join("benchmark","RBRTest.nc")
+        self.in_file_name = os.path.join("benchmark", "RBRtester1.nc")
+        self.air_pressure_file = os.path.join("benchmark","RBRtester2.nc")
+        self.pressure_data = None
+        self.air_pressure_data = None
+        self.depth_data = None
         
+    def acquire_data(self, pressure_file_bool = False):
+        if self.air_pressure_file == None:
+            print("Weather Website Data")
+        else:
+            self.pressure_data = self.read_file(self.in_file_name)
+            self.pressure_data.columns = ['Pressure']
+            self.air_pressure_data = self.read_file(self.air_pressure_file)
+            self.air_pressure_data.columns = ['Air Pressure']
+            final = pd.DataFrame({'pressure': self.pressure_data,"air pressure": self.air_pressure_data})
+            
+            for x in final:
+                print ('final,',x, x['Pressure'], x['Air Pressure'])
+                
     def convert_pressure_to_depth(self):
         pressure = self.get_series(self.in_file_name)
+        
         x1 = np.square(np.sin(self.latitude /57.29578))
         print('x1,', x1 )
         
@@ -30,7 +49,7 @@ class Depth(NetCDFReader):
         
     def calculate_GR(self, X, P):
         a = 9.780318 * (1.0 + ((5.2788 * np.power(10,-3.0)) + (2.36 * np.power(10,-5.0)) * X) \
-                    * X) + ((1.092 * np.power(10,-6.0)) * P)
+                    * X) + (1.092 * np.power(10,-6.0)) * P
         print('GR', a)
         return a
     
@@ -48,4 +67,4 @@ class Depth(NetCDFReader):
     
 if __name__ == "__main__":
     d = Depth()
-    d.convert_pressure_to_depth()
+    d.acquire_data()
