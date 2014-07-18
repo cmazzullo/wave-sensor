@@ -115,6 +115,16 @@ class NEtCDFEditor(object):
     def close_file(self):
         self.dataset.close()
         
+class WriterInput(object):
+    
+    def __init__(self):
+        self.pressure_comments = None
+        self.temperature_comments = None
+        self.depth_comments = None
+    
+    
+    
+        
 if __name__ == "__main__":
     
     #--create an instance    
