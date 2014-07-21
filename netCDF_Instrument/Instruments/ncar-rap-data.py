@@ -3,6 +3,8 @@ from urllib.request import urlopen
 import re
 import matplotlib.pyplot as plt
 import sys
+from datetime import datetime
+import pandas as pd
 
 def get_buoy_pressure(station_id, begin_date, end_date):
     '''Grabs buoy pressure data from the noaa site and plots it.
@@ -15,7 +17,8 @@ get_buoy_pressure(station_id, begin_date, end_date)'''
            'beginDate=%s&endDate=%s&timeZone=0&'
            'format=text&Submit=Submit' % (station_id, begin_date, 
                                          end_date))
-    result = []
+    pressures = []
+    times = []
     precount = 0
     for line in urlopen(url):
         line = line.decode('utf-8')
@@ -23,18 +26,22 @@ get_buoy_pressure(station_id, begin_date, end_date)'''
             break
         if precount == 2:
             row = line.split()
-            pressure = row[5]
-            result.append(pressure)
+            pressures.append(row[5])
+
+            time_str = row[3] + ' ' + row[4]
+            time = convert_buoy_time_string(time_str)
+            times.append(time)
         if line.startswith('<pre>'):
             precount += 1
 
-    plt.plot(result)
-    plt.show()
+    ts = pd.Series(pressures, index=times)
+    return ts
+    # plt.plot(pressures)
+    # plt.show()
 
 def convert_buoy_time_string(time_str):
-    date_format = 'Y%yM%mD%dH%HM%MS%S'
-    stamps = datetime.strptime(time_str, date_format).\
-        replace(tzinfo=self.tzinfo)
+    date_format = '%Y-%m-%d %H:%M'
+    return datetime.strptime(time_str, date_format) 
 
 def array_to_dataframe(pressure, start_time):
     '''Turns a pressure array and a datetime into a time series'''
@@ -52,5 +59,5 @@ if __name__ == '__main__':
         start = sys.argv[2]
         end = sys.argv[3]
         print(sys.argv)
-    get_buoy_pressure(station, start, end)    
+    ts = get_buoy_pressure(station, start, end)  
 
