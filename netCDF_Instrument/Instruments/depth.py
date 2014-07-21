@@ -33,11 +33,31 @@ class Depth(NetCDFReader):
             self.df = pd.DataFrame.join(self.pressure_data,self.air_pressure_data,lsuffix = "a", rsuffix = "b")
             self.df.columns = ["Pressure", "Air Pressure"]
             
+            self.interpolate_data()
+            
+            for x in self.df['Air Pressure']:
+                print('air pressure', x)
+                
             return self.df
+        
+    def interpolate_data(self):
+        air_pressure = self.df['Air Pressure']
+        nan_check = np.isnan(air_pressure)
+        print(type(air_pressure.index))
+        prev_index = -1
+        current_index = None
+        for x in range(0, len(nan_check)):
+            if nan_check[x] == False:
+                current_index = x
+                if prev_index > -1:
+                    
+                    air_pressure[prev_index:current_index] = \
+                    np.linspace(air_pressure[prev_index], air_pressure[current_index], \
+                                num = current_index - (prev_index), endpoint = False)
+                prev_index = x 
                 
     def convert_pressure_to_depth(self):
         pressure = self.get_series(self.in_file_name)
-        
         x1 = np.square(np.sin(self.latitude /57.29578))
         print('x1,', x1 )
         
