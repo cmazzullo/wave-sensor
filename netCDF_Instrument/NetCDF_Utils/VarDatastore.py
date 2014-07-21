@@ -3,11 +3,16 @@ from datetime import datetime
 import pytz
 import numpy as np
 import uuid
+import NetCDF_Utils.DateTimeConvert as timeconvert
+import pytz
 
 class DataStore(object):
     
     def __init__(self, grouping, var_list= None):
         self.utc_millisecond_data = None
+        self.data_start_date = None
+        self.data_end_date = None
+        self.data_duration = None
         self.pressure_data = None
         self.pressure_qc_data = None
         self.temperature_data = None
@@ -50,8 +55,8 @@ class DataStore(object):
                         'short_name': 'longitude',
                         'units': "degrees",
                         'axis': 'X',
-                        'valid_min': "utility valid min",
-                        'valid_max': "utility valid max",
+                        'valid_min': self.longitude,
+                        'valid_max': self.longitude,
                         'ancillary_variables': '',
                         'comment': "longitude 0 equals prime meridian",
                         'ioos_category': "Location",
@@ -65,8 +70,8 @@ class DataStore(object):
                         'short_name': 'latitude',
                         'units': "degrees",
                         'axis': 'Y',
-                        'valid_min': "utility valid min",
-                        'valid_max': "utility valid max",
+                        'valid_min': self.latitutde,
+                        'valid_max': self.latitutde,
                         'ancillary_variables': '',
                         'comment': "latitude 0 equals equator",
                         'ioos_category': "Location",
@@ -184,12 +189,25 @@ class DataStore(object):
                                  "time_coverage_duration": "utility coverage duration",
                                  "time_coverage_resolution": "P0.25S",
                                  "time_zone": "UTC",
-                                 "title": 'title',
+                                 "title": 'Measure of pressure at %s degrees latitude, %s degrees longitude' \
+                                 ' from the date range of %s to %s' % (self.latitude, self.longitude,self.creator_name, \
+                                                                       self.data_start_date, self.data_end_date),
                                  "uuid": str(uuid.uuid4())
                                  }
     def send_data(self,ds):
         self.get_time_var(ds)
         self.get_pressure_var(ds)
+        if self.temperature_data != None:
+            self.get_temp_var(ds)
+            
+        if type(self.z_data) != list:
+            self.get_z_var(ds, False)
+        else:
+            self.get_z_var(ds, True)
+       
+        self.get_lat_var(ds)
+        self.get_lon_var(ds)
+        self.get_global_vars(ds)
         
     def get_instrument_var(self,ds):
         instrument = ds.createVariable("instrument","i4")
@@ -215,8 +233,13 @@ class DataStore(object):
             lon.setncattr(x,self.lon_var[x])
         lon[:] = self.longitude
           
-    def get_z_var(self,ds):
-        z = ds.createVariable("altitude", "f4",fill_value=self.fill_value)
+    def get_z_var(self,ds,time_dimen_bool = False):
+        if time_dimen_bool == False:
+            z = ds.createVariable("altitude", "f4",
+                                  fill_value=self.fill_value)
+        else:
+            z = ds.createVariable("altitude", "f8",("time",),
+                                  fill_value=self.fill_value)
         for x in self.z_var:
             z.setncattr(x,self.z_var[x])
         z[:] = self.z_data
@@ -255,8 +278,12 @@ class DataStore(object):
         for x in self.global_vars_dict:
             ds.setncattr(x,self.global_vars_dict[x])
         
+    def get_time_duration(self):
+        self.data_start_date = timeconvert.convert_milliseconds_to_datetime(self.utc_millisecond_data[0], pytz.utc)
+        self.data_end_date = timeconvert.convert_milliseconds_to_datetime(self.utc_millisecond_data[::-1][0], pytz.utc)   
     def gui_fill_values(self, data_class):
-        pass      
+        pass  
+      
     
     
 #     'Measure of pressure at %s degrees latitude, %s degrees longitude, %s altitude by %s' \

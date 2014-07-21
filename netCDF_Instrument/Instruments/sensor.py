@@ -176,7 +176,7 @@ class Sensor(object):
         z_var.long_name = "altitude of sensor"
         z_var.short_name = 'altitude'
         z_var.standard_name = "altitude"
-        z_var.units = self.z_units
+        z_var.units = "meters"
         z_var.axis = 'Z'
         z_var.valid_min = self.valid_z[0]
         z_var.valid_max = self.valid_z[1]
