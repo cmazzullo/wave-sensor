@@ -1,29 +1,56 @@
+#!/usr/bin/env python3
 from urllib.request import urlopen
 import re
-# 4-letter ICAO id
-station_ids = 'KROA padk'
+import matplotlib.pyplot as plt
+import sys
 
-ids = station_ids.upper().split(' ')
+def get_buoy_pressure(station_id, begin_date, end_date):
+    '''Grabs buoy pressure data from the noaa site and plots it.
 
-hours = 10
+get_buoy_pressure(station_id, begin_date, end_date)'''
 
-if hours == 0:
-    timestring = 'most+recent+only'
-else:
-    s = 'past+%d+hour'
-    timestring = s if hours == 1 else s + 's'
-    timestring = timestring % hours
-idlist = '+'.join(ids)
-url = ('http://weather.rap.ucar.edu/surface/index.php?metarIds=%s&'
-       'hoursStr=%s&std_trans=standard&num_metars=number&'
-       'submit_metars=Retrieve' % (idlist, timestring))
+    station_id = str(station_id)
+    url = ('http://opendap.co-ops.nos.noaa.gov/axis/webservices/'
+           'barometricpressure/response.jsp?stationId=%s&'
+           'beginDate=%s&endDate=%s&timeZone=0&'
+           'format=text&Submit=Submit' % (station_id, begin_date, 
+                                         end_date))
+    result = []
+    precount = 0
+    for line in urlopen(url):
+        line = line.decode('utf-8')
+        if line.startswith('</pre>'):
+            break
+        if precount == 2:
+            row = line.split()
+            pressure = row[5]
+            result.append(pressure)
+        if line.startswith('<pre>'):
+            precount += 1
 
-print(url)
+    plt.plot(result)
+    plt.show()
 
-pattern = '%s|%s' % tuple(ids)
-print('pattern = %s' % pattern)
+def convert_buoy_time_string(time_str):
+    date_format = 'Y%yM%mD%dH%HM%MS%S'
+    stamps = datetime.strptime(time_str, date_format).\
+        replace(tzinfo=self.tzinfo)
 
-for line in urlopen(url):
-    line = line.decode('utf-8')  # Decoding the binary data to text.
-    if re.match(pattern, line):
-        print(line.replace('<BR>', ''))
+def array_to_dataframe(pressure, start_time):
+    '''Turns a pressure array and a datetime into a time series'''
+    start_ms = start_time.total_seconds() * 1000
+    
+        
+if __name__ == '__main__':
+    if 'emacs' in dir():
+        station = 8454000
+        start = 20140710
+        end = 20140711
+    else:
+        station = sys.argv[1]
+        station = 8454000
+        start = sys.argv[2]
+        end = sys.argv[3]
+        print(sys.argv)
+    get_buoy_pressure(station, start, end)    
+
