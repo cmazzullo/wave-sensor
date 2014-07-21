@@ -9,6 +9,8 @@ import numpy as np
 import pandas as pd
 import os
 import re
+import pytz
+from datetime import datetime
 
 class NetCDFReader(object):
     
@@ -20,9 +22,10 @@ class NetCDFReader(object):
         self.series = None
         self.dataframe_vals = dict()
         self.dataframe = None
-        
-        
-    def read_file(self,file_name,pressure_bool = True, series_bool = True):
+        self.epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
+    
+      
+    def read_file(self,file_name,pressure_bool = True, series_bool = True, milliseconds_bool = False):
         
         nc = netCDF4.Dataset(file_name)
         times = nc.variables['time']
@@ -35,20 +38,27 @@ class NetCDFReader(object):
       
         #this method converts the milliseconds in to date times
         time_convert = netCDF4.num2date(times[:],times.units)
+        if milliseconds_bool == True:
+            return self.return_data(pressure, temperature, times, series_bool, pressure_bool)
+        else:
+            return self.return_data(pressure, temperature, time_convert, series_bool, pressure_bool)
+        
+    def return_data(self, pressure, temperature, index, series_bool, pressure_bool):
         if series_bool == True:
             if pressure_bool == True:
-                return pd.Series(pressure,index=time_convert)
+                index = np.divide(index,1000)
+                return pd.Series(pressure,index=index)
             else:
                 if temperature != None:
-                    return pd.Series(temperature,index=time_convert)
+                    return pd.Series(temperature,index=index)
                 else: return None
         else:
             if temperature != None:
-                data = {'pressure': pd.Series(pressure,index=time_convert), \
-                        'temperature': pd.Series(temperature,index=time_convert)}
+                data = {'pressure': pd.Series(pressure,index=index), \
+                        'temperature': pd.Series(temperature,index=index)}
                 return pd.DataFrame(data)
             else:
-                data = pd.DataFrame({'pressure': pd.Series(pressure,index=time_convert)})
+                data = pd.DataFrame({'pressure': pd.Series(pressure,index=index)})
                 return data
         
     def get_series(self, filename):
@@ -115,16 +125,18 @@ class NEtCDFEditor(object):
     def close_file(self):
         self.dataset.close()
         
-class WriterInput(object):
+class NetCDFWriter(object):
     
     def __init__(self):
         self.pressure_comments = None
         self.temperature_comments = None
         self.depth_comments = None
-    
-#     def write_netCDF(self,):
-    
-    
+        self.out_filename = os.path.join('benchmark','DepthTest.nc')
+
+    def write_netCDF(self,var_datastore,series_length):
+        ds = netCDF4.Dataset(os.path.join('benchmark','DepthTest.nc'),'w',format="NETCDF4_CLASSIC")
+        time_dimen = ds.createDimension("time",series_length)
+        var_datastore.send_data(ds)
         
 if __name__ == "__main__":
     
