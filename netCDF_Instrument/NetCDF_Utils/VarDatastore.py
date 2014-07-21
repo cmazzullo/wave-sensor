@@ -281,6 +281,7 @@ class DataStore(object):
     def get_time_duration(self):
         self.data_start_date = timeconvert.convert_milliseconds_to_datetime(self.utc_millisecond_data[0], pytz.utc)
         self.data_end_date = timeconvert.convert_milliseconds_to_datetime(self.utc_millisecond_data[::-1][0], pytz.utc)   
+        
     def gui_fill_values(self, data_class):
         pass  
       

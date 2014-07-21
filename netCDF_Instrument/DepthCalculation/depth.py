@@ -100,7 +100,7 @@ class Depth(NetCDFReader, NetCDFWriter):
         latitude_elem = np.square(np.sin(self.latitude / 57.29578))
         
         self.depth_data = [self.calculate_Depth(latitude_elem, x) for x in self.depth_pressure]
-        print(type(self.depth_data))
+        
         
         print('depths are as follows:\n')
         for x in range(0,len(self.depth_data)):
