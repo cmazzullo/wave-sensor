@@ -24,7 +24,7 @@ class Depth(NetCDFReader):
         self.data_frame = None
         
     def acquire_data(self, pressure_file_bool = False):
-        if self.air_pressure_file == None:
+        if pressure_file_bool == False:
             print("Weather Website Data")
         else:
             self.pressure_data = pd.DataFrame(self.read_file(self.in_file_name))
@@ -43,7 +43,6 @@ class Depth(NetCDFReader):
     def interpolate_data(self):
         air_pressure = self.df['Air Pressure']
         nan_check = np.isnan(air_pressure)
-        print(type(air_pressure.index))
         prev_index = -1
         current_index = None
         for x in range(0, len(nan_check)):
@@ -54,7 +53,21 @@ class Depth(NetCDFReader):
                     air_pressure[prev_index:current_index] = \
                     np.linspace(air_pressure[prev_index], air_pressure[current_index], \
                                 num = current_index - (prev_index), endpoint = False)
-                prev_index = x 
+                prev_index = x
+            elif x == 0:
+                air_pressure[0] = self.air_pressure_data.index[self.air_pressure_data.index \
+                                                            < air_pressure.index[0]][::-1]
+                prev_index = 0
+            elif x == len(nan_check):
+                current_index = x
+                air_pressure[x] = self.air_pressure_data.index[self.air_pressure_data.index \
+                                                               > air_pressure.index[x]][0]
+                air_pressure[prev_index:current_index] = \
+                    np.linspace(air_pressure[prev_index], air_pressure[current_index], \
+                                num = current_index - (prev_index), endpoint = False)
+                
+                
+   # def get_
                 
     def convert_pressure_to_depth(self):
         pressure = self.get_series(self.in_file_name)
@@ -87,4 +100,4 @@ class Depth(NetCDFReader):
     
 if __name__ == "__main__":
     d = Depth()
-    d.acquire_data()
+    d.acquire_data(True)

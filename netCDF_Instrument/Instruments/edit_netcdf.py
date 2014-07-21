@@ -122,7 +122,7 @@ class WriterInput(object):
         self.temperature_comments = None
         self.depth_comments = None
     
-    def write_netCDF(self,):
+#     def write_netCDF(self,):
     
     
         
