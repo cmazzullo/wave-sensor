@@ -5,33 +5,52 @@ This module fetches pressure data from buoys from the internet.
 You can get the raw data (by date and station number) or dump the 
 readings to a netCDF file.
 '''
-
+import sys
+sys.path.append('.')
+import plotter
 from urllib.request import urlopen
 import re
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import sys
 from datetime import datetime
+from datetime import timedelta
 import pandas as pd
 import netCDF4
 import numpy as np
 import pytz
 import os
 
+# Constants
 epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
+delta = timedelta(days=30)
+day = timedelta(days=1)
 
-def get_buoy_pressure(station_id, begin_date, end_date):
-    '''Grabs buoy pressure data from the noaa site.
+def get_data(station_id, begin_date, end_date):
+    if (end_date - begin_date) < delta:
+        return download(station_id, begin_date, end_date)
+    else:
+        p1 = get_data(station_id, begin_date, 
+                      begin_date + delta - day)
+        p2 = get_data(station_id, begin_date + delta, 
+                      end_date)
+        return p1.append(p2)
 
-get_buoy_pressure(station_id, begin_date, end_date)'''
+def datetime_to_string(dt):
+    fmt = '%Y%m%d'
+    return dt.strftime(fmt)
 
-    station_id = str(station_id)
+def download(station_id, begin_date, end_date):
+
+    begin_date = datetime_to_string(begin_date)
+    end_date = datetime_to_string(end_date)
     url = ('http://opendap.co-ops.nos.noaa.gov/axis/webservices/'
            'barometricpressure/response.jsp?stationId=%s&'
            'beginDate=%s&endDate=%s&timeZone=0&format=text&Submit='
-           'Submit' % (station_id, begin_date, end_date))
+           'Submit' % (str(station_id), begin_date, end_date))
     pressures = []
     times = []
     precount = 0
+    print('Downloading pressure data...')
     for line in urlopen(url):
         line = line.decode('utf-8')
         if line.startswith('</pre>'):
@@ -52,8 +71,8 @@ def convert_buoy_time_string(time_str):
     return datetime.strptime(time_str, date_format)
 
 def datetime_to_ms(timestamp):
-    return np.int64((timestamp.to_datetime() - epoch_start.replace(tzinfo=None)).\
-        total_seconds() * 1000)
+    d = (timestamp.to_datetime() - epoch_start.replace(tzinfo=None))
+    return np.int64(d.total_seconds() * 1000)
 
 def make_pressure_var(pressure, ds):
     p_var = ds.createVariable('air_pressure', 'f8', ('time', ))
@@ -71,7 +90,6 @@ def make_pressure_var(pressure, ds):
     p_var.coordinates = "time latitude longitude altitude"
     p_var.ioos_category = "Pressure" ;
     p_var[:] = np.array(pressure, dtype=np.float64)
-    return p_var
 
 def make_time_var(times, ds):
     t_var = ds.createVariable("time", "f8", ("time", ))
@@ -89,29 +107,19 @@ def make_time_var(times, ds):
     t_var.scale_factor = 1.0
     t_var.compression = "not used at this time"
     t_var[:] = times
-    return t_var
     
 def write_to_netCDF(ts, out_filename):
     '''Dumps downloaded pressure data to a netCDF for archiving.'''
     print('Writing to netCDF...')
-
-    if os.path.isfile(out_filename):
-        os.remove(out_filename)
-        
+    if os.path.isfile(out_filename): os.remove(out_filename)
     ds = netCDF4.Dataset(out_filename, 'w', format="NETCDF4_CLASSIC")
     time_dimen = ds.createDimension("time",len(ts))
-
-
-    times = ts.index
-    times = [datetime_to_ms(t) for t in times]
+    times = [datetime_to_ms(t) for t in ts.index]
     times = np.array(times, dtype=np.float64)
-
-    pressure = ts.values
-
-    p_var = make_pressure_var(pressure, ds)
+    p_var = make_pressure_var(ts.values, ds)
     t_var = make_time_var(times, ds)
     ds.comment = "not used at this time"
-    
+
 if __name__ == '__main__':
     usage = """
 usage: slurp STATIONID STARTTIME ENDTIME OUTFILE
@@ -124,19 +132,27 @@ OUTFILE is formatted as a netCDF.
 	ENDTIME	     format: YYYYMMDD
 	OUTFILE	     dump to this file
 """
+    
 # Just for testing purposes
     if 'emacs' in dir():
         station = 8454000
-        start = 20140710
-        end = 20140711
-        ts = get_buoy_pressure(station, start, end)
+        start = '20140501'
+        fmt = '%Y%m%d'
+        start = datetime.strptime(start, fmt)
+        end = '20140701'
+        end = datetime.strptime(end, fmt)
+        pressures = get_data(station, start, end).values
+        pressures = plotter.compress_np(pressures, 5) 
+        plt.plot(pressures)
+        plt.show()
     elif len(sys.argv) == 5:
         station = sys.argv[1]
         station = 8454000
         start = sys.argv[2]
         end = sys.argv[3]
         outfile = sys.argv[4]
-        ts = get_buoy_pressure(station, start, end)
+        ts = get_data(station, start, end)
+        print(ts)
         write_to_netCDF(ts, outfile)
     else:
         print(usage)
