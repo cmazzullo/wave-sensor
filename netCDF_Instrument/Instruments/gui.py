@@ -289,6 +289,7 @@ class Wavegui:
         for var in fields.values():
             if var.name_in_device:
                 setattr(device, var.name_in_device, var.get())
+                
         print('filename: %s' % device.in_filename)
         device.read()
         d.top.destroy()
@@ -546,9 +547,3 @@ class EmbeddedPlot:
             self.canvas.show()
 
         self.xdata = event.xdata
-
-if __name__ == "__main__":
-
-    root = Tk()
-    gui = Wavegui(root)
-    root.mainloop()

@@ -21,6 +21,7 @@ import pytz
 import os
 import math
 
+
 # Constants
 epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
 delta = timedelta(days=30)
@@ -146,15 +147,23 @@ OUTFILE is formatted as a netCDF.
 # Just for testing purposes
     if 'emacs' in dir():
         station = 8454000
-        start = '20140501'
+        y = '2014'
+        m = '07'
+        d = '03'
+        start = y + m + d
         fmt = '%Y%m%d'
         start = datetime.strptime(start, fmt)
-        end = '20140701'
+        y = '2014'
+        m = '07'
+        d = '06'
+        end = y + m + d
         end = datetime.strptime(end, fmt)
-        pressures = get_data(station, start, end).values
-        pressures = compress_np(pressures, 5) 
-        plt.plot(pressures)
+        pressures = get_data(station, start, end)
+        p = compress_np(pressures.values, 5) 
+        plt.plot(p)
         plt.show()
+        outfile = 'OUTPUT.nc'
+        write_to_netCDF(pressures, outfile)
     elif len(sys.argv) == 5:
         station = sys.argv[1]
         station = 8454000
