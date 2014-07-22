@@ -19,8 +19,8 @@ class DataStore(object):
         self.temperature_qc_data = None
         self.z_data = None
         self.z_qc_data = None
-        self.latitutde = None
-        self.longitude = None
+        self.latitude = 0
+        self.longitude = 0
         self.data_grouping = grouping
         self.epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
         self.fill_value = np.float64(-1.0e+10)
@@ -70,8 +70,8 @@ class DataStore(object):
                         'short_name': 'latitude',
                         'units': "degrees",
                         'axis': 'Y',
-                        'valid_min': self.latitutde,
-                        'valid_max': self.latitutde,
+                        'valid_min': self.latitude,
+                        'valid_max': self.latitude,
                         'ancillary_variables': '',
                         'comment': "latitude 0 equals equator",
                         'ioos_category': "Location",
@@ -95,9 +95,10 @@ class DataStore(object):
                         'compression': "not used at this time",
                       }
         self.z_var_qc = {
-                                'flag_masks': ['0000', '0001', '0010', '0100', '1000'],
-                                'flag_meanings': "pass_less_than_3_vals_identical suspicious_last_3_to_4_vals_identical, fail_last_5_vals_identical",
-                                'comment': '0 means pass and 1 flags a failed test'
+                                'flag_masks': ['111', '110', '101', '011'],
+                                'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, \
+                                    invalid_rate_of_change",
+                                'comment': '1 signifies the value passed all tests and a 0 flags a failed test'
                                 }
         self.pressure_var = {
                              'long_name': "sensor pressure record",
@@ -116,9 +117,10 @@ class DataStore(object):
                              'comment': "",
                              } 
         self.pressure_var_qc = {
-                                'flag_masks': ['0000', '0001', '0010', '0100', '1000'],
-                                'flag_meanings': "pass_less_than_3_vals_identical suspicious_last_3_to_4_vals_identical, fail_last_5_vals_identical",
-                                'comment': '0 means pass and 1 flags a failed test'
+                                'flag_masks': ['111', '110', '101', '011'],
+                                'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, \
+                                    invalid_rate_of_change",
+                                'comment': '1 signifies the value passed all tests and a 0 flags a failed test'
                                 }
         self.temp_var= {
                              'long_name': "sensor temperature record",
@@ -137,9 +139,10 @@ class DataStore(object):
                              'comment': "",
                              } 
         self.temp_var_qc = {
-                             'flag_masks': ['0000', '0001', '0010', '0100', '1000'],
-                             'flag_meanings': "pass_less_than_3_vals_identical suspicious_last_3_to_4_vals_identical, fail_last_5_vals_identical",
-                             'comment': '0 means pass and 1 flags a failed test'
+                             'flag_masks': ['111', '110', '101', '011'],
+                             'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, \
+                                    invalid_rate_of_change",
+                             'comment': '1 signifies the value passed all tests and a 0 flags a failed test'
                             }
        
         self.global_vars_dict = {"cdm_data_type": "station",
@@ -189,14 +192,16 @@ class DataStore(object):
                                  "time_coverage_duration": "utility coverage duration",
                                  "time_coverage_resolution": "P0.25S",
                                  "time_zone": "UTC",
-                                 "title": 'Measure of pressure at %s degrees latitude, %s degrees longitude' \
-                                 ' from the date range of %s to %s' % (self.latitude, self.longitude,self.creator_name, \
-                                                                       self.data_start_date, self.data_end_date),
+#                                  "title": 'Measure of pressure at %s degrees latitude, %s degrees longitude' \
+#                                  ' from the date range of %s to %s' % (self.latitude, self.longitude,self.creator_name, \
+#                                                                        self.data_start_date, self.data_end_date),
                                  "uuid": str(uuid.uuid4())
                                  }
     def send_data(self,ds):
+        print('hello')
         self.get_time_var(ds)
         self.get_pressure_var(ds)
+        self.get_pressure_qc_var(ds)
         if self.temperature_data != None:
             self.get_temp_var(ds)
             
@@ -204,10 +209,12 @@ class DataStore(object):
             self.get_z_var(ds, False)
         else:
             self.get_z_var(ds, True)
+            self.get_z_qc_var(ds)
        
         self.get_lat_var(ds)
         self.get_lon_var(ds)
         self.get_global_vars(ds)
+        print('done write')
         
     def get_instrument_var(self,ds):
         instrument = ds.createVariable("instrument","i4")
@@ -246,8 +253,8 @@ class DataStore(object):
            
     def get_z_qc_var(self,ds):
         z_qc = ds.createVariable("altitude_qc",'i4',('time'))
-        for x in self.z_qc_var:
-            z_qc.setncattr(x,self.z_qc_var[x])
+        for x in self.z_var_qc:
+            z_qc.setncattr(x,self.z_var_qc[x])
         z_qc[:] = self.z_qc_data
                    
     def get_pressure_var(self,ds):
@@ -258,8 +265,8 @@ class DataStore(object):
             
     def get_pressure_qc_var(self,ds):
         pressure_qc = ds.createVariable("pressure_qc",'i4',('time'))
-        for x in self.z_qc_var:
-            pressure_qc.setncattr(x,self.pressure_qc_var[x])
+        for x in self.pressure_var_qc:
+            pressure_qc.setncattr(x,self.pressure_var_qc[x])
         pressure_qc[:] = self.pressure_qc_data
         
     def get_temperature_var(self,ds):
@@ -270,8 +277,8 @@ class DataStore(object):
             
     def get_temperature_qc_var(self,ds):
         temperature_qc = ds.createVariable("temperature_qc",'i4',('time'))
-        for x in self.temperature_qc_var:
-            temperature_qc.setncattr(x,self.pressure_qc_var[x])
+        for x in self.temp_var_qc:
+            temperature_qc.setncattr(x,self.temp_var_qc[x])
         temperature_qc[:] = self.temperature_qc_data
             
     def get_global_vars(self, ds):
@@ -284,6 +291,9 @@ class DataStore(object):
         
     def gui_fill_values(self, data_class):
         pass  
+    
+    def set_coordinates(self,lon,lat):
+        pass
       
     
     

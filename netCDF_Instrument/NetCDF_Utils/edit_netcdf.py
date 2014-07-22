@@ -91,7 +91,7 @@ class NetCDFReader(object):
             self.dataframe_vals[x] = self.read_file(x, False, True)
         self.temperature_frame = pd.DataFrame(self.dataframe_vals)
 
-class NEtCDFEditor(object):
+class NetCDFEditor(object):
     
     def __init__(self):
         self.dataset = None
@@ -142,6 +142,7 @@ class NetCDFWriter(object):
         self.out_filename = os.path.join("..\Instruments",'benchmark','DepthTest.nc')
 
     def write_netCDF(self,var_datastore,series_length):
+        print('hello 1')
         ds = netCDF4.Dataset(os.path.join("..\Instruments",'benchmark','DepthTest.nc'),'w',format="NETCDF4_CLASSIC")
         time_dimen = ds.createDimension("time",series_length)
         var_datastore.send_data(ds)
@@ -149,7 +150,7 @@ class NetCDFWriter(object):
 if __name__ == "__main__":
     
     #--create an instance    
-    editor = NEtCDFEditor()
+    editor = NetCDFEditor()
     editor.readedit_file(editor.in_file_name)
     print('first run through...')
     for x in range(0,4):

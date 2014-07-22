@@ -12,10 +12,12 @@ try:
     from NetCDF_Utils.edit_netcdf import NetCDFReader, NetCDFWriter
     import NetCDF_Utils.ncar_rap as rap
     import NetCDF_Utils.VarDatastore as v_store
+    import NetCDF_Utils.Testing as tests
 except:
     from edit_netcdf import NetCDFReader, NetCDFWriter
     import ncar_rap as rap
     import VarDatastore as v_store
+    import Testing as tests
 
 class Depth(NetCDFReader, NetCDFWriter):
     
@@ -28,6 +30,7 @@ class Depth(NetCDFReader, NetCDFWriter):
         self.depth_data = None
         self.data_frame = None
         self.date_format_string = "%Y-%m-%d %H:%M:%S"
+        self.data_tests = tests.DataTests()
         
     def acquire_data(self, pressure_file_bool = False):
         
@@ -87,13 +90,20 @@ class Depth(NetCDFReader, NetCDFWriter):
                                     num = current_index - (prev_index), endpoint = False)
     
     def write_data(self):
-        data_store = v_store.DataStore()
+        data_store = v_store.DataStore(1)
         data_store.pressure_data = [x for x in self.df['Pressure']]
         data_store.utc_millisecond_data = [x * 1000 for x in self.df['Air Pressure'].index]
         data_store.z_data = [x for x in self.depth_data]
         data_store.latitutde = self.latitude
         data_store.longitude = self.longitude
-#         data_store.z_data = [x f]
+#       
+        #Tests#
+        self.data_tests.depth_data = data_store.pressure_data
+        self.data_tests.pressure_data = data_store.z_data
+        data_store.pressure_qc_data = self.data_tests.select_tests('pressure')
+        data_store.z_qc_data = self.data_tests.select_tests('depth')
+        
+        
         self.write_netCDF(data_store, self.df.shape[0])        
                 
     def convert_pressure_to_depth(self):
@@ -102,28 +112,29 @@ class Depth(NetCDFReader, NetCDFWriter):
         self.depth_data = [self.calculate_Depth(latitude_elem, x) for x in self.depth_pressure]
         
         
-        print('depths are as follows:\n')
-        for x in range(0,len(self.depth_data)):
-            print(x, 'pressure:', self.depth_pressure[x], 'depth:', self.depth_data[x])
-        
+#         print('depths are as follows:\n')
+#         for x in range(0,len(self.depth_data)):
+#             print(x, 'pressure:', self.depth_pressure[x], 'depth:', self.depth_data[x])
+#         
     def calculate_GR(self, X, P):
         a = 9.780318 * (1.0 + ((5.2788 * np.power(10,-3.0)) + (2.36 * np.power(10,-5.0)) * X) \
                     * X) + (1.092 * np.power(10,-6.0)) * P
-        print('GR', a)
+#         print('GR', a)
         return a
     
     def calculate_DepthTerm(self, P):
         a = ((((-1.82 * np.power(10,-15.0)) * P + (2.279 * np.power(10,-10.0))) * P \
           - (2.2512 * np.power(10,-5.0))) * P + 9.72659) * P
-        print('Depth Term',a)
+#         print('Depth Term',a)
         return a
           
     def calculate_Depth(self, X, P):
         a =  self.calculate_DepthTerm(P) / self.calculate_GR(X,P) 
         #ask about del / 9.8
-        print("Depth", a)
+#         print("Depth", a)
         return a
     
 if __name__ == "__main__":
     d = Depth()
     d.acquire_data()
+    d.write_data()

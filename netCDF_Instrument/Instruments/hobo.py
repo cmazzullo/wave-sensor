@@ -47,7 +47,7 @@ class Hobo(Sensor, PressureTests):
         print(len(df[1][0]))
         self.utc_millisecond_data = self.convert_to_milliseconds(df.shape[0], df[1][0])
         
-        self.pressure_data = [x for x in np.divide(df[2], 14.5037738)]
+        self.pressure_data = [x for x in np.divide(df[2], 1.45037738)]
         self.data_end_date = self.convert_milliseconds_to_datetime(self.utc_millisecond_data[::-1][0])
         self.get_time_duration(self.utc_millisecond_data[::-1][0] - self.utc_millisecond_data[0])
         self.test_16_stucksensor()
