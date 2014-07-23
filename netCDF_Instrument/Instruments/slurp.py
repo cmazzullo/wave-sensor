@@ -7,7 +7,7 @@ readings to a netCDF file.
 '''
 import sys
 sys.path.append('.')
-import plotter
+#import plotter
 from urllib.request import urlopen
 import re
 import matplotlib.pyplot as plt
@@ -19,6 +19,8 @@ import netCDF4
 import numpy as np
 import pytz
 import os
+import math
+
 
 # Constants
 epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
@@ -120,6 +122,16 @@ def write_to_netCDF(ts, out_filename):
     t_var = make_time_var(times, ds)
     ds.comment = "not used at this time"
 
+def compress_np(arr, c=10):
+    final = np.zeros(math.floor(len(arr) / c))
+    summed = 0
+    for i, e in enumerate(arr):
+        summed += np.float64(e)
+        if i % c == c - 1:
+            final[math.floor(i / c)] = summed / c
+            summed = 0
+    return final
+
 if __name__ == '__main__':
     usage = """
 usage: slurp STATIONID STARTTIME ENDTIME OUTFILE
@@ -132,19 +144,26 @@ OUTFILE is formatted as a netCDF.
 	ENDTIME	     format: YYYYMMDD
 	OUTFILE	     dump to this file
 """
-    
 # Just for testing purposes
     if 'emacs' in dir():
         station = 8454000
-        start = '20140501'
+        y = '2014'
+        m = '07'
+        d = '03'
+        start = y + m + d
         fmt = '%Y%m%d'
         start = datetime.strptime(start, fmt)
-        end = '20140701'
+        y = '2014'
+        m = '07'
+        d = '06'
+        end = y + m + d
         end = datetime.strptime(end, fmt)
-        pressures = get_data(station, start, end).values
-        pressures = plotter.compress_np(pressures, 5) 
-        plt.plot(pressures)
+        pressures = get_data(station, start, end)
+        p = compress_np(pressures.values, 5) 
+        plt.plot(p)
         plt.show()
+        outfile = 'OUTPUT.nc'
+        write_to_netCDF(pressures, outfile)
     elif len(sys.argv) == 5:
         station = sys.argv[1]
         station = 8454000
