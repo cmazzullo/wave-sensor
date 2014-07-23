@@ -7,7 +7,6 @@ readings to a netCDF file.
 '''
 import sys
 sys.path.append('.')
-#import plotter
 from urllib.request import urlopen
 import re
 import matplotlib.pyplot as plt
@@ -20,7 +19,6 @@ import numpy as np
 import pytz
 import os
 import math
-
 
 # Constants
 epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
