@@ -21,14 +21,28 @@ import os
 import math
 import edit_netcdf
 
+<<<<<<< HEAD
+try:
+    import NetCDF_Utils.DateTimeConvert as dateconvert
+    from NetCDF_Utils.edit_netcdf import NetCDFWriter
+    from NetCDF_Utils.VarDatastore import DataStore
+    from NetCDF_Utils.Testing import DataTests
+except:
+    print('Check out packaging!')
+=======
+>>>>>>> origin/master
 # Constants
 epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
 delta = timedelta(days=30)
 day = timedelta(days=1)
 
-def get_data(station_id, begin_date, end_date):
+def get_data(station_id, begin_date, end_date, out_filename = None):
     if (end_date - begin_date) < delta:
-        return download(station_id, begin_date, end_date)
+        data = download(station_id, begin_date, end_date)
+        if out_filename == None:
+            out_filename = 'air_pressure.nc'
+        write_to_netCDF(data,out_filename)
+        return data
     else:
         p1 = get_data(station_id, begin_date, 
                       begin_date + delta - day)
@@ -58,19 +72,26 @@ def download(station_id, begin_date, end_date):
             break
         if precount == 2:
             row = line.split()
-            pressures.append(row[5])
+            pressures.append(np.float64(row[5]))
             time_str = row[3] + ' ' + row[4]
             time = convert_buoy_time_string(time_str)
             times.append(time)
         if line.startswith('<pre>'):
             precount += 1
 
+<<<<<<< HEAD
+    times = [dateconvert.convert_date_to_milliseconds(None,None,date_time=x) for x in times]
+=======
+>>>>>>> origin/master
     return pd.Series(pressures, index=times)
 
 def convert_buoy_time_string(time_str):
     date_format = '%Y-%m-%d %H:%M'
-    return datetime.strptime(time_str, date_format)
+    utc = pytz.utc
+    return utc.localize(datetime.strptime(time_str, date_format))
 
+<<<<<<< HEAD
+=======
 def datetime_to_ms(timestamp):
     d = (timestamp.to_datetime() - epoch_start.replace(tzinfo=None))
     return np.int64(d.total_seconds() * 1000)
@@ -108,6 +129,7 @@ def make_time_var(times, ds):
     t_var.scale_factor = 1.0
     t_var.compression = "not used at this time"
     t_var[:] = times
+<<<<<<< HEAD
 
 def write_to_netCDF(ts, out_filename):
     '''Dumps downloaded pressure data to a netCDF for archiving.'''
@@ -133,6 +155,31 @@ def write_to_netCDF(ts, out_filename):
 #     p_var = make_pressure_var(ts.values, ds)
 #     t_var = make_time_var(times, ds)
 #     ds.comment = "not used at this time"
+=======
+    
+>>>>>>> origin/master
+def write_to_netCDF(ts, out_filename):
+    '''Dumps downloaded pressure data to a netCDF for archiving.'''
+    print('Writing to netCDF...')
+   
+    net_writer = NetCDFWriter()
+  
+    net_writer.vstore.pressure_data = [x for x in ts.values]
+    net_writer.vstore.utc_millisecond_data = [x for x in ts.index]
+    net_writer.vstore.latitutde = net_writer.latitude
+    net_writer.vstore.longitude = net_writer.longitude
+    net_writer.out_filename = out_filename
+    
+    net_writer.vstore.pressure_name = "air_pressure"
+    net_writer.vstore.pressure_var['long name'] =  "buoy pressure record",
+    net_writer.vstore.pressure_var['standard_name'] = "air_pressure",
+#       
+    #Tests#
+    net_writer.data_tests.pressure_data = ts.values
+    net_writer.vstore.pressure_qc_data = net_writer.data_tests.select_tests('pressure')
+    
+    net_writer.write_netCDF(net_writer.vstore, len(ts.values))     
+>>>>>>> 05890b3892bb964dddd8aee958740a51cf5a9704
 
 def compress_np(arr, c=10):
     final = np.zeros(math.floor(len(arr) / c))
@@ -156,6 +203,10 @@ OUTFILE is formatted as a netCDF.
 	ENDTIME	     format: YYYYMMDD
 	OUTFILE	     dump to this file
 """
+<<<<<<< HEAD
+    
+#
+=======
 # Just for testing purposes
     if 'emacs' in dir():
         station = 8454000
@@ -187,3 +238,4 @@ OUTFILE is formatted as a netCDF.
         write_to_netCDF(ts, outfile)
     else:
         print(usage)
+>>>>>>> origin/master

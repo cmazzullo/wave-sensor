@@ -7,7 +7,7 @@ import NetCDF_Utils.DateTimeConvert as timeconvert
 import pytz
 
 class DataStore(object):
-    
+    '''Use this as an abstract data store, then pass a netcdf write stream to send data method'''
     def __init__(self, grouping):
         self.utc_millisecond_data = None
         self.data_start_date = None
@@ -16,12 +16,14 @@ class DataStore(object):
         self.pressure_data = None
         self.pressure_qc_data = None
         self.pressure_range = [-1000,1000]
+        self.pressure_name = None
         self.temperature_data = None
         self.temperature_qc_data = None
         self.temperature_range = [-20,50]
         self.z_data = None
         self.z_qc_data = None
         self.z_range = [-1000,1000]
+        self.z_name = None
         self.latitude = 0
         self.latitude_range = [-90,90]
         self.longitude = 0
@@ -236,20 +238,21 @@ class DataStore(object):
         time[:] = self.utc_millisecond_data
         
     def get_lat_var(self,ds):
-        lat = ds.createVariable("latitude","f4",fill_value=self.fill_value)
+        lat = ds.createVariable("latitude","f8",fill_value=self.fill_value)
         for x in self.lat_var:
+            print(x, self.lat_var[x])
             lat.setncattr(x,self.lat_var[x])
         lat[:] = self.latitutde
             
     def get_lon_var(self,ds):
-        lon = ds.createVariable("longitude","f4",fill_value=self.fill_value)
+        lon = ds.createVariable("longitude","f8",fill_value=self.fill_value)
         for x in self.lon_var:
             lon.setncattr(x,self.lon_var[x])
         lon[:] = self.longitude
           
     def get_z_var(self,ds,time_dimen_bool = False):
         if time_dimen_bool == False:
-            z = ds.createVariable("altitude", "f4",
+            z = ds.createVariable("altitude", "f8",
                                   fill_value=self.fill_value)
         else:
             z = ds.createVariable("altitude", "f8",("time",),
@@ -259,13 +262,19 @@ class DataStore(object):
         z[:] = self.z_data
            
     def get_z_qc_var(self,ds):
-        z_qc = ds.createVariable("altitude_qc",'i4',('time'))
+        if self.z_name != None:
+            z_qc = ds.createVariable(self.z_name,'i4',('time'))
+        else:
+            z_qc = ds.createVariable("altitude_qc",'i4',('time'))
         for x in self.z_var_qc:
             z_qc.setncattr(x,self.z_var_qc[x])
         z_qc[:] = self.z_qc_data
                    
     def get_pressure_var(self,ds):
-        pressure = ds.createVariable("sea_water_pressure","f8",("time",))
+        if self.pressure_name != None:
+            pressure = ds.createVariable(self.pressure_name,"f8",("time",))
+        else:
+            pressure = ds.createVariable("sea_water_pressure","f8",("time",))
         for x in self.pressure_var:
             pressure.setncattr(x,self.pressure_var[x])
         pressure[:] = self.pressure_data

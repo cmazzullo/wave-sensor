@@ -10,7 +10,7 @@ from datetime import datetime
 
 try:
     from NetCDF_Utils.edit_netcdf import NetCDFReader, NetCDFWriter
-    import NetCDF_Utils.ncar_rap as rap
+    import NetCDF_Utils.slurp as slurp
     import NetCDF_Utils.VarDatastore as v_store
     import NetCDF_Utils.Testing as tests
 except:
@@ -19,9 +19,10 @@ except:
     import VarDatastore as v_store
     import Testing as tests
 
-class Depth(NetCDFReader, NetCDFWriter):
+class Depth(NetCDFWriter, NetCDFReader):
     
     def __init__(self):
+        super().__init__()
         self.latitude = 30
         self.in_file_name = os.path.join("..\Instruments","benchmark", "RBRtester1.nc")
         self.air_pressure_file = os.path.join("..\Instruments","benchmark","RBRtester2.nc")
@@ -37,9 +38,12 @@ class Depth(NetCDFReader, NetCDFWriter):
         self.pressure_data = pd.DataFrame(self.read_file(self.in_file_name, milliseconds_bool = True))
         if pressure_file_bool == False:
             station = 8454000
-            start = 20140513
-            end = 20140513
-            ts = rap.get_buoy_pressure(station, start, end)
+            start = '20140501'
+            fmt = '%Y%m%d'
+            start = datetime.strptime(start, fmt)
+            end = '20140701'
+            end = datetime.strptime(end, fmt)
+            ts = slurp.get_data(station, start, end)
             self.air_pressure_data = pd.DataFrame(ts)  
         else:
             self.air_pressure_data = pd.DataFrame(self.read_file(self.air_pressure_file, milliseconds_bool = True))
@@ -52,8 +56,8 @@ class Depth(NetCDFReader, NetCDFWriter):
         
     def interpolate_data(self):
         air_pressure = self.df['Air Pressure']
-       
-        nan_check = np.isnan(air_pressure)
+        print(air_pressure)
+        nan_check = np.isnan(air_pressure.values)
         #Checks to see if no time data matchers up between 1st and second file, if not a linspace caluclates the air pressure
         if len(nan_check[nan_check == False]) == 0:
           
@@ -96,10 +100,11 @@ class Depth(NetCDFReader, NetCDFWriter):
         data_store.z_data = [x for x in self.depth_data]
         data_store.latitutde = self.latitude
         data_store.longitude = self.longitude
+        self.out_filename = 'DepthCalc.nc'
 #       
         #Tests#
-        self.data_tests.depth_data = data_store.pressure_data
-        self.data_tests.pressure_data = data_store.z_data
+        self.data_tests.depth_data = data_store.z_data
+        self.data_tests.pressure_data = data_store.pressure_data
         data_store.pressure_qc_data = self.data_tests.select_tests('pressure')
         data_store.z_qc_data = self.data_tests.select_tests('depth')
         
