@@ -2,7 +2,7 @@
 '''
 This module fetches pressure data from buoys from the internet.
 
-You can get the raw data (by date and station number) or dump the 
+You can get the raw data (by date and station number) or dump the
 readings to a netCDF file.
 '''
 import sys
@@ -19,11 +19,6 @@ import numpy as np
 import pytz
 import os
 import math
-
-
-
-
-
 try:
     import NetCDF_Utils.DateTimeConvert as dateconvert
     from NetCDF_Utils.edit_netcdf import NetCDFWriter
@@ -32,9 +27,7 @@ try:
 except:
     print('Check out packaging!')
 
-
 class Buoydata(NetCDFWriter):
-        
     def __init__(self, station_id):
         # Constants
         self.epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
@@ -46,18 +39,8 @@ class Buoydata(NetCDFWriter):
         self.z = None
         self.out_filename = None
 
-
-    # Constants
-    epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
-    delta = timedelta(days=30)
-    day = timedelta(days=1)
-
-
-
-
-
     def get_data(self, begin, end):
-        '''If the requested time interval is too long, download several 
+        '''If the requested time interval is too long, download several
 smaller time intervals and return the concatenated results.'''
         if (end - begin) < self.delta:
             data = self.download(begin, end)
@@ -66,7 +49,6 @@ smaller time intervals and return the concatenated results.'''
             p1 = self.get_data(begin, begin + self.delta - self.day)
             p2 = self.get_data(begin + self.delta, end)
             return p1.append(p2)
-
 
     def datetime_to_string(self, dt):
         fmt = '%Y%m%d'
@@ -102,8 +84,6 @@ smaller time intervals and return the concatenated results.'''
                 times.append(time)
             elif line.startswith('<pre>'):
                 precount += 1
-
-
         to_ms = dateconvert.convert_date_to_milliseconds
         times = [to_ms(None, None, date_time=t) for t in times]
         return pd.Series(np.divide(pressures,100), index=times)
@@ -133,14 +113,11 @@ smaller time intervals and return the concatenated results.'''
         vs.pressure_name = "air_pressure"
         vs.pressure_var['long_name'] =  "buoy pressure record"
         vs.pressure_var['standard_name'] = "air_pressure"
-
-
         #Tests#
         net_writer.data_tests.pressure_data = ts.values
         ptest = net_writer.data_tests.select_tests('pressure')
         vs.pressure_qc_data = ptest
-        net_writer.write_netCDF(vs, len(ts.values))     
-
+        net_writer.write_netCDF(vs, len(ts.values))
 
 def compress_np(arr, c=10):
     final = np.zeros(math.floor(len(arr) / c))
@@ -164,9 +141,8 @@ OUTFILE is formatted as a netCDF.
 	ENDTIME	     format: YYYYMMDD
 	OUTFILE	     dump to this file
 """
-# Just for testing purposes
-
     if 'emacs' in dir():
+# Just for testing purposes
         print('emacs')
         station = 8454000
         b = Buoydata(station)
@@ -183,7 +159,7 @@ OUTFILE is formatted as a netCDF.
         end = y + m + d
         end = datetime.strptime(end, fmt)
         pressures = b.get_data(start, end)
-        p = compress_np(pressures.values, 5) 
+        p = compress_np(pressures.values, 5)
         plt.plot(p)
         plt.show()
         outfile = 'OUTPUT.nc'
@@ -200,4 +176,3 @@ OUTFILE is formatted as a netCDF.
         b.write_to_netCDF(ts, outfile)
     else:
         print(usage)
-
