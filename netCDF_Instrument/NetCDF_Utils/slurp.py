@@ -19,6 +19,7 @@ import numpy as np
 import pytz
 import os
 import math
+import edit_netcdf
 
 # Constants
 epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
@@ -107,11 +108,12 @@ def make_time_var(times, ds):
     t_var.scale_factor = 1.0
     t_var.compression = "not used at this time"
     t_var[:] = times
-    
+
 def write_to_netCDF(ts, out_filename):
     '''Dumps downloaded pressure data to a netCDF for archiving.'''
     print('Writing to netCDF...')
     if os.path.isfile(out_filename): os.remove(out_filename)
+    
     ds = netCDF4.Dataset(out_filename, 'w', format="NETCDF4_CLASSIC")
     time_dimen = ds.createDimension("time",len(ts))
     times = [datetime_to_ms(t) for t in ts.index]
@@ -119,6 +121,18 @@ def write_to_netCDF(ts, out_filename):
     p_var = make_pressure_var(ts.values, ds)
     t_var = make_time_var(times, ds)
     ds.comment = "not used at this time"
+    
+# def write_to_netCDF(ts, out_filename):
+#     '''Dumps downloaded pressure data to a netCDF for archiving.'''
+#     print('Writing to netCDF...')
+#     if os.path.isfile(out_filename): os.remove(out_filename)
+#     ds = netCDF4.Dataset(out_filename, 'w', format="NETCDF4_CLASSIC")
+#     time_dimen = ds.createDimension("time",len(ts))
+#     times = [datetime_to_ms(t) for t in ts.index]
+#     times = np.array(times, dtype=np.float64)
+#     p_var = make_pressure_var(ts.values, ds)
+#     t_var = make_time_var(times, ds)
+#     ds.comment = "not used at this time"
 
 def compress_np(arr, c=10):
     final = np.zeros(math.floor(len(arr) / c))

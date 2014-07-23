@@ -42,8 +42,8 @@ y = [ 2 * math.sin(f * 2 * math.pi * e) +
 rand = randn(L)
 y = y + rand
 
-#nyquist = Fs / 2                # highest representable frequency
-nyquist = 100
+nyquist = Fs / 2                # highest representable frequency
+
 Y = fft.fft(y) / L
 Y = np.absolute(Y)**2
 #Y = Y.real
