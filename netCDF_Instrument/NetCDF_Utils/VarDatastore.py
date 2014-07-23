@@ -240,7 +240,6 @@ class DataStore(object):
     def get_lat_var(self,ds):
         lat = ds.createVariable("latitude","f8",fill_value=self.fill_value)
         for x in self.lat_var:
-            print(x, self.lat_var[x])
             lat.setncattr(x,self.lat_var[x])
         lat[:] = self.latitutde
             

@@ -10,14 +10,10 @@ from datetime import datetime
 
 try:
     from NetCDF_Utils.edit_netcdf import NetCDFReader, NetCDFWriter
-    import NetCDF_Utils.slurp as slurp
-    import NetCDF_Utils.VarDatastore as v_store
-    import NetCDF_Utils.Testing as tests
+    from NetCDF_Utils import slurp
 except:
     from edit_netcdf import NetCDFReader, NetCDFWriter
-    import ncar_rap as rap
-    import VarDatastore as v_store
-    import Testing as tests
+    import slurp as slurp
 
 class Depth(NetCDFWriter, NetCDFReader):
     
@@ -31,7 +27,7 @@ class Depth(NetCDFWriter, NetCDFReader):
         self.depth_data = None
         self.data_frame = None
         self.date_format_string = "%Y-%m-%d %H:%M:%S"
-        self.data_tests = tests.DataTests()
+        
         
     def acquire_data(self, pressure_file_bool = False):
         
@@ -44,7 +40,8 @@ class Depth(NetCDFWriter, NetCDFReader):
             end = '20140701'
             end = datetime.strptime(end, fmt)
             ts = slurp.get_data(station, start, end)
-            self.air_pressure_data = pd.DataFrame(ts)  
+            self.air_pressure_data = pd.DataFrame(ts) 
+            slurp.write_to_netCDF(ts, 'outname.nc') 
         else:
             self.air_pressure_data = pd.DataFrame(self.read_file(self.air_pressure_file, milliseconds_bool = True))
     
@@ -94,22 +91,25 @@ class Depth(NetCDFWriter, NetCDFReader):
                                     num = current_index - (prev_index), endpoint = False)
     
     def write_data(self):
-        data_store = v_store.DataStore(1)
-        data_store.pressure_data = [x for x in self.df['Pressure']]
-        data_store.utc_millisecond_data = [x * 1000 for x in self.df['Air Pressure'].index]
-        data_store.z_data = [x for x in self.depth_data]
-        data_store.latitutde = self.latitude
-        data_store.longitude = self.longitude
+        self.vstore.pressure_data = [x for x in self.df['Pressure']]
+        self.vstore.utc_millisecond_data = [x * 1000 for x in self.df['Air Pressure'].index]
+        self.vstore.z_data = [x for x in self.depth_data]
+        self.vstore.latitutde = self.latitude
+        self.vstore.longitude = self.longitude
         self.out_filename = 'DepthCalc.nc'
+        
+        self.vstore.pressure_name = "calculated_pressure"
+        self.vstore.pressure_var['long name'] =  "buoy pressure record",
+        self.vstore.pressure_var['standard_name'] = "air_pressure",
 #       
         #Tests#
-        self.data_tests.depth_data = data_store.z_data
-        self.data_tests.pressure_data = data_store.pressure_data
-        data_store.pressure_qc_data = self.data_tests.select_tests('pressure')
-        data_store.z_qc_data = self.data_tests.select_tests('depth')
+        self.data_tests.depth_data = self.vstore.z_data
+        self.data_tests.pressure_data = self.vstore.pressure_data
+        self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
+        self.vstore.z_qc_data = self.data_tests.select_tests('depth')
         
         
-        self.write_netCDF(data_store, self.df.shape[0])        
+        self.write_netCDF(self.vstore, self.df.shape[0])        
                 
     def convert_pressure_to_depth(self):
         latitude_elem = np.square(np.sin(self.latitude / 57.29578))

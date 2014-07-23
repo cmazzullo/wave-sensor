@@ -21,7 +21,7 @@ import os
 import math
 import edit_netcdf
 
-<<<<<<< HEAD
+
 try:
     import NetCDF_Utils.DateTimeConvert as dateconvert
     from NetCDF_Utils.edit_netcdf import NetCDFWriter
@@ -29,21 +29,20 @@ try:
     from NetCDF_Utils.Testing import DataTests
 except:
     print('Check out packaging!')
-=======
->>>>>>> origin/master
+
+
 # Constants
 epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
 delta = timedelta(days=30)
 day = timedelta(days=1)
 
 def get_data(station_id, begin_date, end_date, out_filename = None):
+    print((end_date - begin_date), delta)
     if (end_date - begin_date) < delta:
         data = download(station_id, begin_date, end_date)
-        if out_filename == None:
-            out_filename = 'air_pressure.nc'
-        write_to_netCDF(data,out_filename)
         return data
     else:
+        print('more')
         p1 = get_data(station_id, begin_date, 
                       begin_date + delta - day)
         p2 = get_data(station_id, begin_date + delta, 
@@ -79,10 +78,10 @@ def download(station_id, begin_date, end_date):
         if line.startswith('<pre>'):
             precount += 1
 
-<<<<<<< HEAD
+
     times = [dateconvert.convert_date_to_milliseconds(None,None,date_time=x) for x in times]
-=======
->>>>>>> origin/master
+
+
     return pd.Series(pressures, index=times)
 
 def convert_buoy_time_string(time_str):
@@ -90,8 +89,8 @@ def convert_buoy_time_string(time_str):
     utc = pytz.utc
     return utc.localize(datetime.strptime(time_str, date_format))
 
-<<<<<<< HEAD
-=======
+
+
 def datetime_to_ms(timestamp):
     d = (timestamp.to_datetime() - epoch_start.replace(tzinfo=None))
     return np.int64(d.total_seconds() * 1000)
@@ -157,7 +156,7 @@ def write_to_netCDF(ts, out_filename):
 #     ds.comment = "not used at this time"
 =======
     
->>>>>>> origin/master
+
 def write_to_netCDF(ts, out_filename):
     '''Dumps downloaded pressure data to a netCDF for archiving.'''
     print('Writing to netCDF...')
@@ -165,7 +164,7 @@ def write_to_netCDF(ts, out_filename):
     net_writer = NetCDFWriter()
   
     net_writer.vstore.pressure_data = [x for x in ts.values]
-    net_writer.vstore.utc_millisecond_data = [x for x in ts.index]
+    net_writer.vstore.utc_millisecond_data = [x * 1000 for x in ts.index]
     net_writer.vstore.latitutde = net_writer.latitude
     net_writer.vstore.longitude = net_writer.longitude
     net_writer.out_filename = out_filename
@@ -203,12 +202,13 @@ OUTFILE is formatted as a netCDF.
 	ENDTIME	     format: YYYYMMDD
 	OUTFILE	     dump to this file
 """
-<<<<<<< HEAD
+
     
 #
-=======
+
 # Just for testing purposes
     if 'emacs' in dir():
+        print('emacs')
         station = 8454000
         y = '2014'
         m = '07'
@@ -228,6 +228,7 @@ OUTFILE is formatted as a netCDF.
         outfile = 'OUTPUT.nc'
         write_to_netCDF(pressures, outfile)
     elif len(sys.argv) == 5:
+        print(5)
         station = sys.argv[1]
         station = 8454000
         start = sys.argv[2]
@@ -238,4 +239,4 @@ OUTFILE is formatted as a netCDF.
         write_to_netCDF(ts, outfile)
     else:
         print(usage)
->>>>>>> origin/master
+
