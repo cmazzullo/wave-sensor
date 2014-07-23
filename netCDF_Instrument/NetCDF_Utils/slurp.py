@@ -20,10 +20,10 @@ import pytz
 import os
 import math
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 30812bcc5afe1531de1a12a287c6500a7f457a59
+
+
+
 try:
     import NetCDF_Utils.DateTimeConvert as dateconvert
     from NetCDF_Utils.edit_netcdf import NetCDFWriter
@@ -31,7 +31,7 @@ try:
     from NetCDF_Utils.Testing import DataTests
 except:
     print('Check out packaging!')
-<<<<<<< HEAD
+
 
 class Buoydata:
         
@@ -44,7 +44,7 @@ class Buoydata:
         self.lat = None
         self.lon = None
         self.z = None
-=======
+
 
 
 # Constants
@@ -70,7 +70,7 @@ def datetime_to_string(dt):
     return dt.strftime(fmt)
 
 def download(station_id, begin_date, end_date):
->>>>>>> 30812bcc5afe1531de1a12a287c6500a7f457a59
+
 
     def get_data(self, begin, end):
         '''If the requested time interval is too long, download several 
@@ -83,17 +83,17 @@ smaller time intervals and return the concatenated results.'''
             p2 = self.get_data(begin + self.delta, end)
             return p1.append(p2)
 
-<<<<<<< HEAD
+
     def datetime_to_string(self, dt):
         fmt = '%Y%m%d'
         return dt.strftime(fmt)
-=======
+
 
     times = [dateconvert.convert_date_to_milliseconds(None,None,date_time=x) for x in times]
 
 
     return pd.Series(pressures, index=times)
->>>>>>> 30812bcc5afe1531de1a12a287c6500a7f457a59
+
 
     def download(self, begin, end):
         begin = self.datetime_to_string(begin)
@@ -126,17 +126,17 @@ smaller time intervals and return the concatenated results.'''
             elif line.startswith('<pre>'):
                 precount += 1
 
-<<<<<<< HEAD
+
         to_ms = dateconvert.convert_date_to_milliseconds
         times = [to_ms(None, None, date_time=t) for t in times]
         return pd.Series(pressures, index=times)
-=======
+
 
 
 def datetime_to_ms(timestamp):
     d = (timestamp.to_datetime() - epoch_start.replace(tzinfo=None))
     return np.int64(d.total_seconds() * 1000)
->>>>>>> 30812bcc5afe1531de1a12a287c6500a7f457a59
+
 
     def convert_buoy_time_string(self, time_str):
         date_format = '%Y-%m-%d %H:%M'
@@ -163,13 +163,13 @@ def datetime_to_ms(timestamp):
         vs.pressure_var['long_name'] =  "buoy pressure record"
         vs.pressure_var['standard_name'] = "air_pressure"
 
-<<<<<<< HEAD
+
         #Tests#
         net_writer.data_tests.pressure_data = ts.values
         ptest = net_writer.data_tests.select_tests('pressure')
         vs.pressure_qc_data = ptest
         net_writer.write_netCDF(vs, len(ts.values))     
-=======
+
 def write_to_netCDF(ts, out_filename):
     '''Dumps downloaded pressure data to a netCDF for archiving.'''
     print('Writing to netCDF...')
@@ -194,7 +194,7 @@ def write_to_netCDF(ts, out_filename):
 #     p_var = make_pressure_var(ts.values, ds)
 #     t_var = make_time_var(times, ds)
 #     ds.comment = "not used at this time"
-=======
+
     
 
 def write_to_netCDF(ts, out_filename):
@@ -218,8 +218,8 @@ def write_to_netCDF(ts, out_filename):
     net_writer.vstore.pressure_qc_data = net_writer.data_tests.select_tests('pressure')
     
     net_writer.write_netCDF(net_writer.vstore, len(ts.values))     
->>>>>>> 05890b3892bb964dddd8aee958740a51cf5a9704
->>>>>>> 30812bcc5afe1531de1a12a287c6500a7f457a59
+
+
 
 def compress_np(arr, c=10):
     final = np.zeros(math.floor(len(arr) / c))
@@ -243,14 +243,8 @@ OUTFILE is formatted as a netCDF.
 	ENDTIME	     format: YYYYMMDD
 	OUTFILE	     dump to this file
 """
-<<<<<<< HEAD
-=======
-
-    
-#
-
 # Just for testing purposes
->>>>>>> 30812bcc5afe1531de1a12a287c6500a7f457a59
+
     if 'emacs' in dir():
         print('emacs')
         station = 8454000
