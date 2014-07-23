@@ -34,9 +34,17 @@ except:
 try:        
     import netCDF4
 except:
-    raise Exception("netCDF4 is required")        
+    raise Exception("netCDF4 is required")      
 
-class MeasureSysLogger(Sensor, PressureTests):
+try:
+    import NetCDF_Utils.DateTimeConvert as dateconvert
+    from NetCDF_Utils.Testing import DataTests
+    from NetCDF_Utils.edit_netcdf import NetCDFWriter 
+    from NetCDF_Utils.VarDatastore import DataStore
+except:
+    print('Check your packaging')    
+
+class MeasureSysLogger(NetCDFWriter):
     '''derived class for leveltroll ascii files
     '''
     def __init__(self):
@@ -44,7 +52,8 @@ class MeasureSysLogger(Sensor, PressureTests):
         super(MeasureSysLogger,self).__init__()
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 4
-        self.date_format_string = '%m/%d/%Y %H:%M:%S.%f %p'  
+        self.date_format_string = '%m/%d/%Y %H:%M:%S.%f %p' 
+        self.data_tests = DataTests() 
         
     def read(self):
         '''load the data from in_filename
@@ -55,26 +64,14 @@ class MeasureSysLogger(Sensor, PressureTests):
         df = pandas.read_table(self.in_filename,skiprows=skip_index + 1, header=None, engine='c', sep=',', usecols=[3,4,5,6])
        
         first_date = df[3][0][1:]
-        self.data_start = self.convert_date_to_milliseconds(first_date)
+        self.data_start = dateconvert.convert_date_to_milliseconds(first_date, self.date_format_string)
         self.utc_millisecond_data = [(x * 1000) + self.data_start for x in df[4]]
-       
-#         self.utc_millisecond_data = self.convert_to_milliseconds(df.shape - 1, \
-#                                                                          ('%s %s' % (x[1],x[2])))
-#                 break
-        
+  
         self.pressure_data = [x / 14.5037738 for x in df[5]]
-        print(df[6][0])
-        print(len(str(df[6][0])))
+       
         if re.match('^[0-9]{1,3}.[0-9]+$', str(df[6][0])):
             self.temperature_data = [x for x in df[6]]
             
-        self.data_end_date = self.convert_milliseconds_to_datetime(self.utc_millisecond_data[::-1][0])
-       
-        self.get_time_duration(self.utc_millisecond_data[::-1][0] - self.utc_millisecond_data[0])
-        self.test_16_stucksensor()
-        self.test_17_frequencyrange()
-        self.test_20_rateofchange()
-        self.get_15_value()
         print(len(self.pressure_data))
         
     def read_start(self, expression, delimeter):
@@ -93,7 +90,19 @@ class MeasureSysLogger(Sensor, PressureTests):
         '''offsets seconds from specified epoch using UTC time
         '''        
         offset = self.data_start - self.epoch_start            
-        return offset.total_seconds()      
+        return offset.total_seconds()  
+    
+    def write(self):
+        self.vstore.pressure_data = self.pressure_data
+        self.vstore.utc_millisecond_data = self.utc_millisecond_data
+        self.vstore.latitutde = self.latitude
+        self.vstore.longitude = self.longitude
+       
+        #Tests#
+        self.data_tests.pressure_data = self.pressure_data
+        self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
+        
+        self.write_netCDF(self.vstore, len(self.pressure_data))     
 
 if __name__ == "__main__":
     

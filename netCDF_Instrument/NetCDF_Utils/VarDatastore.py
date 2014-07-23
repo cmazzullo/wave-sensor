@@ -8,19 +8,26 @@ import pytz
 
 class DataStore(object):
     
-    def __init__(self, grouping, var_list= None):
+    def __init__(self, grouping):
         self.utc_millisecond_data = None
         self.data_start_date = None
         self.data_end_date = None
         self.data_duration = None
         self.pressure_data = None
         self.pressure_qc_data = None
+        self.pressure_range = [-1000,1000]
         self.temperature_data = None
         self.temperature_qc_data = None
+        self.temperature_range = [-20,50]
         self.z_data = None
         self.z_qc_data = None
+        self.z_range = [-1000,1000]
         self.latitude = 0
+        self.latitude_range = [-90,90]
         self.longitude = 0
+        self.longitude_range = [-180,180]
+        self.z = 0
+        self.salinity = 35
         self.data_grouping = grouping
         self.epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
         self.fill_value = np.float64(-1.0e+10)
@@ -85,8 +92,8 @@ class DataStore(object):
                         'short_name': 'altitude',
                         'units': "degrees",
                         'axis': 'Z',
-                        'valid_min': "utility valid min",
-                        'valid_max': "utility valid max",
+                        'valid_min': self.z_range[0],
+                        'valid_max': self.z_range[1],
                         'ancillary_variables': '',
                         'comment': "latitiude 0 equals equator",
                         'ioos_category': "Location",
@@ -109,8 +116,8 @@ class DataStore(object):
                              'scale_factor': np.float32(1.0),
                              'add_offset': np.float32(0.0),
                              'compression': "not used at this time",
-                             'min': "utility valid pressure",
-                             'max': "utilility valid max",
+                             'min': self.pressure_range[0],
+                             'max': self.pressure_range[1],
                              'ancillary_variables': '',
                              'coordinates': "time latitude longitude altitude",
                              'ioos_category': "Pressure",
@@ -131,11 +138,11 @@ class DataStore(object):
                              'scale_factor': np.float32(1.0),
                              'add_offset': np.float32(0.0),
                              'compression': "not used at this time",
-                             'min': "utility valid pressure",
-                             'max': "utilility valid max",
+                             'min': self.temperature_range[0],
+                             'max': self.temperature_range[1],
                              'ancillary_variables': '',
                              'coordinates': "time latitude longitude altitude",
-                             'ioos_category': "Pressure",
+                             'ioos_category': "Temperature",
                              'comment': "",
                              } 
         self.temp_var_qc = {
@@ -155,16 +162,16 @@ class DataStore(object):
                                  "creator_url": "gui url",
                                  "date_created": datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ"),
                                  "date_modified": datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ"),
-                                 "geospatial_lat_min": "guilat",
-                                 "geospatial_lat_max": "guilat",
-                                 "geospatial_lon_min": "guilon",
-                                 "geospatial_lon_max": "guilon",
+                                 "geospatial_lat_min": self.latitude_range[0],
+                                 "geospatial_lat_max": self.latitude_range[1],
+                                 "geospatial_lon_min": self.longitude_range[0],
+                                 "geospatial_lon_max": self.longitude_range[1],
                                  "geospatial_lat_units": "degrees_north",
                                  "geospatial_lat_resolution": "point",
                                  "geospatial_lon_units": "degrees_east",
                                  "geospatial_lon_resolution": "point",
-                                 "geospatial_vertical_min": "gui z",
-                                 "geospatial_vertical_max": "gui z",
+                                 "geospatial_vertical_min": self.z,
+                                 "geospatial_vertical_max": self.z,
                                  "geospatial_vertical_units": "meters",
                                  "geospatial_vertical_resolution": "point",
                                  "geospatial_vertical_positive": "up",
@@ -175,15 +182,15 @@ class DataStore(object):
                                  "keywords_vocabulary": "not used at this time",
                                  "license": "This data may only be used upon the consent of the USGS",
                                  "Metadata_Conventions": "Unidata Dataset Discovery v1.0",
-                                 "metadata_link": "usgs.katrinamapperinfo.com",
+                                 "metadata_link": "http://54.243.149.253/home/webmap/viewer.html?webmap=c07fae08c20c4117bdb8e92e3239837e",
                                  "naming_authority": "not used at this time",
                                  "processing_level": "deferred with intention to implement",
                                  "project": "deferred with intention to implement",
                                  "publisher_email": "deferred with intention to implement",
                                  "publisher_name": "deferred with intention to implement",
                                  "publisher_url": "deferred with intention to implement",
-                                 "readme": "file created by "+ "gui creator" +str(datetime.now()) +"with files" + "gui filenames",
-                                 "salinity_ppm": "gui salinity",
+                                 "readme": "file created by "+ "gui creator " +str(datetime.now()) +" with files " + "gui filenames",
+                                 "salinity_ppm": self.salinity,
                                  "sea_name": "gui sea name",
                                  "standard_name_vocabulary": "CF-1.6",
                                  "summary": "This is data collected by a pressure instrument used for extrapolating information regarding weather patterns",
@@ -198,7 +205,6 @@ class DataStore(object):
                                  "uuid": str(uuid.uuid4())
                                  }
     def send_data(self,ds):
-        print('hello')
         self.get_time_var(ds)
         self.get_pressure_var(ds)
         self.get_pressure_qc_var(ds)
@@ -214,6 +220,7 @@ class DataStore(object):
         self.get_lat_var(ds)
         self.get_lon_var(ds)
         self.get_global_vars(ds)
+        self.get_time_duration()
         print('done write')
         
     def get_instrument_var(self,ds):
@@ -286,15 +293,29 @@ class DataStore(object):
             ds.setncattr(x,self.global_vars_dict[x])
         
     def get_time_duration(self):
-        self.data_start_date = timeconvert.convert_milliseconds_to_datetime(self.utc_millisecond_data[0], pytz.utc)
-        self.data_end_date = timeconvert.convert_milliseconds_to_datetime(self.utc_millisecond_data[::-1][0], pytz.utc)   
+        first_milli = self.utc_millisecond_data[0]
+        second_milli = self.utc_millisecond_data[::-1][0]
+        self.global_vars_dict["time_coverage_start"] = \
+        timeconvert.convert_milliseconds_to_datetime(first_milli, pytz.utc)
         
-    def gui_fill_values(self, data_class):
-        pass  
+        self.global_vars_dict["time_coverage_end"] = \
+        timeconvert.convert_milliseconds_to_datetime(second_milli, pytz.utc)
+        
+        self.global_vars_dict["time_coverage_end"] = \
+        timeconvert.get_time_duration(second_milli - first_milli)
+        
+        self.global_vars_dict['title'] = 'Measure of pressure at %s degrees latitude, %s degrees longitude  by %s' \
+        ' from the date range of %s to %s' % (self.latitude, self.longitude, self.global_vars_dict["creator_name"], \
+                                                  self.global_vars_dict["time_coverage_start"], \
+                                                  self.global_vars_dict["time_coverage_end"])
+            
     
-    def set_coordinates(self,lon,lat):
-        pass
-      
+    def set_attributes(self, var_dict):
+        for x in var_dict:
+            for y in var_dict[x]:
+                var1 = self.__dict__[x]
+                var1[y] = var_dict[x][y]
+        print('done set')
     
     
 #     'Measure of pressure at %s degrees latitude, %s degrees longitude, %s altitude by %s' \

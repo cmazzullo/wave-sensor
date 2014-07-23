@@ -36,9 +36,17 @@ except:
 try:        
     import netCDF4
 except:
-    raise Exception("netCDF4 is required")        
+    raise Exception("netCDF4 is required") 
 
-class House(Sensor, PressureTests):
+try:
+    import NetCDF_Utils.DateTimeConvert as dateconvert
+    from NetCDF_Utils.Testing import DataTests
+    from NetCDF_Utils.edit_netcdf import NetCDFWriter 
+    from NetCDF_Utils.VarDatastore import DataStore
+except:
+    print('Check your packaging')           
+
+class House(NetCDFWriter):
     '''derived class for house ascii files
     '''
     def __init__(self):
@@ -49,6 +57,7 @@ class House(Sensor, PressureTests):
         self.frequency = 4
        
         self.date_format_string = '%Y.%m.%d %H:%M:%S '
+        self.data_tests = DataTests() 
     
 
     def read(self):
@@ -65,16 +74,10 @@ class House(Sensor, PressureTests):
         with open(self.in_filename, 'r') as wavelog:
             for x in wavelog:
                 if re.match('^[0-9]{4}.[0-9]{2}.[0-9]{2}', x):
-                    self.utc_millisecond_data = self.convert_to_milliseconds(len(self.pressure_data), x) #second arg has extra space that is unnecessary
+                    self.utc_millisecond_data = dateconvert.convert_to_milliseconds(len(self.pressure_data), x, \
+                                                                        self.date_format_string, self.frequency) #second arg has extra space that is unnecessary
                     break
        
-        self.data_end_date = self.convert_milliseconds_to_datetime(self.utc_millisecond_data[::-1][0])
-        print('time', self.utc_millisecond_data[::-1][0], self.utc_millisecond_data[0])
-        self.get_time_duration(self.utc_millisecond_data[::-1][0] - self.utc_millisecond_data[0])
-        self.test_16_stucksensor()
-        self.test_17_frequencyrange()
-        self.test_20_rateofchange()
-        self.get_15_value()
         print(len(self.pressure_data))
         
     def pressure_convert(self, x):
@@ -97,6 +100,18 @@ class House(Sensor, PressureTests):
                     break
                 skip_index += 1   
         return skip_index  
+    
+    def write(self):
+        self.vstore.pressure_data = self.pressure_data
+        self.vstore.utc_millisecond_data = self.utc_millisecond_data
+        self.vstore.latitutde = self.latitude
+        self.vstore.longitude = self.longitude
+       
+        #Tests#
+        self.data_tests.pressure_data = self.pressure_data
+        self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
+        
+        self.write_netCDF(self.vstore, len(self.pressure_data)) 
 
 if __name__ == "__main__":
     
