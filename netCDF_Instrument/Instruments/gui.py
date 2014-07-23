@@ -547,3 +547,9 @@ class EmbeddedPlot:
             self.canvas.show()
 
         self.xdata = event.xdata
+
+if __name__ == "__main__":
+
+    root = Tk()
+    gui = Wavegui(root)
+    root.mainloop()
