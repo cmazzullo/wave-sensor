@@ -100,7 +100,7 @@ smaller time intervals and return the concatenated results.'''
         net_writer = NetCDFWriter()
         vs = net_writer.vstore
         vs.pressure_data = [x for x in ts.values]
-        vs.utc_millisecond_data = [x for x in ts.index]
+        vs.utc_millisecond_data = [x * 1000 for x in ts.index]
         vs.latitutde = self.lat
         vs.longitude = self.lon
 #        vs.z = self.z

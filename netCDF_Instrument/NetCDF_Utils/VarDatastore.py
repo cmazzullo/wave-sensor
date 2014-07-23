@@ -104,7 +104,7 @@ class DataStore(object):
                         'compression': "not used at this time",
                       }
         self.z_var_qc = {
-                                'flag_masks': ['111', '110', '101', '011'],
+                                'flag_masks': '111 110 101 011',
                                 'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, \
                                     invalid_rate_of_change",
                                 'comment': '1 signifies the value passed all tests and a 0 flags a failed test'
@@ -126,7 +126,7 @@ class DataStore(object):
                              'comment': "",
                              } 
         self.pressure_var_qc = {
-                                'flag_masks': ['111', '110', '101', '011'],
+                                'flag_masks': '111 110 101 011',
                                 'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, \
                                     invalid_rate_of_change",
                                 'comment': '1 signifies the value passed all tests and a 0 flags a failed test'
@@ -148,7 +148,7 @@ class DataStore(object):
                              'comment': "",
                              } 
         self.temp_var_qc = {
-                             'flag_masks': ['111', '110', '101', '011'],
+                             'flag_masks': '111 110 101 011',
                              'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, \
                                     invalid_rate_of_change",
                              'comment': '1 signifies the value passed all tests and a 0 flags a failed test'
@@ -230,7 +230,6 @@ class DataStore(object):
         for x in self.instrument_var:
             instrument.setncattr(x,self.instrument_var[x])
         
-       
     def get_time_var(self,ds):
         time = ds.createVariable("time","f8",("time",))
         for x in self.time_var:
@@ -240,7 +239,6 @@ class DataStore(object):
     def get_lat_var(self,ds):
         lat = ds.createVariable("latitude","f8",fill_value=self.fill_value)
         for x in self.lat_var:
-            print(x, self.lat_var[x])
             lat.setncattr(x,self.lat_var[x])
         lat[:] = self.latitutde
             
