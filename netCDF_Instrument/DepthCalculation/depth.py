@@ -10,7 +10,7 @@ from datetime import datetime
 
 try:
     from NetCDF_Utils.edit_netcdf import NetCDFReader, NetCDFWriter
-    import NetCDF_Utils.slurp as slurp
+    from NetCDF_Utils.slurp import Buoydata
     import NetCDF_Utils.VarDatastore as v_store
     import NetCDF_Utils.Testing as tests
 except:
@@ -38,19 +38,19 @@ class Depth(NetCDFWriter, NetCDFReader):
         self.closest_a_first_date = None
         self.closest_a_last_date = None
         self.data_tests = tests.DataTests()
+        self.Buoydata = Buoydata(8454000)
 
         
     def acquire_data(self, pressure_file_bool = False):
         
         self.pressure_data = self.read_file(self.in_file_name, milliseconds_bool = True)
         if pressure_file_bool == False:
-            station = 8454000
             start = '20140501'
             fmt = '%Y%m%d'
             start = datetime.strptime(start, fmt)
             end = '20140701'
             end = datetime.strptime(end, fmt)
-            ts = slurp.get_data(station, start, end)
+            ts = self.Buoydata.get_data(start, end)
             self.air_pressure_data = pd.DataFrame(ts)  
         else:
             self.air_pressure_data = self.read_file(self.air_pressure_file, milliseconds_bool = True)

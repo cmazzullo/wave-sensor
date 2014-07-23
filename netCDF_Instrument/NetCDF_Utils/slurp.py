@@ -106,7 +106,7 @@ smaller time intervals and return the concatenated results.'''
 
         to_ms = dateconvert.convert_date_to_milliseconds
         times = [to_ms(None, None, date_time=t) for t in times]
-        return pd.Series(np.divide(pressures /100), index=times)
+        return pd.Series(np.divide(pressures,100), index=times)
 
 
     def convert_buoy_time_string(self, time_str):
