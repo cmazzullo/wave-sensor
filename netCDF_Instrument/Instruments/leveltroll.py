@@ -19,9 +19,17 @@ except:
 try:        
     import netCDF4
 except:
-    raise Exception("netCDF4 is required")        
+    raise Exception("netCDF4 is required")  
 
-class Leveltroll(Sensor, PressureTests):
+try:
+    import NetCDF_Utils.DateTimeConvert as dateconvert
+    from NetCDF_Utils.Testing import DataTests
+    from NetCDF_Utils.edit_netcdf import NetCDFWriter 
+    from NetCDF_Utils.VarDatastore import DataStore
+except:
+    print('Check your packaging')        
+
+class Leveltroll(NetCDFWriter):
     '''derived class for leveltroll ascii files
     '''
     def __init__(self):
@@ -31,6 +39,7 @@ class Leveltroll(Sensor, PressureTests):
         super(Leveltroll,self).__init__()
         self.date_format_string = "%m/%d/%Y %I:%M:%S %p "
         self.temperature_data = None
+        self.data_tests = DataTests()
         
     def read(self):
         '''load the data from in_filename
@@ -50,13 +59,8 @@ class Leveltroll(Sensor, PressureTests):
         self.utc_millisecond_data = [(x * 1000) + self.data_start for x in long_seconds]
         
         self.pressure_data = np.divide(data["pressure"], 1.45037738)
-        self.temperature_data = [x for x in data["temperature"]]
-        self.data_end_date = self.convert_milliseconds_to_datetime(self.utc_millisecond_data[::-1][0])
-        self.get_time_duration(self.utc_millisecond_data[::-1][0] - self.utc_millisecond_data[0])
-        self.test_16_stucksensor()
-        self.test_17_frequencyrange()
-        self.test_20_rateofchange()
-        self.get_15_value()
+#         self.temperature_data = [x for x in data["temperature"]]
+        
         print(len(self.pressure_data))
 
     def read_header(self,f):
@@ -89,7 +93,7 @@ class Leveltroll(Sensor, PressureTests):
         raw = line.strip().split(',')
         dt_str = raw[0]
         try:
-            self.data_start = self.convert_date_to_milliseconds(dt_str)
+            self.data_start = dateconvert.convert_date_to_milliseconds(dt_str,self.date_format_string)
 #             self.data_start_date = datetime.strftime(self.data_start, "%Y-%m-%dT%H:%M:%SZ")
 #             print('Datetime', self.data_start, self.data_start_date)
         except Exception as e:
@@ -115,7 +119,18 @@ class Leveltroll(Sensor, PressureTests):
         '''        
         offset = self.data_start - self.epoch_start            
         return offset.total_seconds()       
-
+    
+    def write(self):
+        self.vstore.pressure_data = self.pressure_data
+        self.vstore.utc_millisecond_data = self.utc_millisecond_data
+        self.vstore.latitutde = self.latitude
+        self.vstore.longitude = self.longitude
+       
+        #Tests#
+        self.data_tests.pressure_data = self.pressure_data
+        self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
+        
+        self.write_netCDF(self.vstore, len(self.pressure_data))  
 
 if __name__ == "__main__":
     

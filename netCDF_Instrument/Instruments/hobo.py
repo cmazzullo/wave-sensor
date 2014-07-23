@@ -1,3 +1,8 @@
+'''
+Created on Jun 20, 2014
+
+@author: Gregory
+'''
 from Instruments.sensor import Sensor
 from Instruments.InstrumentTests import PressureTests
 import os
@@ -24,9 +29,17 @@ except:
 try:        
     import netCDF4
 except:
-    raise Exception("netCDF4 is required")        
+    raise Exception("netCDF4 is required") 
+      
+try:
+    import NetCDF_Utils.DateTimeConvert as dateconvert
+    from NetCDF_Utils.Testing import DataTests
+    from NetCDF_Utils.edit_netcdf import NetCDFWriter 
+    from NetCDF_Utils.VarDatastore import DataStore
+except:
+    print('Check your packaging')    
 
-class Hobo(Sensor, PressureTests):
+class Hobo(NetCDFWriter):
     '''derived class for leveltroll ascii files
     '''
     def __init__(self):
@@ -36,6 +49,7 @@ class Hobo(Sensor, PressureTests):
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 1.0/30.0
         self.date_format_string = '%m/%d/%y %I:%M:%S %p'  
+        self.data_tests = DataTests()
         
     def read(self):
         '''load the data from in_filename
@@ -44,16 +58,12 @@ class Hobo(Sensor, PressureTests):
         skip_index = self.read_start('"#"',',')
         #for skipping lines in case there is calibration header data
         df = pandas.read_table(self.in_filename,skiprows=skip_index, header=None, engine='c', sep=',')
-        print(len(df[1][0]))
-        self.utc_millisecond_data = self.convert_to_milliseconds(df.shape[0], df[1][0])
+       
+        self.utc_millisecond_data = dateconvert.convert_to_milliseconds(df.shape[0], df[1][0], \
+                                                            self.date_format_string, self.frequency)
         
         self.pressure_data = [x for x in np.divide(df[2], 1.45037738)]
-        self.data_end_date = self.convert_milliseconds_to_datetime(self.utc_millisecond_data[::-1][0])
-        self.get_time_duration(self.utc_millisecond_data[::-1][0] - self.utc_millisecond_data[0])
-        self.test_16_stucksensor()
-        self.test_17_frequencyrange()
-        self.test_20_rateofchange()
-        self.get_15_value()
+       
         print(len(self.pressure_data))
         
     def read_start(self, expression, delimeter):
@@ -66,6 +76,18 @@ class Hobo(Sensor, PressureTests):
                     break
                 skip_index += 1   
         return skip_index + 1 
+    
+    def write(self):
+        self.vstore.pressure_data = self.pressure_data
+        self.vstore.utc_millisecond_data = self.utc_millisecond_data
+        self.vstore.latitutde = self.latitude
+        self.vstore.longitude = self.longitude
+       
+        #Tests#
+        self.data_tests.pressure_data = self.pressure_data
+        self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
+        
+        self.write_netCDF(self.vstore, len(self.pressure_data))  
 
 if __name__ == "__main__":
     

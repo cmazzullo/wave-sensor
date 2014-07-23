@@ -9,7 +9,15 @@ from pytz import timezone
 import pandas as pd
 import pytz
 
-class Waveguage(Sensor, PressureTests):
+try:
+    import NetCDF_Utils.DateTimeConvert as dateconvert
+    from NetCDF_Utils.Testing import DataTests
+    from NetCDF_Utils.edit_netcdf import NetCDFWriter 
+    from NetCDF_Utils.VarDatastore import DataStore
+except:
+    print('Check your packaging')
+
+class Waveguage(NetCDFWriter):
     """Reads in an ASCII file output by a Waveguage pressure sensor
     from Ocean Sensor Systems Inc.
 
@@ -20,6 +28,7 @@ class Waveguage(Sensor, PressureTests):
     def __init__(self):
         self.tz_info = pytz.timezone("US/Eastern")
         super(Waveguage, self).__init__()
+        self.data_tests = DataTests()
 
     def read(self):
         """Sets start_time to a datetime object, utc_millisecond_data
@@ -38,12 +47,7 @@ class Waveguage(Sensor, PressureTests):
 
         #Test and utility methods
         ms = self.utc_millisecond_data[::-1][0]
-        self.data_end_date = self.convert_milliseconds_to_datetime(ms)
-        self.get_time_duration(ms - self.utc_millisecond_data[0])
-        self.test_16_stucksensor()
-        self.test_17_frequencyrange()
-        self.test_20_rateofchange()
-        self.get_15_value() 
+        
 
     def make_pressure_array(self, t, chunks):
         def press_entries(t2, t1):
@@ -145,6 +149,18 @@ class Waveguage(Sensor, PressureTests):
                           names='p')
         data.p = data.p.apply(lambda x: x.strip())
         return data.p
+    
+    def write(self):
+        self.vstore.pressure_data = self.pressure_data
+        self.vstore.utc_millisecond_data = self.utc_millisecond_data
+        self.vstore.latitutde = self.latitude
+        self.vstore.longitude = self.longitude
+       
+        #Tests#
+        self.data_tests.pressure_data = self.pressure_data
+        self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
+        
+        self.write_netCDF(self.vstore, len(self.pressure_data)) 
 
 if __name__ == '__main__':
     # Just for testing!

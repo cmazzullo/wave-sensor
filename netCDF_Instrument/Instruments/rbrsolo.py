@@ -29,9 +29,17 @@ except:
 try:        
     import netCDF4
 except:
-    raise Exception("netCDF4 is required")        
+    raise Exception("netCDF4 is required") 
 
-class RBRSolo(Sensor, PressureTests):
+try:
+    import NetCDF_Utils.DateTimeConvert as dateconvert
+    from NetCDF_Utils.Testing import DataTests
+    from NetCDF_Utils.edit_netcdf import NetCDFWriter 
+    from NetCDF_Utils.VarDatastore import DataStore
+except:
+    print('Check your packaging')    
+
+class RBRSolo(NetCDFWriter):
     '''derived class for leveltroll ascii files
     '''
     def __init__(self):
@@ -41,6 +49,7 @@ class RBRSolo(Sensor, PressureTests):
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 4
         self.date_format_string = '%d-%b-%Y %H:%M:%S.%f'  
+        self.data_tests = DataTests()
         
     def read(self):
         '''load the data from in_filename
@@ -48,21 +57,17 @@ class RBRSolo(Sensor, PressureTests):
         '''
         skip_index = self.read_start('^[0-9]{2}-[A-Z]{1}[a-z]{2,8}-[0-9]{4}$',' ')
         #for skipping lines in case there is calibration header data
-        df= pandas.read_csv(self.in_filename,skiprows=skip_index, delim_whitespace=True, \
+        df = pandas.read_csv(self.in_filename,skiprows=skip_index, delim_whitespace=True, \
                             header=None, engine='c', usecols=[0,1,2])
         for x in df[0:1].itertuples():
             if x[0] == 0:
-                self.utc_millisecond_data = self.convert_to_milliseconds(df.shape[0] - 1, \
-                                                                         ('%s %s' % (x[1],x[2])))
+                self.utc_millisecond_data = dateconvert.convert_to_milliseconds(df.shape[0] - 1, \
+                                                            ('%s %s' % (x[1],x[2])), \
+                                                            self.date_format_string, self.frequency)
                 break
         
         self.pressure_data = [x[1] for x in df[2][:-1].iteritems()]
-        self.data_end_date = self.convert_milliseconds_to_datetime(self.utc_millisecond_data[::-1][0])
-        self.get_time_duration(self.utc_millisecond_data[::-1][0] - self.utc_millisecond_data[0])
-        self.test_16_stucksensor()
-        self.test_17_frequencyrange()
-        self.test_20_rateofchange()
-        self.get_15_value()
+       
         print(len(self.pressure_data))
         
     def read_start(self, expression, delimeter):
@@ -75,6 +80,18 @@ class RBRSolo(Sensor, PressureTests):
                     break
                 skip_index += 1   
         return skip_index  
+    
+    def write(self):
+        self.vstore.pressure_data = self.pressure_data
+        self.vstore.utc_millisecond_data = self.utc_millisecond_data
+        self.vstore.latitutde = self.latitude
+        self.vstore.longitude = self.longitude
+#       
+        #Tests#
+        self.data_tests.pressure_data = self.pressure_data
+        self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
+        
+        self.write_netCDF(self.vstore, len(self.pressure_data))      
 
 if __name__ == "__main__":
     

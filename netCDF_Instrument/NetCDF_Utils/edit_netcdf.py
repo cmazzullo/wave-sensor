@@ -12,6 +12,11 @@ import re
 import pytz
 from datetime import datetime
 
+try:
+    from NetCDF_Utils.VarDatastore import DataStore
+except:
+    print('Check Packaging')
+
 class NetCDFReader(object):
     
     def __init__(self):
@@ -25,6 +30,7 @@ class NetCDFReader(object):
         self.epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
         self.latitude = None
         self.longitude = None
+        
     
       
     def read_file(self,file_name,pressure_bool = True, series_bool = True, milliseconds_bool = False):
@@ -140,12 +146,62 @@ class NetCDFWriter(object):
         self.temperature_comments = None
         self.depth_comments = None
         self.out_filename = os.path.join("..\Instruments",'benchmark','DepthTest.nc')
+        self.in_filename = None
+        self.is_baro = None
+        self.pressure_units = None
+        self.z_units = 'meters'
+        self.latitude = None
+        self.longitude = None
+        self.z = None
+        self.salinity_ppm = -1.0e+10
+        self.utc_millisecond_data = None
+        self.pressure_data = None
+        self.presure_data_flags = None
+        self.epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
+        self.data_start = None
+        self.timezone_string = None
+        self.tz_info = pytz.timezone('US/Eastern')
+        self.date_format_string = None
+        self.frequency = None
+        self.valid_pressure_units = ["psi","pascals","atm"]
+        self.valid_z_units = ["meters","feet"]
+        self.valid_latitude = (np.float32(-90),np.float32(90))
+        self.valid_longitude = (np.float32(-180),np.float32(180))
+        self.valid_z = (np.float32(-10000),np.float32(10000))
+        self.valid_salinity = (np.float32(0.0),np.float32(40000))
+        self.valid_pressure = (np.float32(-10000),np.float32(10000))
+        self.valid_temp = (np.float32(-10000), np.float32(10000))
+        self.fill_value = np.float64(-1.0e+10)
+        self.creator_name = None
+        self.creator_email = ""
+        self.creator_url = ""
+        self.sea_name = "The Red Sea"
+        self.user_data_start_flag = None
+        self.vstore = DataStore(1)
+        self.vdict = dict()
+        print('Done with initialization')
 
     def write_netCDF(self,var_datastore,series_length):
-        print('hello 1')
-        ds = netCDF4.Dataset(os.path.join("..\Instruments",'benchmark','DepthTest.nc'),'w',format="NETCDF4_CLASSIC")
+        ds = netCDF4.Dataset(os.path.join(self.out_filename),'w',format="NETCDF4_CLASSIC")
         time_dimen = ds.createDimension("time",series_length)
+        var_datastore.set_attributes(self.var_dict())
         var_datastore.send_data(ds)
+        
+    def var_dict(self):
+        var_dict = dict()
+        
+        lat_dict = {'valid_min': self.latitude, 'valid_max': self.latitude}
+        var_dict['lat_var'] = lat_dict
+        lon_dict = {'valid_min': self.longitude, 'valid_max': self.longitude}
+        var_dict['lon_var'] = lon_dict
+        global_vars = {'creator_name': self.creator_name, 'creator_email': self.creator_email,
+                       'creator_eamil': self.creator_email, 'geospatial_lat_min': self.latitude,
+                       'geospatial_lat_max': self.latitude, 'geospatial_lon_min': self.longitude,
+                       'geospatial_lon_max': self.longitude, 'geospatial_vertical_min': self.z,
+                       'geospatial_vertical_max': self.z, 'sea_name': self.sea_name}
+        var_dict['global_vars_dict'] = global_vars
+        
+        return var_dict
         
 if __name__ == "__main__":
     

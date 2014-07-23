@@ -9,18 +9,18 @@ from datetime import datetime
 
 epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
 
-def convert_to_milliseconds(series_length, datestring, frequency):
+def convert_to_milliseconds(series_length, datestring, date_format_string, frequency):
         return  np.arange(series_length, dtype='int64') * (1000 / frequency)\
-          + convert_date_to_milliseconds(datestring)
+          + convert_date_to_milliseconds(datestring,date_format_string)
 
 
-def convert_date_to_milliseconds(datestring, date_format_string, datetime = None):
-        if datetime == None:
+def convert_date_to_milliseconds(datestring, date_format_string, date_time = None):
+        if date_time == None:
             first_date = pytz.utc.localize(datetime.strptime(datestring, date_format_string))
             return (first_date - epoch_start).total_seconds() * 1000
         else:
             #pandas index will not take a long so I cannot multiply by 1000
-            first_date = datetime
+            first_date = date_time
             return (first_date - epoch_start).total_seconds()
         
 def convert_milliseconds_to_datetime(milliseconds, tzinfo):
@@ -29,7 +29,7 @@ def convert_milliseconds_to_datetime(milliseconds, tzinfo):
         final_date = new_dt.astimezone(pytz.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
         return(final_date)
     
-def get_time_duration(self, seconds_difference):
+def get_time_duration(seconds_difference):
 
         days = int((((seconds_difference / 1000) / 60) / 60) / 24)
         hours =  int((((seconds_difference / 1000) / 60) / 60) % 24)
