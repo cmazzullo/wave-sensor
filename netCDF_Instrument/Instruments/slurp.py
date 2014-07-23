@@ -113,6 +113,17 @@ def make_time_var(times, ds):
 def write_to_netCDF(ts, out_filename):
     '''Dumps downloaded pressure data to a netCDF for archiving.'''
     print('Writing to netCDF...')
+    net_writer = NetCDFWriter()
+    net_writer.vstore.pressure_data = ts
+    net_writer.vstore.utc_millisecond_data = ts.index
+    net_writer.vstore.latitutde = net_writer.latitude
+    net_writer.vstore.longitude = net_writer.longitude
+#       
+        #Tests#
+        self.data_tests.pressure_data = self.pressure_data
+        self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
+        
+        self.write_netCDF(self.vstore, len(self.pressure_data))     
     if os.path.isfile(out_filename): os.remove(out_filename)
     ds = netCDF4.Dataset(out_filename, 'w', format="NETCDF4_CLASSIC")
     time_dimen = ds.createDimension("time",len(ts))

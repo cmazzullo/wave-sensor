@@ -14,6 +14,7 @@ from datetime import datetime
 
 try:
     from NetCDF_Utils.VarDatastore import DataStore
+    from NetCDF_Utils.Testing import DataTests
 except:
     print('Check Packaging')
 
@@ -150,9 +151,9 @@ class NetCDFWriter(object):
         self.is_baro = None
         self.pressure_units = None
         self.z_units = 'meters'
-        self.latitude = None
-        self.longitude = None
-        self.z = None
+        self.latitude = 0
+        self.longitude = 0
+        self.z = 0
         self.salinity_ppm = -1.0e+10
         self.utc_millisecond_data = None
         self.pressure_data = None
@@ -172,13 +173,14 @@ class NetCDFWriter(object):
         self.valid_pressure = (np.float32(-10000),np.float32(10000))
         self.valid_temp = (np.float32(-10000), np.float32(10000))
         self.fill_value = np.float64(-1.0e+10)
-        self.creator_name = None
+        self.creator_name = ""
         self.creator_email = ""
         self.creator_url = ""
         self.sea_name = "The Red Sea"
         self.user_data_start_flag = None
         self.vstore = DataStore(1)
         self.vdict = dict()
+        self.data_tests = DataTests()
         print('Done with initialization')
 
     def write_netCDF(self,var_datastore,series_length):

@@ -7,7 +7,6 @@ readings to a netCDF file.
 '''
 import sys
 sys.path.append('.')
-import plotter
 from urllib.request import urlopen
 import re
 import matplotlib.pyplot as plt
@@ -21,7 +20,10 @@ import pytz
 import os
 
 try:
-    import NetCDF_Utils.DateTimeConvert as nc
+    import NetCDF_Utils.DateTimeConvert as dateconvert
+    from NetCDF_Utils.edit_netcdf import NetCDFWriter
+    from NetCDF_Utils.VarDatastore import DataStore
+    from NetCDF_Utils.Testing import DataTests
 except:
     print('Check out packaging!')
 # Constants
@@ -29,9 +31,13 @@ epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
 delta = timedelta(days=30)
 day = timedelta(days=1)
 
-def get_data(station_id, begin_date, end_date):
+def get_data(station_id, begin_date, end_date, out_filename = None):
     if (end_date - begin_date) < delta:
-        return download(station_id, begin_date, end_date)
+        data = download(station_id, begin_date, end_date)
+        if out_filename == None:
+            out_filename = 'air_pressure.nc'
+        write_to_netCDF(data,out_filename)
+        return data
     else:
         p1 = get_data(station_id, begin_date, 
                       begin_date + delta - day)
@@ -61,66 +67,42 @@ def download(station_id, begin_date, end_date):
             break
         if precount == 2:
             row = line.split()
-            pressures.append(row[5])
+            pressures.append(np.float64(row[5]))
             time_str = row[3] + ' ' + row[4]
             time = convert_buoy_time_string(time_str)
             times.append(time)
         if line.startswith('<pre>'):
             precount += 1
 
-    times = [nc.convert_date_to_milliseconds(None,None,datetime=x) for x in times]
+    times = [dateconvert.convert_date_to_milliseconds(None,None,date_time=x) for x in times]
     return pd.Series(pressures, index=times)
 
 def convert_buoy_time_string(time_str):
     date_format = '%Y-%m-%d %H:%M'
-    return datetime.strptime(time_str, date_format)
+    utc = pytz.utc
+    return utc.localize(datetime.strptime(time_str, date_format))
 
-
-def make_pressure_var(pressure, ds):
-    p_var = ds.createVariable('air_pressure', 'f8', ('time', ))
-    p_var.long_name = "buoy pressure record"
-    p_var.standard_name = "air_pressure"
-    p_var.short_name = "pressure"
-    p_var.nodc_name = "pressure".upper()
-    p_var.units = "decibar"
-    p_var.scale_factor = np.float32(1.0)
-    p_var.add_offset = np.float32(0.0)
-    p_var.compression = "not used at this time"
-    p_var.min = np.float32(-10000)
-    p_var.max = np.float32(10000)
-    p_var.ancillary_variables = ''
-    p_var.coordinates = "time latitude longitude altitude"
-    p_var.ioos_category = "Pressure" ;
-    p_var[:] = np.array(pressure, dtype=np.float64)
-
-def make_time_var(times, ds):
-    t_var = ds.createVariable("time", "f8", ("time", ))
-    t_var.long_name = 'Time'
-    t_var.short_name = 'time'
-    t_var.standard_name = "time"
-    t_var.units = ("milliseconds since " +
-                   epoch_start.strftime("%Y-%m-%d %H:%M:%S"))
-    t_var.calendar = "gregorian"
-    t_var.axis = 'T'
-    t_var.ancillary_variables = ''
-    t_var.comment = ''
-    t_var.ioos_category = "Time" ;
-    t_var.add_offset = 0.0
-    t_var.scale_factor = 1.0
-    t_var.compression = "not used at this time"
-    t_var[:] = times
-    
 def write_to_netCDF(ts, out_filename):
     '''Dumps downloaded pressure data to a netCDF for archiving.'''
     print('Writing to netCDF...')
-    if os.path.isfile(out_filename): os.remove(out_filename)
-    ds = netCDF4.Dataset(out_filename, 'w', format="NETCDF4_CLASSIC")
-    time_dimen = ds.createDimension("time",len(ts))
-    times = [datetime_to_ms(t) for t in ts.index]
-    times = np.array(times, dtype=np.float64)
-    p_var = make_pressure_var(ts.values, ds)
-    t_var = make_time_var(times, ds)
-    ds.comment = "not used at this time"
+   
+    net_writer = NetCDFWriter()
+  
+    net_writer.vstore.pressure_data = [x for x in ts.values]
+    net_writer.vstore.utc_millisecond_data = [x for x in ts.index]
+    net_writer.vstore.latitutde = net_writer.latitude
+    net_writer.vstore.longitude = net_writer.longitude
+    net_writer.out_filename = out_filename
+    
+    net_writer.vstore.pressure_name = "air_pressure"
+    net_writer.vstore.pressure_var['long name'] =  "buoy pressure record",
+    net_writer.vstore.pressure_var['standard_name'] = "air_pressure",
+#       
+    #Tests#
+    net_writer.data_tests.pressure_data = ts.values
+    net_writer.vstore.pressure_qc_data = net_writer.data_tests.select_tests('pressure')
+    
+    net_writer.write_netCDF(net_writer.vstore, len(ts.values))     
 
 if __name__ == '__main__':
     usage = """
@@ -135,26 +117,4 @@ OUTFILE is formatted as a netCDF.
 	OUTFILE	     dump to this file
 """
     
-# Just for testing purposes
-    if 'emacs' in dir():
-        station = 8454000
-        start = '20140501'
-        fmt = '%Y%m%d'
-        start = datetime.strptime(start, fmt)
-        end = '20140701'
-        end = datetime.strptime(end, fmt)
-        pressures = get_data(station, start, end).values
-        pressures = plotter.compress_np(pressures, 5) 
-        plt.plot(pressures)
-        plt.show()
-    elif len(sys.argv) == 5:
-        station = sys.argv[1]
-        station = 8454000
-        start = sys.argv[2]
-        end = sys.argv[3]
-        outfile = sys.argv[4]
-        ts = get_data(station, start, end)
-        print(ts)
-        write_to_netCDF(ts, outfile)
-    else:
-        print(usage)
+#
