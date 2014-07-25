@@ -90,31 +90,36 @@ class Depth(NetCDFWriter, NetCDFReader):
         
     def create_pwave_data(self):
 #         A = np.vstack([np.arange(0,len(self.pressure_data)), np.ones(len(self.sea_pressure_data))]).T
-        print(len(self.pressure_data))
-        a =  np.polyfit(np.arange(0,len(self.sea_pressure_data)), self.sea_pressure_data, 1) # construct the polynomial #np.linalg.lstsq(A, self.sea_pressure_data)[0]
-        print(a[0],a[1])
+        range_index = np.multiply(np.arange(0,len(self.sea_pressure_data)),.25)
+        a =  np.polyfit(range_index, self.sea_pressure_data, 1) # construct the polynomial #np.linalg.lstsq(A, self.sea_pressure_data)[0]
+       
         p4 = np.poly1d(a)
-        time_x_slope = np.multiply(np.arange(0,len(self.sea_pressure_data)),a[0])
-        minus_intercept = np.subtract(self.sea_pressure_data,a[1])
          
-        self.pwave_data = pd.Series(np.subtract(minus_intercept,time_x_slope),index=self.pressure_data.index)
+        self.pwave_data = pd.Series(np.subtract(self.sea_pressure_data,p4(range_index)), \
+                                    index=self.pressure_data.index)
+        
+        print('pressure',self.pressure_data)
+        print('interp',self.interp_data)
+        print('p',self.sea_pressure_data)
+        print(a[0],a[1])
+        print([p4(x) for x in range_index])
         print('pwave',self.pwave_data)
         
         plt.plot(self.sea_pressure_data.index,self.sea_pressure_data, label='Original data')
-        plt.plot(self.sea_pressure_data.index, p4(np.arange(0,len(self.sea_pressure_data))),'r', label='FittedLine', linewidth=1.0, color='red')
+        plt.plot(self.sea_pressure_data.index, p4(range_index),'r', label='FittedLine', linewidth=1.0, color='red')
         plt.legend()
         plt.grid(b=True, which='major', color='grey', linestyle="-")
         plt.show()
 
     def create_hyrostatic_pressure_data(self):
-        self.hydrostat_pressure_data = pd.Series(np.subtract(self.pressure_data, \
+        self.hydrostat_pressure_data = pd.Series(np.subtract(self.sea_pressure_data, \
                                     self.pwave_data), index = self.pressure_data.index)
         
         print('hydrostat', self.hydrostat_pressure_data)
         
     def create_depth_data(self):
         hstat = self.hydrostat_pressure_data
-        divide_rho_than_g = np.divide(np.divide(hstat,self.density),self.accel_to_grav)
+        divide_rho_than_g = np.divide(hstat,self.accel_to_grav)
         self.depth_data = pd.Series(divide_rho_than_g, index=self.pressure_data.index)
         
         print('depth', self.depth_data)
@@ -152,30 +157,28 @@ class Depth(NetCDFWriter, NetCDFReader):
         
         self.write_netCDF(data_store, len(self.pressure_data))        
        
-    def calculate_hydrostatic_pressure(self):
-        pass
-             
-    def convert_pressure_to_depth(self):
-        latitude_elem = np.square(np.sin(self.latitude / 57.29578))
-        
-        self.depth_data = [self.calculate_Depth(latitude_elem, x) for x in self.depth_pressure]
-        
-
-    def calculate_GR(self, X, P):
-        a = 9.780318 * (1.0 + ((5.2788 * np.power(10,-3.0)) + (2.36 * np.power(10,-5.0)) * X) \
-                    * X) + (1.092 * np.power(10,-6.0)) * P
-#         print('GR', a)
-        return a
-    
-    def calculate_DepthTerm(self, P):
-        a = ((((-1.82 * np.power(10,-15.0)) * P + (2.279 * np.power(10,-10.0))) * P \
-          - (2.2512 * np.power(10,-5.0))) * P + 9.72659) * P
-#       
-        return a
-          
-    def calculate_Depth(self, X, P):
-        a =  self.calculate_DepthTerm(P) / self.calculate_GR(X,P) 
-        return a
+   
+#     def convert_pressure_to_depth(self):
+#         latitude_elem = np.square(np.sin(self.latitude / 57.29578))
+#         
+#         self.depth_data = [self.calculate_Depth(latitude_elem, x) for x in self.depth_pressure]
+#         
+# 
+#     def calculate_GR(self, X, P):
+#         a = 9.780318 * (1.0 + ((5.2788 * np.power(10,-3.0)) + (2.36 * np.power(10,-5.0)) * X) \
+#                     * X) + (1.092 * np.power(10,-6.0)) * P
+# #         print('GR', a)
+#         return a
+#     
+#     def calculate_DepthTerm(self, P):
+#         a = ((((-1.82 * np.power(10,-15.0)) * P + (2.279 * np.power(10,-10.0))) * P \
+#           - (2.2512 * np.power(10,-5.0))) * P + 9.72659) * P
+# #       
+#         return a
+#           
+#     def calculate_Depth(self, X, P):
+#         a =  self.calculate_DepthTerm(P) / self.calculate_GR(X,P) 
+#         return a
     
 if __name__ == "__main__":
     d = Depth()
