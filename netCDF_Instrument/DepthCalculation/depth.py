@@ -25,7 +25,7 @@ class Depth(NetCDFWriter, NetCDFReader):
     def __init__(self):
         super().__init__()
         self.latitude = 30
-        self.in_file_name = os.path.join("..\Instruments","benchmark", "RBR_RSK_Test.txt.nc")
+        self.in_file_name = os.path.join("..\Instruments","benchmark", "RBRrsk.nc")
         self.air_pressure_file = os.path.join("..\Instruments","benchmark","RBRtester2.nc")
         self.pressure_data = None
         self.interp_data = None
@@ -44,11 +44,13 @@ class Depth(NetCDFWriter, NetCDFReader):
         self.Buoydata = Buoydata(8454000)
         self.density = 1030
         self.accel_to_grav = 9.81
+        self.average_depth = None
 
         
     def acquire_data(self, pressure_file_bool = False):
         
         self.pressure_data = self.read_file(self.in_file_name, milliseconds_bool = True)
+        self.pressure_data = pd.Series(np.multiply(self.pressure_data,10000), index = self.pressure_data.index)
         if pressure_file_bool == False:
             start = '20140512'
             fmt = '%Y%m%d'
@@ -57,7 +59,7 @@ class Depth(NetCDFWriter, NetCDFReader):
             end = datetime.strptime(end, fmt)
             ts = self.Buoydata.get_data(start, end)
             self.Buoydata.write_to_netCDF(ts,'air_pressure.nc')
-            self.air_pressure_data = ts
+            self.air_pressure_data = pd.Series(np.multiply(ts,10000), index = ts.index)
         else:
             self.air_pressure_data = self.read_file(self.air_pressure_file, milliseconds_bool = True)
     
@@ -89,7 +91,6 @@ class Depth(NetCDFWriter, NetCDFReader):
                                 index = self.pressure_data.index)
         
     def create_pwave_data(self):
-#         A = np.vstack([np.arange(0,len(self.pressure_data)), np.ones(len(self.sea_pressure_data))]).T
         range_index = np.multiply(np.arange(0,len(self.sea_pressure_data)),.25)
         a =  np.polyfit(range_index, self.sea_pressure_data, 1) # construct the polynomial #np.linalg.lstsq(A, self.sea_pressure_data)[0]
        
@@ -97,13 +98,6 @@ class Depth(NetCDFWriter, NetCDFReader):
          
         self.pwave_data = pd.Series(np.subtract(self.sea_pressure_data,p4(range_index)), \
                                     index=self.pressure_data.index)
-        
-        print('pressure',self.pressure_data)
-        print('interp',self.interp_data)
-        print('p',self.sea_pressure_data)
-        print(a[0],a[1])
-        print([p4(x) for x in range_index])
-        print('pwave',self.pwave_data)
         
         plt.plot(self.sea_pressure_data.index,self.sea_pressure_data, label='Original data')
         plt.plot(self.sea_pressure_data.index, p4(range_index),'r', label='FittedLine', linewidth=1.0, color='red')
@@ -119,24 +113,27 @@ class Depth(NetCDFWriter, NetCDFReader):
         
     def create_depth_data(self):
         hstat = self.hydrostat_pressure_data
-        divide_rho_than_g = np.divide(hstat,self.accel_to_grav)
+        divide_rho_than_g = np.divide(np.divide(hstat,self.density),self.accel_to_grav)
         self.depth_data = pd.Series(divide_rho_than_g, index=self.pressure_data.index)
         
-        print('depth', self.depth_data)
+        self.average_depth = np.mean(self.depth_data)
+        
              
     def plot_data(self):
         pressure_mean = np.mean(self.pressure_data)
         air_pressure_mean = np.mean(self.air_pressure_data)
         interp_mean = np.mean(self.interp_data)
         
-        p1, = plt.plot(self.air_pressure_data.index,np.subtract(self.air_pressure_data,  \
-                 air_pressure_mean),alpha=0.70, linewidth="3.0", linestyle="-")
-        p2, = plt.plot(self.pressure_data.index,np.subtract(self.interp_data,interp_mean), \
+        p1, = plt.plot(self.pressure_data.index,self.sea_pressure_data, label="sea pres"  \
+                 ,alpha=0.70, linewidth="3.0", linestyle="-")
+        p2, = plt.plot(self.pressure_data.index,self.pwave_data, label="pwave", \
                  alpha=0.70, linewidth="3.0", linestyle="-")
-        p3, = plt.plot(self.pressure_data.index,np.subtract(self.pressure_data,pressure_mean), \
+        p3, = plt.plot(self.pressure_data.index,self.hydrostat_pressure_data, label='hydro', \
                   alpha=0.70, linewidth="3.0", linestyle="-")
+        p4, = plt.plot(self.pressure_data.index,self.depth_data,label='depth',
+                    alpha=.60, linewidth="3.0", linestyle="-")
         
-        plt.legend([p1,p2,p3], ['Air Pres','Interp Air Pres','Sea Pres'],bbox_to_anchor=(.80, 1.10), loc=2, borderaxespad=0.0)
+        plt.legend(bbox_to_anchor=(.80, 1.10), loc=2, borderaxespad=0.0)
         plt.show()
         
     def write_data(self):
@@ -154,33 +151,10 @@ class Depth(NetCDFWriter, NetCDFReader):
         data_store.pressure_qc_data = self.data_tests.select_tests('pressure')
         data_store.z_qc_data = self.data_tests.select_tests('depth')
         
-        
         self.write_netCDF(data_store, len(self.pressure_data))        
-       
-   
-#     def convert_pressure_to_depth(self):
-#         latitude_elem = np.square(np.sin(self.latitude / 57.29578))
-#         
-#         self.depth_data = [self.calculate_Depth(latitude_elem, x) for x in self.depth_pressure]
-#         
-# 
-#     def calculate_GR(self, X, P):
-#         a = 9.780318 * (1.0 + ((5.2788 * np.power(10,-3.0)) + (2.36 * np.power(10,-5.0)) * X) \
-#                     * X) + (1.092 * np.power(10,-6.0)) * P
-# #         print('GR', a)
-#         return a
-#     
-#     def calculate_DepthTerm(self, P):
-#         a = ((((-1.82 * np.power(10,-15.0)) * P + (2.279 * np.power(10,-10.0))) * P \
-#           - (2.2512 * np.power(10,-5.0))) * P + 9.72659) * P
-# #       
-#         return a
-#           
-#     def calculate_Depth(self, X, P):
-#         a =  self.calculate_DepthTerm(P) / self.calculate_GR(X,P) 
-#         return a
     
 if __name__ == "__main__":
     d = Depth()
     d.acquire_data()
+    d.plot_data()
 #     d.write_data()
