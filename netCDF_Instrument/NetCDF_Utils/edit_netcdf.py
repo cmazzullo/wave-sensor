@@ -54,14 +54,15 @@ class NetCDFReader(object):
         #this method converts the milliseconds in to date times
         time_convert = netCDF4.num2date(times[:],times.units)
         if milliseconds_bool == True:
-            return self.return_data(pressure, temperature, times, series_bool, pressure_bool)
+            return self.return_data(pressure, temperature, times, series_bool, pressure_bool, True)
         else:
             return self.return_data(pressure, temperature, time_convert, series_bool, pressure_bool)
         
-    def return_data(self, pressure, temperature, index, series_bool, pressure_bool):
+    def return_data(self, pressure, temperature, index, series_bool, pressure_bool, milli_bool = False):
         if series_bool == True:
-            if pressure_bool == True:
-                index = np.divide(index,1000)
+            if milli_bool == True:
+                if type(index) != 'datetime.datetime':  # PAndas series cannot take a long as an index
+                    index = np.divide(index,1000)
                 return pd.Series(pressure,index=index)
             else:
                 if temperature != None:
