@@ -20,6 +20,7 @@ class Time_Domain_Analysis(Depth):
         self.start = 1
         super().__init__()
         self.in_file_name = '../Instruments/Benchmark/RBRrsk.nc'
+        self.TanAlfa = 0.001      #Bedslope
         self.individual_waves = []
         self.individual_wave_time = []
         self.dates = None
@@ -134,6 +135,7 @@ class Time_Domain_Analysis(Depth):
                 etamin = 0
             if eta[x] > etamax: etamax = eta[x]
             if eta[x] < etamin: etamin = eta[x]
+            
   
     
 if __name__ == '__main__':
