@@ -29,6 +29,7 @@ from Instruments.waveguage import Waveguage
 from Instruments.house import House
 from Instruments.measuresys import MeasureSysLogger
 
+
 class Wavegui:
 
     def __init__(self, root):
@@ -63,10 +64,10 @@ class Wavegui:
         self.global_frame.destroy()
 
         self.global_frame = self.make_global_frame(root, files=True)
-        self.global_frame.grid(row=1, column=0, sticky=(N,W,E,S))
+        self.global_frame.grid(row=1, column=0, sticky=(N, W, E, S))
 
         self.file_frame = self.make_file_frame(root)
-        self.file_frame.grid(row=0, column=0, sticky=(N,W,E,S))
+        self.file_frame.grid(row=0, column=0, sticky=(N, W, E, S))
 
         root.update()
         root.minsize(root.winfo_width(), root.winfo_height())
@@ -84,7 +85,7 @@ class Wavegui:
         book = ttk.Notebook(tabs, width=50)
 
         for datafile in self.datafiles:
-            tab =  ttk.Frame(tabs)
+            tab = ttk.Frame(tabs)
             widgets = ttk.Frame(tab, padding="3 3 12 12")
 
             for row, var in enumerate(datafile.fields.values()):
@@ -104,8 +105,7 @@ class Wavegui:
 
             load = partial(self.load_entries, datafile)
             ttk.Button(buttons, text='Load Default',
-                       command=load).\
-                       grid(column=3, row=0, sticky=W)
+                       command=load).grid(column=3, row=0, sticky=W)
             buttons.pack(fill=BOTH, expand=1)
             fname = datafile.fields['in_filename'].stringvar.get()
             fname = os.path.basename(fname)
@@ -147,7 +147,6 @@ class Wavegui:
         f.update()
         return f
 
-
     def make_global_buttons_nofile(self, f):
         """This makes the frame containing buttons and populates it.
         This is for the case when there are no files selected by the
@@ -180,8 +179,7 @@ class Wavegui:
         ttk.Button(b, text="Load Globals",
                    command=self.load_globals).grid(column=2, row=0)
         ttk.Button(b, text="Remove All Files",
-                   command=self.remove_all_files).\
-                   grid(column=3, row=0)
+                   command=self.remove_all).grid(column=3, row=0)
         ttk.Button(b, text="Load Default in All Files",
                    command=self.load_per_file).grid(column=4, row=0)
         ttk.Button(b, text="Process Files",
@@ -193,17 +191,16 @@ class Wavegui:
 
     def make_global_fields(self):
 
-        l = [ Variable('username',
-                       label='Your full name:',
-                       name_in_device='creator_name'),
-              Variable('email',
-                       label='Your email address:',
-                       name_in_device='creator_email'),
-              Variable('url',
-                       label='Your personal url:',
-                       name_in_device='creator_url'),
-              Variable('project',
-                       label='Project name:') ]
+        l = [Variable('username', label='Your full name:',
+                      name_in_device='creator_name'),
+             Variable('email',
+                      label='Your email address:',
+                      name_in_device='creator_email'),
+             Variable('url',
+                      label='Your personal url:',
+                      name_in_device='creator_url'),
+             Variable('project',
+                      label='Project name:')]
 
         d = OrderedDict([(v.name, v) for v in l])
         return d
@@ -223,7 +220,7 @@ class Wavegui:
                       for d in self.datafiles]
         print(old_fnames)
         new_fnames = filedialog.askopenfilename(multiple=True)
-        new_fnames = [f for f in new_fnames if not f in old_fnames]
+        new_fnames = [f for f in new_fnames if f not in old_fnames]
 
         new_datafiles = [Datafile(fname, self.instruments)
                          for fname in new_fnames]
@@ -231,7 +228,7 @@ class Wavegui:
         self.datafiles += new_datafiles
         self.initialize_somefiles(self.root)
 
-    def remove_all_files(self):
+    def remove_all(self):
         self.datafiles = []
         self.initialize_nofiles(self.root)
 
@@ -247,7 +244,8 @@ class Wavegui:
         devices = [self.read_file(datafile) for datafile in
                    self.datafiles]
 
-        if not all(devices): return
+        if not all(devices):
+            return
 
         start_points = [self.plot_pressure(d) for d in devices]
 
@@ -289,7 +287,7 @@ class Wavegui:
         for var in fields.values():
             if var.name_in_device:
                 setattr(device, var.name_in_device, var.get())
-                
+
         print('filename: %s' % device.in_filename)
         device.read()
         d.top.destroy()
@@ -304,13 +302,13 @@ class Wavegui:
 
     def load_per_file(self):
         # if none of the entries have been filled out...
-        b =  not any(v.stringvar.get() for d in self.datafiles
-                     for v in d.fields.values() if not v.filename)
+        b = not any(v.stringvar.get() for d in self.datafiles
+                    for v in d.fields.values() if not v.filename)
 
         if b or self.proceed(self.datafiles):
             for datafile in self.datafiles:
                 l = [v for v in datafile.fields.values() if v.autosave]
-                    
+
                 if os.path.isfile(self.per_file_history):
                     with open(self.per_file_history, 'r') as f:
                         for line, var in zip(f, l):
@@ -324,10 +322,10 @@ class Wavegui:
                     f.write(var.stringvar.get() + '\n')
 
     def load_globals(self):
-        b =  not any(v.stringvar.get()
-                     for v in self.global_fields.values()
-                     if not v.filename)
-                    
+        b = not any(v.stringvar.get()
+                    for v in self.global_fields.values()
+                    if not v.filename)
+
         if b or self.proceed(self.global_fields):
             l = [v for v in self.global_fields.values() if v.autosave]
 
@@ -337,9 +335,9 @@ class Wavegui:
                         var.stringvar.set(line.rstrip())
 
     def load_entries(self, datafile):
-        b =  not any(v.stringvar.get()
-                     for v in datafile.fields.values()
-                     if not v.filename)
+        b = not any(v.stringvar.get()
+                    for v in datafile.fields.values()
+                    if not v.filename)
 
         if b or self.proceed([datafile]):
             l = [v for v in datafile.fields.values() if v.autosave]
@@ -388,79 +386,81 @@ class Wavegui:
             ttk.Button(frame, text='Help', command=c).\
                 grid(column=3, row=row, sticky=W)
 
+
 class Datafile:
 
     def __init__(self, filename, instruments):
 
-        l = [ Variable('in_filename',
-                       name_in_device='in_filename',
-                       label='Input filename:',
-                       filename='in',
-                       autosave=False),
-              Variable('out_filename',
-                       name_in_device='out_filename',
-                       label='Output filename:',
-                       filename='out',
-                       autosave=False),
-              Variable('latitude',
-                       name_in_device='latitude',
-                       label='Latitude (decimal degrees):',
-                       valtype=np.float32,
-                       autosave=False,
-                       doc='Decimal degrees east of the Prime Meridian.'),
-              Variable('longitude (decimal degrees)',
-                       name_in_device='longitude',
-                       label='Longitude (decimal degrees):',
-                       valtype=np.float32,
-                       autosave=False,
-                       doc='Decimal degrees north of the equator.'),
-              Variable('altitude',
-                       name_in_device='z',
-                       label='Altitude (meters):',
-                       doc="Altitude in meters with respect to the "
-                       "NAVD88 geoid.",
-                       valtype=np.float32,
-                       autosave=False),
-              Variable('salinity',
-                       name_in_device='salinity',
-                       label='Salinity (ppm):',
-                       valtype=np.float32,
-                       autosave=False),
-              Variable('timezone',
-                       name_in_device='tzinfo',
-                       label='Timezone:',
-                       options=("US/Central", "US/Eastern"),
-                       valtype=timezone),
-              Variable('instrument',
-                       options=instruments.keys(),
-                       label='Instrument:'),
-              Variable('sea_name',
-                       name_in_device='sea_name',
-                       label='Sea Name:',
-                       options=('Chesapeake Bay',
-                                'Great Lakes',
-                                'Gulf of Alaska',
-                                'Gulf of California',
-                                'Gulf of Maine',
-                                'Gulf of Mexico',
-                                'Hudson Bay',
-                                'Massachusetts Bay',
-                                'NE Atlantic (limit-40 W)',
-                                'NE Pacific (limit-180)',
-                                'North American Coastline-North',
-                                'North American Coastline-South',
-                                'North Atlantic Ocean',
-                                'North Pacific Ocean',
-                                'NW Atlantic (limit-40 W)',
-                                'NW Pacific (limit-180)',
-                                'SE Atlantic (limit-20 W)',
-                                'SE Pacific (limit-140 W)',
-                                'SW Atlantic (limit-20 W)',
-                                'SW Pacific (limit-147 E to 140 W)'))]
+        l = [Variable('in_filename',
+                      name_in_device='in_filename',
+                      label='Input filename:',
+                      filename='in',
+                      autosave=False),
+             Variable('out_filename',
+                      name_in_device='out_filename',
+                      label='Output filename:',
+                      filename='out',
+                      autosave=False),
+             Variable('latitude',
+                      name_in_device='latitude',
+                      label='Latitude (decimal degrees):',
+                      valtype=np.float32,
+                      autosave=False,
+                      doc='Decimal degrees east of the Prime Meridian.'),
+             Variable('longitude (decimal degrees)',
+                      name_in_device='longitude',
+                      label='Longitude (decimal degrees):',
+                      valtype=np.float32,
+                      autosave=False,
+                      doc='Decimal degrees north of the equator.'),
+             Variable('altitude',
+                      name_in_device='z',
+                      label='Altitude (meters):',
+                      doc="Altitude in meters with respect to the "
+                      "NAVD88 geoid.",
+                      valtype=np.float32,
+                      autosave=False),
+             Variable('salinity',
+                      name_in_device='salinity',
+                      label='Salinity (ppm):',
+                      valtype=np.float32,
+                      autosave=False),
+             Variable('timezone',
+                      name_in_device='tzinfo',
+                      label='Timezone:',
+                      options=("US/Central", "US/Eastern"),
+                      valtype=timezone),
+             Variable('instrument',
+                      options=instruments.keys(),
+                      label='Instrument:'),
+             Variable('sea_name',
+                      name_in_device='sea_name',
+                      label='Sea Name:',
+                      options=('Chesapeake Bay',
+                               'Great Lakes',
+                               'Gulf of Alaska',
+                               'Gulf of California',
+                               'Gulf of Maine',
+                               'Gulf of Mexico',
+                               'Hudson Bay',
+                               'Massachusetts Bay',
+                               'NE Atlantic (limit-40 W)',
+                               'NE Pacific (limit-180)',
+                               'North American Coastline-North',
+                               'North American Coastline-South',
+                               'North Atlantic Ocean',
+                               'North Pacific Ocean',
+                               'NW Atlantic (limit-40 W)',
+                               'NW Pacific (limit-180)',
+                               'SE Atlantic (limit-20 W)',
+                               'SE Pacific (limit-140 W)',
+                               'SW Atlantic (limit-20 W)',
+                               'SW Pacific (limit-147 E to 140 W)'))]
 
         self.fields = OrderedDict([(v.name, v) for v in l])
         self.fields['in_filename'].stringvar.set(filename)
         self.fields['out_filename'].stringvar.set(filename + '.nc')
+
 
 class MessageDialog:
 
@@ -476,6 +476,7 @@ class MessageDialog:
             top.initial_focus = top
         elif buttons == 2:
             buttonframe = ttk.Frame(top, padding="3 3 12 12")
+
             def event(boolean):
                 self.boolean = boolean
                 top.destroy()
@@ -489,6 +490,7 @@ class MessageDialog:
             top.initial_focus = top
 
         top.grab_set()
+
 
 class Variable:
 
@@ -511,6 +513,7 @@ class Variable:
         val = self.stringvar.get()
         return self.valtype(val)
 
+
 class EmbeddedPlot:
 
     def __init__(self, root, data):
@@ -521,7 +524,7 @@ class EmbeddedPlot:
         header = ttk.Label(top, text=message)
         header.pack(fill=BOTH, expand=1)
 
-        f = Figure(figsize=(5,4), dpi=100)
+        f = Figure(figsize=(5, 4), dpi=100)
         self.a = a = f.add_subplot(111)
         a.plot(data)
 
@@ -542,7 +545,7 @@ class EmbeddedPlot:
         self.xdata = 0
 
     def onclick(self, event):
-        if self.dot: 
+        if self.dot:
             self.dot = self.a.plot(event.xdata, event.ydata, 'ro')
             self.canvas.show()
 
