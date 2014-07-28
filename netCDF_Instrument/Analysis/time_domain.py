@@ -3,6 +3,8 @@ Created on Jul 25, 2014
 
 @author: Gregory
 '''
+import sys
+sys.path.append('..')
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -25,7 +27,71 @@ class Time_Domain_Analysis(Depth):
     def initialize(self):
         self.acquire_data()
         self.new_data = [x for x in self.pwave_data]
-        
+
+    def method2(self, pressure_data):
+            
+        self.initialize()
+        Pwave = self.new_data
+        P = pressure_data
+        freq = 4
+        t = np.arange(0, len(P)) / freq
+        slope, intercept =  np.polyfit(t, P, 1)
+        Pstatic = slope * t + intercept
+        Pwave = P - Pstatic
+        depth = Pstatic / (rho * g)
+        # Downward crossing method: if the function crosses the x axis in
+        # an interval and if its endpoint is below the x axis, we've found
+        # a new wave.
+        start = period = counter = Pmin = Pmax = 0
+        periods = []                    # periods of found waves
+        eta = np.zeros(len(P))
+        interval = 1 / 4
+        steepness = 0.03
+        Hminimum = 0.10
+        H = []
+
+        for i in range(len(Pwave) - 1):
+            if (Pwave[i] * Pwave[i+1]) < 0 and Pwave[i+1] < 0:
+                print(i)
+                periods.append(period)
+                # w**2 = g * k, the dispersion relation for deep water
+                wavelength = g * period**2 / (2 * np.pi)
+                # if the water is too shallow
+                if depth[i] / wavelength < 0.36:
+                    wavelength = ((g * depth[i])**(1/2) *
+                                  (1 - depth[i] / wavelength) *
+                                  period)
+                    height = (((Pmax - Pmin) / (rho * g)) *
+                              np.cosh(2 * np.pi * depth[i] /
+                                      wavelength))
+                H.append(height)
+                Hunreduced = Hreduced = height
+                print('height = ' + str(height))
+                print('wavelength = ' + str(wavelength))
+                if height / wavelength > steepness:
+                    print('Wave is too steep!')
+                    Hreduced = steepness * wavelength
+                    H.pop()
+                    H.append(Hreduced)
+                if height < Hminimum:
+                    print('Wave is too small!')
+                    Hreduced = Hminimum
+                    counter -= 1
+                reduction = Hreduced / Hunreduced
+                for j in range(start, i):
+                    eta[j] = ((Pwave[j] * reduction) / (rho * g)) * \
+                             np.cosh(2 * np.pi * depth[j] / wavelength)
+                start = i + 1
+                period = Pmax = Pmin = 0
+                counter += 1
+            period = period + interval
+            if Pwave[i] > Pmax:
+                Pmax = Pwave[i]
+            if Pwave[i] < Pmin:
+                Pmin = Pwave[i]
+
+        self.individual_waves = H
+
     def method1(self):
         self.initialize()
         self.dates = [x for x in self.pressure_data.index]
