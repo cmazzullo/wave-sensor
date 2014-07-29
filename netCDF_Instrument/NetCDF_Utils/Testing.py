@@ -5,7 +5,8 @@ Created on Jul 22, 2014
 '''
 import numpy as np
 from bitarray import bitarray as bit
-
+import sys
+sys.path.append('..')
 class DataTests(object):
     
     def __init__(self):

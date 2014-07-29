@@ -24,7 +24,7 @@ def draw_nc(fname):
 
 
 def compress(P):
-    M = 500
+    M = 5000
     c = math.ceil(len(P) / M)
     p = slurp.compress_np(P, c)
     return p
@@ -147,5 +147,5 @@ def plot_storm():
     plt.show()
     return Y, nu
 
-Y, nu = plot_storm()
+#Y, nu = plot_storm()
 print('done')

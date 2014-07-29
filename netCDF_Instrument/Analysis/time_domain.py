@@ -29,11 +29,11 @@ class Time_Domain_Analysis(Depth):
         self.acquire_data()
         self.new_data = [x for x in self.pwave_data]
 
-    def method2(self, pressure_data):
+    def method2(self):
             
         self.initialize()
         Pwave = self.new_data
-        P = pressure_data
+        P = self.pressure_data
         freq = 4
         t = np.arange(0, len(P)) / freq
         slope, intercept =  np.polyfit(t, P, 1)
@@ -140,4 +140,4 @@ class Time_Domain_Analysis(Depth):
     
 if __name__ == '__main__':
     td = Time_Domain_Analysis() 
-    td.method1()
+    td.method2()

@@ -178,8 +178,8 @@ class Wavegui:
                    command=self.save_globals).grid(column=1, row=0)
         ttk.Button(b, text="Load Globals",
                    command=self.load_globals).grid(column=2, row=0)
-        ttk.Button(b, text="Remove All Files",
-                   command=self.remove_all).grid(column=3, row=0)
+        # ttk.Button(b, text="Remove All Files",
+        #            command=self.remove_all).grid(column=3, row=0)
         ttk.Button(b, text="Load Default in All Files",
                    command=self.load_per_file).grid(column=4, row=0)
         ttk.Button(b, text="Process Files",
@@ -551,8 +551,9 @@ class EmbeddedPlot:
 
         self.xdata = event.xdata
 
-if __name__ == "__main__":
 
+if __name__ == '__main__':
     root = Tk()
     gui = Wavegui(root)
     root.mainloop()
+
