@@ -1,3 +1,4 @@
+
 '''
 Created on Jul 17, 2014
 
@@ -9,24 +10,18 @@ import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
 
-try:
-    from NetCDF_Utils.edit_netcdf import NetCDFReader, NetCDFWriter
-    from NetCDF_Utils.slurp import Buoydata
-    import NetCDF_Utils.VarDatastore as v_store
-    import NetCDF_Utils.Testing as tests
-except:
-    from edit_netcdf import NetCDFReader, NetCDFWriter
-    import ncar_rap as rap
-    import VarDatastore as v_store
-    import Testing as tests
+from NetCDF_Utils.edit_netcdf import NetCDFReader, NetCDFWriter
+from NetCDF_Utils.slurp import Buoydata
+import NetCDF_Utils.VarDatastore as v_store
+import NetCDF_Utils.Testing as tests
 
 class Depth(NetCDFWriter, NetCDFReader):
     
     def __init__(self):
         super().__init__()
         self.latitude = 30
-        self.in_file_name = os.path.join("..\Instruments","benchmark", "barodepth.nc")
-        self.air_pressure_file = os.path.join("..\Instruments","benchmark","RBRtester2.nc")
+        self.in_file_name = os.path.join("..\Instruments","benchmark", "RBRTester1.nc")
+        self.air_pressure_file = os.path.join("..\Instruments","benchmark",'infosys2.nc')
         self.pressure_data = None
         self.interp_data = None
         self.sea_pressure_data = None
@@ -42,8 +37,8 @@ class Depth(NetCDFWriter, NetCDFReader):
         self.closest_a_last_date = None
         self.data_tests = tests.DataTests()
         self.Buoydata = Buoydata(8454000)
-        self.density = 1027
-        self.accel_to_grav = 9.81
+        self.rho = 1027 #density
+        self.g = 9.81  #acceleration due to gravity
         self.average_depth = None
         self.flat_test = False
         
@@ -52,10 +47,10 @@ class Depth(NetCDFWriter, NetCDFReader):
         self.pressure_data = self.read_file(self.in_file_name, milliseconds_bool = True)
         self.pressure_data = pd.Series(np.multiply(self.pressure_data,10000), index = self.pressure_data.index)
         if pressure_file_bool == False:
-            start = '20120514'
+            start = '20140703'
             fmt = '%Y%m%d'
             start = datetime.strptime(start, fmt)
-            end = '20120517'
+            end = '20140706'
             end = datetime.strptime(end, fmt)
             ts = self.Buoydata.get_data(start, end)
             self.Buoydata.write_to_netCDF(ts,'air_pressure.nc')
@@ -119,8 +114,8 @@ class Depth(NetCDFWriter, NetCDFReader):
         
     def create_depth_data(self):
         hstat = self.hydrostat_pressure_data
-        divide_rho_than_g = np.divide(np.divide(hstat,self.density),self.accel_to_grav)
-        self.depth_data = pd.Series(divide_rho_than_g, index=self.pressure_data.index)
+        divide_rho_and_g = np.divide(hstat,self.rho * self.g)
+        self.depth_data = pd.Series(divide_rho_and_g, index=self.pressure_data.index)
         
         self.average_depth = np.mean(self.depth_data)
         print('depth', self.depth_data)
@@ -168,7 +163,7 @@ class Depth(NetCDFWriter, NetCDFReader):
 if __name__ == "__main__":
     d = Depth()
 #     d.test()
-    d.flat_test = True
+#     d.flat_test = True
     d.acquire_data()
     d.plot_data()
     d.write_data()
