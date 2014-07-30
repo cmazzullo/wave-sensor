@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+import numpy as np
+import matplotlib.pyplot as plt
+
+def create_data(T):
+    '''Fabricates some pressure data covering time T'''
+    t = np.arange(0, T, 500)
+    r = np.random.normal(scale=.2, size=len(t))
+    angfreq = .2
+    phase = 2
+    amplitude = 4
+    p = amplitude + np.sin(angfreq * t + phase)
+    
+    
+y = np.sin(np.arange(1, 2, 100))
+plt.plot(y)
+plt.show()
