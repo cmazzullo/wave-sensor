@@ -67,7 +67,7 @@ class MeasureSysLogger(NetCDFWriter):
         self.data_start = dateconvert.convert_date_to_milliseconds(first_date, self.date_format_string)
         self.utc_millisecond_data = [(x * 1000) + self.data_start for x in df[4]]
   
-        self.pressure_data = [x / 14.5037738 for x in df[5]]
+        self.pressure_data = [x / 1.45037738 for x in df[5]]
        
         if re.match('^[0-9]{1,3}.[0-9]+$', str(df[6][0])):
             self.temperature_data = [x for x in df[6]]

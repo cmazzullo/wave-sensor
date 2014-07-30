@@ -1,3 +1,4 @@
+
 '''
 Created on Jul 25, 2014
 
@@ -13,35 +14,45 @@ class Rayleigh(BG):
         self.yi = yi
         self.x = xmark
         self.poe = np.array(np.divide(range(1,11),10.0))[::-1]
-        self.poe = self.poe.concatenate([.01,.005,.002,.001,.0005])
+        self.poe = np.concatenate((self.poe,[.01,.005,.002,.001,.0005]))
         self.y = np.sqrt((np.negative(np.log(self.poe))))
         self.n = len(self.y)
         self.m = len(self.x)
         self.axis = [[self.x[0], self.x[self.m-1], self.y[0], self.y[self.n-1]]]
         self.dx = np.abs(self.x[self.m-1] - self.x[0])/25
         self.xh = [self.x[0],self.x[self.m-1]]
-        self.dy = np.abs(self.y(self.n-1)-self.y[0])/25
+        self.dy = np.abs(self.y[self.n-1]-self.y[0])/25
         self.yv = [self.y[0],self.y[self.n-1]]
         self.Hrms = Hrms
         self.Htr = Htr
         
     def exceedance_graph(self):
+        fig = plt.figure(figsize=(16,8))
+        ax = fig.add_subplot(111)
+        lims = [0,1]
         for x in range(0,self.n):
-            plt.plot(self.xh,self.y[x])
-            plt.text(self.x[x]-2*self.dx,self.y[x],self.poe[x])
+            yh = [self.y[x], self.y[x]]
+            ax.plot(self.xh,yh,color='grey', alpha=0.5)
+            ax.text(self.x[0]-2*self.dx,self.y[x],self.poe[x])
+            lims[1] = self.y[x]
         
         for x in range(0,self.m):
-            plt.plot(self.x[0],self),
-            plt.text(self.x[x] - self.dx/4,self.y[0]-self.dy,self.x[x])
+            xv = [self.x[x],self.x[x]]
+            ax.plot(xv,self.yv,color='grey', alpha=0.5)
+            ax.text(self.x[x] - self.dx/4,self.y[0]-self.dy,self.x[x])
+            lims[0] = self.x[x]
             
         zi = np.sqrt(np.negative(np.log(self.yi)))
-        plt.plot(self.xi,zi,'o')
+       
+        ax.plot(self.xi,zi,'o',label='xi/zi')
         coef = np.polyfit(self.xi,zi,1)
-        xa = 0.5 * np.min(self.xi)
-        xb = 1.5 * np.max(self.xi)
-        xx = np.concatenate(np.array(xa),self.xin,np.array(xb))
+        xa = list([0.5 * np.min(self.xi)])
+        xb = list([1.5 * np.max(self.xi)])
+        xx = np.concatenate((np.array(xa),self.xi,np.array(xb)))
         yy = np.polyval(coef, xx)
-        plt.plot(xx,yy)
+        print('coeficient',coef)
+        print('yy', yy)
+        ax.plot(xx,yy, label='xx/yy')
         
         H1 = self.get_bg_value(self.Htr/self.Hrms, 1)
         H2 = self.get_bg_value(self.Htr/self.Hrms, 2)
@@ -57,12 +68,20 @@ class Rayleigh(BG):
                 
         zzz = np.sqrt(np.negative(np.log(np.subtract(1,yyy))))
         
-        plt.plot(xxx,zzz,'r')
+        ax.plot(xxx,zzz,'r',label='xxx/zzz')
+        ax.legend()
+        
+        plt.setp(ax.get_yticklabels(), visible=False)
+        plt.setp(ax.get_yticklines(),visible=False)
+        plt.setp(ax.get_xticklabels(), visible=False)
+        plt.setp(ax.get_xticklines(),visible=False)
+        plt.ylim(0,lims[1])
+        plt.xlim(0,lims[0])
         plt.show()
             
         
     def array_utility(self,start,end):
-        a = list(start)
+        a = list([start])
         start += .01
         while start < end:
             a.append(start)
@@ -71,8 +90,6 @@ class Rayleigh(BG):
         return a
     
     
-if __name__ == '__main__':
-    r = Rayleigh()
-    
+
     
     
