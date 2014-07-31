@@ -9,9 +9,14 @@ from datetime import datetime
 
 epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
 
-def convert_to_milliseconds(series_length, datestring, date_format_string, frequency):
-        return  np.arange(series_length, dtype='int64') * (1000 / frequency)\
-          + convert_date_to_milliseconds(datestring,date_format_string)
+def convert_to_milliseconds(series_length, datestring, date_format_string, frequency,date_seconds = None):
+        if date_seconds == None:
+            return  np.arange(series_length, dtype='int64') * (1000 / frequency)\
+                + convert_date_to_milliseconds(datestring,date_format_string)
+        else:
+            return  np.arange(series_length, dtype='int64') * (1000 / frequency)\
+                + date_seconds
+
 
 
 def convert_date_to_milliseconds(datestring, date_format_string, date_time = None):
