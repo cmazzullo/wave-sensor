@@ -1,60 +1,53 @@
 #!/usr/bin/env python3
-'''This module interpolates wave data with a sin wave using nonlinear least
+"""This module interpolates wave data with a sin wave using nonlinear least
 squares. If you do this and subtract the best-fit sin wave, you can get the
-water level independent of tides.'''
+water level independent of tides."""
 
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import leastsq
 from scipy.optimize import curve_fit
+from scipy.optimize import brute
+import numpy.fft as fft
+
 def create_data(t):
-    '''Fabricates some pressure data covering time array t'''
-    #   r = np.random.normal(scale=.2, size=len(t))
-    r = 0
-    amplitude = 1
-    phase = 2
-    angfreq =.05
-    p = amplitude * np.sin(angfreq * t + phase) + r
+    """Fabricates some pressure data covering time array t"""
+    r = np.random.normal(scale=.4, size=len(t))
+    p = (1 * np.sin(2 * np.pi * .01 * t) + 
+         .5 * np.sin(2 * np.pi * .05 * t) +
+         .3 * np.sin(2 * np.pi * .1 * t) +
+         .2 * np.sin(2 * np.pi * .2 * t) + 10 + r)
+
     return p
 
 
 def residual(params, t, data):
-    '''Defines a residual between a sin wave based model and the real
-data. Minimizing this will give the coefficients of the best-fit
-sin wave.'''
+    """Residual between sin and data.
+
+    Defines a residual between a sin wave based model and the real
+    data. Minimizing this will give the coefficients of the best-fit
+    sin wave."""
     phase = params[0]
     freq = params[1]
     model = np.sin(freq * t + phase)
     return abs(data - model)
 
 
-# Setup, create wave    
 T = 300
 samfreq = 4  # Samples per second
 t = np.arange(0, T, 1 / samfreq)
 p = create_data(t)
-data = 2 * p / (max(p) - min(p))
-params = [.05, 2]
-out = leastsq(residual, params, args=(t, data))
-freqout = out[0][0]
-phaseout = out[0][1]
+# Massage data
+clean_p = (p - np.average(p)) / (max(p) - min(p))
+Y = np.absolute(fft.fft(clean_p) / len(clean_p))**2
+nu = fft.fftfreq(len(clean_p), 1 / samfreq)
+max_freq = nu[np.argmax(Y[0:len(Y) / 2])]
 
-
-# def func(t, amp, freq, phase):
-#     return amp * np.sin(freq * t + phase)
-
-# y = func(t, 2.5, 1.3, .5)
-# ydata = y + .2 * np.random.normal(size=len(t))
-# popt, pcov = curve_fit(func, t, ydata)
-
-
-def func(x, a, b, c):
-    return a * np.sin(-b * x) + c
-xdata = np.linspace(0, 4, 50)
-y = func(xdata, 2.5, 1.3, 0.5)
-ydata = y + 0.2 * np.random.normal(size=len(xdata))
-popt, pcov = curve_fit(func, xdata, ydata)
-
-plt.plot(func(xdata, *popt))
-plt.plot(ydata)
+tide = np.average(p) + (max(p) - min(p)) * np.sin(2 * np.pi * max_freq * t) / 2
+print(max_freq)
+#plt.plot(nu, Y)
+plt.plot(p, label='Pressure data')
+#plt.plot(p - tide)
+plt.plot(tide, linewidth=1, color='r', label='Calculated tide')
+plt.legend()
 plt.show()

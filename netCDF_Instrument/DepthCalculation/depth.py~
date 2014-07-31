@@ -1,3 +1,4 @@
+
 '''
 Created on Jul 17, 2014
 
@@ -85,7 +86,7 @@ class Depth(NetCDFWriter, NetCDFReader):
                                 index = self.pressure_data.index)
         print('sea - pressure', self.sea_pressure_data)
         
-    def create_pwave_data(self, correct_tides=False):
+    def create_pwave_data(self):
         range_index = np.multiply(np.arange(0,len(self.sea_pressure_data)),.25)
         a =  np.polyfit(range_index, self.sea_pressure_data, 1) # construct the polynomial #np.linalg.lstsq(A, self.sea_pressure_data)[0]
        
