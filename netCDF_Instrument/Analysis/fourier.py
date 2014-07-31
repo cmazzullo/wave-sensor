@@ -1,27 +1,49 @@
 #!/usr/bin/env python3
 """
-This module does frequency analysis on input arrays.
-There are also some plotting utilities in here.
+This module does frequency analysis and plotting.
 
 Typical usage:
 
 p = pressure_readings
-freqs, fft_data = fourier.transform(p)
-fourier.plotfreq(freqs, fft_data)
-fourier.plotlines(freqs, fft_data, lines=5)
+sample_f = 4  # Hz
+freqs, fft_data = fourier.transform(p, sample_f)
+fourier.plot_freq(freqs, fft_data)
+plt.show()
+fourier.quickplot(p, sample_f)
 plt.show()
 """
 
 import sys
-#from netCDF4 import Dataset
 import matplotlib.pyplot as plt
-import math
 import numpy as np
 from numpy import fft
 from numpy.random import randn
 
 
+def transform(p, sample_f):
+    '''Runs a fast fourier transform on p.
+
+    Returns a power spectrum of p in units (unit of p)**2 / Hz, along
+    with the frequency bins that the x-coordinate in the transformed
+    data correspond to.
+
+    Arguments:
+    p -- the pressure array
+    sample_f -- the frequency that the data was sampled at (in Hz)
+    '''
+    y = fft.fft(p) / len(p)  # fourier transform of p
+    # THIS SCALING MIGHT BE WRONG, NEED TO CHECK:
+    Y = np.absolute(2 * y)**2  # power spectrum of p
+    nu = fft.fftfreq(len(p), 1 / sample_f)  # frequency bins
+    return nu, Y
+    
+
+def quickplot(p, sample_f):
+    nu, Y = transform(p, sample_f)
+    plot_time_and_freq(p, nu, Y)
+
 # These methods fabricate data for testing purposes.
+
 def get_pressure_array(fname):
     f = Dataset(fname, 'r', format='NETCDF4_CLASSIC')
     v = f.variables
@@ -29,134 +51,66 @@ def get_pressure_array(fname):
     return P
 
 
-def make_signal(sample_rate, total_time):
-    f = 10
-    t = np.arange(0, total_time + T, T)      # time vector
-    y = (2 * math.sin(f * 2 * math.pi * t) +
-         math.sin(2 * f * 2 * math.pi * t) +
-         math.sin(5 * f * 2 * math.pi * t) +
-         math.sin(6 * f * 2 * math.pi * t))
-
-    rand = randn(L)
-    y = y + rand
-    return y
+def create_data(t):
+    """Fabricates some pressure data covering time array t"""
+    r = np.random.normal(scale=1, size=len(t))
+    p = (1 * np.sin(2 * np.pi * .01 * t) +
+         1 * np.sin(2 * np.pi * .05 * t) +
+         .3 * np.sin(2 * np.pi * .1 * t) +
+         .2 * np.sin(2 * np.pi * .2 * t) + 10 + r)
+    return p
 
 
 # Plotting utilities
 
 def compress(arr, points=1000):
-    """Compresses an array down to the given number of points by 
+    """Compresses an array down to the given number of points by
     averaging."""
-    c = math.ceil(len(P) / M)
-    final = np.zeros(math.floor(len(arr) / c))
+    c = np.ceil(len(arr) / points)
+    final = np.zeros(np.floor(len(arr) / c))
     summed = 0
     for i, e in enumerate(arr):
         summed += np.float64(e)
         if i % c == c - 1:
-            final[math.floor(i / c)] = summed / c
+            final[np.floor(i / c)] = summed / c
             summed = 0
     return final
 
 
-def semilog(Y, nu, nq, label='', xlim=1000):
-    plt.plot(nu[0:nq], np.log(Y[0:nq]))
-#    plt.xticks(np.arange(0, 1, .1), rotation=30, size='small')
-    plt.xlim((0, xlim))
-    plt.grid()
-    plt.ylabel(label)
-    plt.xlabel('Frequency (1/hour)')
+def plot_freq(nu, Y):
+    cutoff = len(nu) / 4
+    plt.plot(nu[1:cutoff], Y[1:cutoff], linewidth=2, color='r')
+    plt.title('Power spectrum')
+    plt.ylabel('Power (Pa**2 / Hz)')
+    plt.xlabel('Frequency (Hz)')
 
 
-def linear_vlines(Y, nu, nq, label='', xlim=1):
-    plt.vlines(nu[0:nq], [0], Y[0:nq], colors='r')
-#    plt.xticks(np.arange(0, 1, .1), rotation=30, size='small')
-    plt.xlim((0, xlim))
-    plt.grid()
-    plt.ylabel(label)
-    plt.xlabel('Frequency (1/hour)')
-
-
-def plot_pressure(time, y):
-    plt.plot(compress(time), compress(y))
-    plt.title('Hurricane pressure readings')
+def plot_pressure(t, p):
+    '''Plots the raw pressure readings'''
+    plt.plot(t, p)
+    plt.title('Pressure readings')
     plt.ylabel('Pressure (bar)')
     plt.xlabel('Time (hours)')
 
-        
-def plot_storm():
-    fname = '/home/chris/measurement-systems.nc'
-    y = get_pressure_array(fname)
-    L = len(y)
-    print(L)
-    Fs = 3                          # sampling frequency (Hz)
-    total_time = L / Fs             # total seconds
-    T = 1 / Fs                      # sample time
-    t = np.arange(0, total_time + T, T)      # time vector
 
-    nyquist = Fs / 2                # highest representable frequency
-    Y = fft.fft(y)
-    Y = np.absolute(Y)**2
-    Y = Y[:len(Y) / 2]
-    nu = fft.fftfreq(L, T)
-    nu = nu * 60  # turns Hz frequency into minute^-1 frequency
-    nu = nu[:len(nu) / 2]
-    time = np.arange(0, L + 1) / (Fs * 60)
-
-    nq_hours = 60 * nyquist # nyquist in minute**-1
-    
-    plt.subplot(2, 1, 1)
-    plot_pressure(time, y)
-
-    plt.subplot(2, 1, 2)
-    # Compressed
-    semilog(compress(Y), compress(nu), nq_hours, 
-            label='ln(F(m)**2)', xlim=nq_hours)
-
-    plt.show()
-    return Y, nu
-
-
-def plot_fourier():
-    Fs = 1000                       # sampling frequency (Hz)
-    total_time = 1                  # total seconds
-    fname = '/home/chris/measurement-systems.nc'
-    y = get_pressure_array(fname)
-    T = 1 / Fs                      # sample time
-    L = Fs * total_time + 1
-    t = np.arange(0, total_time + T, T)      # time vector
-    f = 10                          # frequency in Hz
-
-    nyquist = Fs / 2                # highest representable frequency
-
-    Y = fft.fft(y) / L
-    Y = np.absolute(Y)**2
-    Y = Y[0:nyquist]
-    nu = fft.fftfreq(L + 1, T)
-    nu = nu[0:nyquist] # THIS IS INVALID! MAKE SURE TO CHANGE THIS
-
-    plt.subplot(2, 1, 1)
-    plt.plot(y)
+def plot_time_and_freq(p, nu, Y):
+    # Make a nice plot
     plt.title('Time space and frequency space')
-    plt.ylabel('Amplitude')
-    plt.xlabel('Time (s)')
-
+    plt.subplot(2, 1, 1)
+    plot_pressure(t, p)
     plt.subplot(2, 1, 2)
-    plt.vlines(nu, [0], Y)
-    plt.ylabel('Magnitude')
-    plt.xlabel('Frequency (Hz)')
+    plot_freq(nu, Y)
 
+
+if __name__ == '__main__':
+
+    sample_f = 10  # sampling frequency (Hz)
+    total_time = 300  # total seconds
+    
+    # Fabricate some data
+    t = np.arange(0, total_time, 1 / sample_f)
+    p = create_data(t)
+
+    # Transform to frequency space
+    quickplot(p, sample_f)
     plt.show()
-
-def semilog_vlines(Y, nu, nq, label='', xlim=1000):
-    plt.vlines(nu[1:nq], [0],
-               np.log(Y[1:nq]),
-               colors='r')
-#    plt.xticks(np.arange(0, 1, .1), rotation=30, size='small')
-    plt.xlim((0, xlim))
-    plt.grid()
-    plt.ylabel(label)
-    plt.xlabel('Frequency (1/hour)')
-
-#Y, nu = plot_storm()
-print('done')
-

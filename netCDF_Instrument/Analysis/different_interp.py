@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
-"""This module interpolates wave data with a sin wave using nonlinear least
+"""
+Find tides by interpolation
+
+This module interpolates wave data with a sin wave using nonlinear least
 squares. If you do this and subtract the best-fit sin wave, you can get the
-water level independent of tides."""
+water level independent of tides.
+"""
 
 import numpy as np
 import matplotlib.pyplot as plt
