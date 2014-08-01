@@ -19,7 +19,7 @@ class Depth(NetCDFWriter, NetCDFReader):
     def __init__(self):
         super().__init__()
         self.latitude = 30
-        self.in_file_name = os.path.join("..\Instruments","benchmark", "RBRTester1.nc")
+        self.in_file_name = os.path.join("..\Instruments","benchmark", "infosys2.nc")
         self.air_pressure_file = os.path.join("..\Instruments","benchmark",'infosys2.nc')
         self.pressure_data = None
         self.interp_data = None
@@ -46,10 +46,10 @@ class Depth(NetCDFWriter, NetCDFReader):
         self.pressure_data = self.read_file(self.in_file_name, milliseconds_bool = True)
         self.pressure_data = pd.Series(np.multiply(self.pressure_data,10000), index = self.pressure_data.index)
         if pressure_file_bool == False:
-            start = '20140703'
+            start = '20140513'
             fmt = '%Y%m%d'
             start = datetime.strptime(start, fmt)
-            end = '20140706'
+            end = '20140515'
             end = datetime.strptime(end, fmt)
             ts = self.Buoydata.get_data(start, end)
             self.Buoydata.write_to_netCDF(ts,'air_pressure.nc')
@@ -103,13 +103,10 @@ class Depth(NetCDFWriter, NetCDFReader):
     def create_hyrostatic_pressure_data(self):
         if(self.flat_test):
             self.hydrostat_pressure_data = pd.Series(self.sea_pressure_data, index = self.pressure_data.index)
-            
-            print('hydrostat', self.hydrostat_pressure_data)
         else:
             self.hydrostat_pressure_data = pd.Series(np.subtract(self.sea_pressure_data, \
                                         self.pwave_data), index = self.pressure_data.index)
-            
-            print('hydrostat', self.hydrostat_pressure_data)
+
         
     def create_depth_data(self):
         hstat = self.hydrostat_pressure_data
