@@ -122,10 +122,10 @@ class Time_Domain_Analysis(Depth):
                 if height / wavelength > steepness:
                     print('Wave is too steep!')
                     Hreduced = steepness * wavelength
-                    H.pop()
                     H.append(Hreduced)
                 if height < Hminimum:
                     print('Wave is too small!')
+                    H.pop()
                     Hreduced = Hminimum
                     counter -= 1
                 reduction = Hreduced / Hunreduced
