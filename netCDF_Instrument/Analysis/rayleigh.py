@@ -16,7 +16,6 @@ class Rayleigh(BG):
         self.poe = np.array(np.divide(range(1,11),10.0))[::-1]
         self.poe = np.concatenate((self.poe,[.01,.005,.002,.001,.0005]))
         self.y = np.sqrt((np.negative(np.log(self.poe))))
-        print('wave heights',self.xi)
         self.n = len(self.y)
         self.m = len(self.x)
         self.axis = [[self.x[0], self.x[self.m-1], self.y[0], self.y[self.n-1]]]
@@ -27,9 +26,8 @@ class Rayleigh(BG):
         self.Hrms = Hrms
         self.Htr = Htr
         
-    def exceedance_graph(self):
-        fig = plt.figure(figsize=(16,8))
-        ax = fig.add_subplot(111)
+    def exceedance_graph(self, ax):
+        ax.set_title('Wave Height Distribution (m)')
         lims = [0,1]
         for x in range(0,self.n):
             yh = [self.y[x], self.y[x]]
@@ -51,8 +49,7 @@ class Rayleigh(BG):
         xb = list([1.5 * np.max(self.xi)])
         xx = np.concatenate((np.array(xa),self.xi,np.array(xb)))
         yy = np.polyval(coef, xx)
-        print('coefficient',coef)
-        print('yy', yy)
+       
         ax.plot(xx,yy, label='Rayleigh Fit')
         
         H1 = self.get_bg_value(self.Htr/self.Hrms, 1)
@@ -66,7 +63,7 @@ class Rayleigh(BG):
                 yyy.append(1 - np.exp(np.negative(np.power(xxx[x]/(H1*self.Hrms),2.0))))
             else:
                 yyy.append(1 - np.exp(np.negative(np.power(xxx[x]/(H2*self.Hrms),3.6))))
-        print('yyy', yyy)        
+             
         zzz = np.sqrt(np.negative(np.log(np.subtract(1,yyy))))
         
         ax.plot(xxx,zzz,'r',label='BG Fit')
@@ -78,7 +75,7 @@ class Rayleigh(BG):
         plt.setp(ax.get_xticklines(),visible=False)
         plt.ylim(0,lims[1])
         plt.xlim(0,lims[0])
-        plt.show()
+#         plt.show()
             
         
     def array_utility(self,start,end):
