@@ -25,22 +25,11 @@ def create_data(t):
     return p
 
 
-def residual(params, t, data):
-    """Residual between sin and data.
-
-    Defines a residual between a sin wave based model and the real
-    data. Minimizing this will give the coefficients of the best-fit
-    sin wave."""
-    phase = params[0]
-    freq = params[1]
-    model = np.sin(freq * t + phase)
-    return abs(data - model)
-
-
-T = 300
+T = 300  # total time
 samfreq = 4  # Samples per second
 t = np.arange(0, T, 1 / samfreq)
 p = create_data(t)
+
 # Massage data
 clean_p = (p - np.average(p)) / (max(p) - min(p))
 Y = np.absolute(fft.fft(clean_p) / len(clean_p))**2

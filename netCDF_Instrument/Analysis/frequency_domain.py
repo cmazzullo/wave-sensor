@@ -1,12 +1,76 @@
+"""
+Takes in pressure data, outputs frequency information.
+
+When given an array of sea pressure readings, the script method of
+this module will print out the moments of the data and draw a
+graph of the frequency of the waves.
+
+This module assumes that p is a numpy array! Regular python arrays
+won't work!
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 from netCDF4 import Dataset
 import Analysis.fourier as fourier
-import DepthCalculation.depth as depth 
+import DepthCalculation.depth as depth
 import Analysis.time_domain as time_domain
+import DepthCalculation.depth as depth
+
+rho = 1030  # Density of water in kg / m**3
+g = 9.8  # gravitational acceleration
+
+
+def get_mean_depth(t, p):
+    slope, intercept = np.polyfit(t, p, 1)
+    static_p = slope * t + intercept
+    mean_p = np.mean(static_p)
+    mean_depth = mean_p / (rho * g)
+    return mean_depth
+
+
+def script(p, M, sample_freq=4):
+    t = np.arange(0, len(p)) / sample_freq
+    DT = 1 / sample_freq
+    data = p
+    mean_depth = get_mean_depth(t, p)
+    P, F = crosgk(p, p, len(p), M, DT, 1)
+    energy = np.zeros_like(F)
+    # Moments:
+    m0 = m1 = m2 = m01 = 0
+    deltaF = F[2] - F[1]
+    emax = prmax = 0  # maximum value of pressure energy
+
+    cutoff = .95
+    # Calculates energy spectrum and calculates the moments of the
+    # spectrum
+    prmax = max(P[1][50:2000])
+    print(prmax)
+    print(np.shape(p))
+    for i in range(50, 2000):
+    # prmax = max(P[1])
+    # for i in range(len(P)):
+        T = 1 / F[i]
+        pr = np.sqrt(P[0][i])
+        L = 1.56 * T**2
+        if mean_depth / L < 0.36:
+            L = np.sqrt(g * mean_depth) * (1 - mean_depth / L) * T
+        energy[i] = (np.cosh(2 * np.pi * mean_depth / L)**2 *
+                     pr / (rho * g))
+        if pr / prmax < cutoff:
+            energy[i] = 0
+        if energy[i] > emax:
+            emax = energy[i]
+            Tpeak = T
+        m0 = m0 + energy[i] * deltaF
+        m1 = m1 + energy[i] * deltaF * F[i]
+        m2 = m2 + energy[i] * deltaF * F[i]**2
+        if F[i] > 0:
+            m01 = m01 + energy[i] * deltaF / F[i]
+    return energy
+
 def crosgk(X, Y, N, M, DT, DW):
-    '''Takes two signals and outputs their power cross-spectrum with 
-some smoothing in the frequency domain. 
+    '''Takes two signals and outputs their power cross-spectrum with
+some smoothing in the frequency domain.
 
 INPUT:
 X - signal 1
@@ -55,7 +119,6 @@ DW - data window type (1 for hann, else rectangle)
     Pxy = (2 / (ns * (N**2) * varw * df)) * Pxy
 
     if M > 1:
-        w = []
         w = np.hamming(M)
         w = w / sum(w)
         w1 = np.array(w[np.ceil((M + 1) / 2) : M])
@@ -74,7 +137,6 @@ DW - data window type (1 for hann, else rectangle)
     Pyy = Pyy[0 : N / 2]
     Pxy = Pxy[0 : N / 2]
 
-    F = []
     F = np.arange(0, N / 2) * df
 
     if DW == 1:
@@ -105,7 +167,7 @@ DW - data window type (1 for hann, else rectangle)
 
     return P, F
 
-    
+
 def make_test_data():
     T = 300  # total time in seconds
     f = 4  # sample frequency in Hz
@@ -117,11 +179,11 @@ def make_test_data():
                  for amp, period in zip(amps, periods)]) + noise
     return Pwave
 
-    
+
 def demonstration():
     #    p = make_test_data()
     fname = '/home/chris/measurement-systems.nc'
-    p = get_pressure_array(fname)
+    p = get_prssure_array(fname)
     P, F = crosgk(p, p, len(p), 1, .25, 1)
     plt.plot(fourier.compress(P[2]), 'b')
     plt.xticks(np.arange(0, 1, .1), rotation=30, size='small')
@@ -132,6 +194,7 @@ def demonstration():
     plt.ylabel('Power spectrum (Pa**2 / Hz)')
     plt.show()
 
+    
 def get_pressure_array(fname):
     f = Dataset(fname, 'r', format='NETCDF4_CLASSIC')
     v = f.variables
@@ -139,38 +202,13 @@ def get_pressure_array(fname):
     P -= sum(P) / len(P)
     return P
 
-def script():
-    fname = '/home/chris/measurement-systems.nc'
-    p = get_pressure_array(fname)
-    AverageDepth = (sum(p) / len(p)) / (9.8 * 1027)
-    P, F = crosgk(p, p, len(p), 1, .25, 1)
-    energy = np.zeros_like(F)
-    prmax = max(P[1][50:2000])**(1/2)
-    for i in range(50, 2000):
-        T = 1 / F[i]
-        pr = np.sqrt(P[1][i])
-        L0 = 1.56 * T**2
-        if AverageDepth / L0 < 0.36:
-            L = sqrt(g * AverageDepth) * (1 - AverageDepth / L0) * T
-        else:
-            L = L0
-        energy[i] = (pr / (rho * g)) * cosh(2 * np.pi * AverageDepth / L)**2
-        if pr < cutoff * prmax:
-            energy[i] = 0
-        if energy[i] > emax:
-            emax = energy[i]
-            Tpeak = T
-        m0 = m0 + energy[i] * deltaF
-        m1 = m1 + energy[i] * deltaF * F[i]
-        m2 = m2 + energy[i] * deltaF * F[i]**2
-        if F[i] > 0:
-            m01 = m01 + energy[i] * deltaF / F[i]
-    
-        return energy
+fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
+         'wave-guage-14-07-2014.csv.nc')
+p = get_pressure_array(fname)
 
-energy = script()
-    
+energy = script(p, 10)
+
 #demonstration()
-    
+
 if __name__ == '__main__':
-    demonstration()    
+    pass

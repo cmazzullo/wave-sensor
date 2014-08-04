@@ -247,8 +247,8 @@ class Wavegui:
         if not all(devices):
             return
 
-        start_points = [self.plot_pressure(d) for d in devices]
-
+     # start_points = [self.plot_pressure(d) for d in devices]
+        start_points = [0 for d in devices]
         [self.write_file(d, s) for d, s in zip(devices, start_points)]
 
         d = MessageDialog(self.root, message="Success! Files saved.",

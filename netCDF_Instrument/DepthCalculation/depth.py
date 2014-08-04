@@ -93,7 +93,16 @@ class Depth(NetCDFWriter, NetCDFReader):
          
         self.pwave_data = pd.Series(np.subtract(self.sea_pressure_data,p4(range_index)), \
                                     index=self.pressure_data.index)
-        
+
+        samfreq = 4  # the sampling frequency
+        p = self.sea_pressure_data
+        clean_p = (p - np.average(p)) / (max(p) - min(p))
+        Y = np.absolute(fft.fft(clean_p) / len(clean_p))**2
+        nu = fft.fftfreq(len(clean_p), 1 / samfreq)
+        max_freq = nu[np.argmax(Y[0:len(Y) / 2])]
+        tide = (np.average(p) + (max(p) - min(p)) *
+                np.sin(2 * np.pi * max_freq * t) / 2)
+        self.pwave_data = pd.Series(self.sea_pressure_data - tide, index=self.pressure_data.index)
 #         plt.plot(self.sea_pressure_data.index,self.sea_pressure_data, label='Original data')
 #         plt.plot(self.sea_pressure_data.index, p4(range_index),'r', label='FittedLine', linewidth=1.0, color='red')
 #         plt.legend()
@@ -145,7 +154,7 @@ class Depth(NetCDFWriter, NetCDFReader):
         data_store.latitutde = self.latitude
         data_store.longitude = self.longitude
         self.out_filename = 'DepthCalc.nc'
-#       
+
         #Tests#
         self.data_tests.depth_data = data_store.z_data
         self.data_tests.pressure_data = data_store.pressure_data
