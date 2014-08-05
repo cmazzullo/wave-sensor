@@ -102,7 +102,7 @@ class Time_Domain_Analysis(Depth):
         H = []
 
         for i in range(len(Pwave) - 1):
-            if (Pwave[i] * Pwave[i+1]) < 0 and Pwave[i+1] < 0:
+            if Pwave[i] > 0 and Pwave[i+1] < 0:
                 print(i)
                 periods.append(period)
                 # w**2 = g * k, the dispersion relation for deep water

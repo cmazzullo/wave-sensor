@@ -7,21 +7,6 @@ import numpy as np
 g = 9.8                         # gravity
 rho = 1030                      # density of seawater in kg/m**3
 
-def compress_np(arr, c=10):
-    final = np.zeros(math.floor(len(arr) / c))
-    summed = 0
-    for i, e in enumerate(arr):
-        summed += np.float64(e)
-        if i % c == c - 1:
-            final[math.floor(i / c)] = summed / c
-            summed = 0
-    return final
-
-def compress(P):
-    M = 500
-    c = math.ceil(len(P) / M)
-    p = compress_np(P, c)
-    return p
 
 def make_pressure(length):
     sample_freq = 4
@@ -37,8 +22,6 @@ def make_pressure(length):
     plt.show()
     return P
 
-def test():
-    make_pressure(300) # 5 minutes of pressure data
 
 def create_pwave_data(P):
     freq = 4
@@ -48,11 +31,8 @@ def create_pwave_data(P):
     Pwave = P - Pstatic
     return Pstatic, Pwave
 
-fname = '/home/chris/measurement-systems.nc'
-#P = get_pressure_array(fname)
-P = make_pressure(100)
 
-def get_wave_data(pressure_data):
+def get_wave_data_method2(pressure_data, timestep):
     P = pressure_data
     Pstatic, Pwave = create_pwave_data(P)
     depth = Pstatic / (rho * g)
@@ -66,7 +46,6 @@ def get_wave_data(pressure_data):
     start = period = counter = Pmin = Pmax = 0
     periods = []                    # periods of found waves
     eta = np.zeros(len(P))
-    interval = 1 / 4
     steepness = 0.03
     Hminimum = 0.10
 
@@ -82,8 +61,8 @@ def get_wave_data(pressure_data):
             if depth[i] / wavelength < 0.36:
                 wavelength = ((g * depth[i])**(1/2) *
                               (1 - depth[i] / wavelength) * period)
-                height = (((Pmax - Pmin) / (rho * g)) *
-                          np.cosh(2 * np.pi * depth[i] / wavelength))
+            height = (((Pmax - Pmin) / (rho * g)) *
+                        np.cosh(2 * np.pi * depth[i] / wavelength))
             H.append(height)
             Hunreduced = Hreduced = height
             print('height = ' + str(height))
@@ -104,8 +83,16 @@ def get_wave_data(pressure_data):
             start = i + 1
             period = Pmax = Pmin = 0
             counter += 1
-        period = period + interval
+        period = period + timestep
         if Pwave[i] > Pmax:
             Pmax = Pwave[i]
         if Pwave[i] < Pmin:
             Pmin = Pwave[i]
+    return eta
+
+if __name__ == '__main__':
+    fname = '/home/chris/measurement-systems.nc'
+    #P = get_pressure_array(fname)
+    P = make_pressure(300)
+    eta = get_wave_data_method2(P, .25)
+    plt.plot(eta); plt.show()
