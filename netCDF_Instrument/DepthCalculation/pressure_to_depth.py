@@ -13,7 +13,7 @@ g = 9.8  # gravity (m / s**2)
 rho = 1030  # density of seawater (kg / m**3)
 
       
-def make_height_data(t, p, z, H, timestep, amp_cutoff):
+def pressure_to_depth(t, p, z, H, timestep, amp_cutoff):
     """Takes an array of pressure readings and creates wave height data.
     
     t -- the time array
@@ -29,10 +29,11 @@ def make_height_data(t, p, z, H, timestep, amp_cutoff):
 
     for i in range(len(amps)):
         # Filter out the noise with amp_cutoff
-        if np.absolute(amps[i] / len(p)) >= amp_cutoff:
+        if np.absolute(amps[i] / len(p)) >= amp_cutoff :
             k = omega_to_k(freqs[i] * 2 * np.pi, H)
             # Scale, applying the diffusion relation
-            newamps[i] = pressure_to_eta(amps[i], k, z, H)
+            a = pressure_to_eta(amps[i], k, z, H)
+            newamps[i] = a
 
     # Convert back to time space
     eta = np.fft.irfft(newamps)    
@@ -59,7 +60,6 @@ def pressure_to_eta(del_p, k, z, H):
     
     
 def eta_to_pressure(eta, k, z, H):
-    """Converts the non-hydrostatic pressure to height above z=0."""
     c = _coefficient(k, z, H)
     return eta * c
     

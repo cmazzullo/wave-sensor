@@ -12,9 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from netCDF4 import Dataset
 import Analysis.fourier as fourier
-import DepthCalculation.depth as depth
-import Analysis.time_domain as time_domain
-import DepthCalculation.depth as depth
+
 
 rho = 1030  # Density of water in kg / m**3
 g = 9.8  # gravitational acceleration
@@ -31,7 +29,6 @@ def get_mean_depth(t, p):
 def script(p, M, sample_freq=4):
     t = np.arange(0, len(p)) / sample_freq
     DT = 1 / sample_freq
-    data = p
     mean_depth = get_mean_depth(t, p)
     P, F = crosgk(p, p, len(p), M, DT, 1)
     energy = np.zeros_like(F)
@@ -60,7 +57,6 @@ def script(p, M, sample_freq=4):
             energy[i] = 0
         if energy[i] > emax:
             emax = energy[i]
-            Tpeak = T
         m0 = m0 + energy[i] * deltaF
         m1 = m1 + energy[i] * deltaF * F[i]
         m2 = m2 + energy[i] * deltaF * F[i]**2
@@ -183,7 +179,7 @@ def make_test_data():
 def demonstration():
     #    p = make_test_data()
     fname = '/home/chris/measurement-systems.nc'
-    p = get_prssure_array(fname)
+    p = get_pressure_array(fname)
     P, F = crosgk(p, p, len(p), 1, .25, 1)
     plt.plot(fourier.compress(P[2]), 'b')
     plt.xticks(np.arange(0, 1, .1), rotation=30, size='small')

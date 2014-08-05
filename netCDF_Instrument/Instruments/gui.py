@@ -5,7 +5,6 @@ matplotlib.use('TkAgg')
 from collections import OrderedDict
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.backends.backend_tkagg import NavigationToolbar2TkAgg
-from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
 from tkinter import *
 from tkinter import ttk
@@ -13,16 +12,10 @@ from tkinter import filedialog
 from pytz import timezone
 import os
 import numpy as np
-import time
-
-from tkinter import *
-from tkinter import ttk
-from tkinter import filedialog
 
 import sys
 sys.path.append('..')
 
-from Instruments.sensor import Sensor
 from Instruments.rbrsolo import RBRSolo
 from Instruments.leveltroll import Leveltroll
 from Instruments.waveguage import Waveguage
@@ -119,7 +112,6 @@ class Wavegui:
         tabs.pack(fill=BOTH, expand=1)
 
         f.update()
-
         return f
 
     def make_global_frame(self, root, files=False):
@@ -153,7 +145,6 @@ class Wavegui:
         user."""
 
         buttons = ttk.Frame(f, padding="3 3 12 12")
-
         ttk.Button(buttons, text="Select File(s)",
                    command=self.select_files).grid(column=0, row=0)
         ttk.Button(buttons, text="Save Globals",
@@ -162,7 +153,6 @@ class Wavegui:
                    command=self.load_globals).grid(column=2, row=0)
         ttk.Button(buttons, text="Quit",
                    command=root.destroy).grid(column=3, row=0)
-
         return buttons
 
     def make_global_buttons_somefiles(self, f):
@@ -178,16 +168,14 @@ class Wavegui:
                    command=self.save_globals).grid(column=1, row=0)
         ttk.Button(b, text="Load Globals",
                    command=self.load_globals).grid(column=2, row=0)
-        # ttk.Button(b, text="Remove All Files",
-        #            command=self.remove_all).grid(column=3, row=0)
         ttk.Button(b, text="Load Default in All Files",
                    command=self.load_per_file).grid(column=4, row=0)
         ttk.Button(b, text="Process Files",
                    command=self.process_files).grid(column=5, row=0)
         ttk.Button(b, text="Quit",
                    command=root.destroy).grid(column=6, row=0)
-
         return b
+
 
     def make_global_fields(self):
 
@@ -205,8 +193,6 @@ class Wavegui:
         d = OrderedDict([(v.name, v) for v in l])
         return d
 
-# Methods on buttons
-# Global
 
     def select_files(self):
         fnames = filedialog.askopenfilename(multiple=True)
@@ -214,6 +200,7 @@ class Wavegui:
             self.datafiles = [Datafile(fname, self.instruments)
                               for fname in fnames]
             self.initialize_somefiles(self.root)
+
 
     def add_files(self):
         old_fnames = [d.fields['in_filename'].get()
@@ -228,9 +215,11 @@ class Wavegui:
         self.datafiles += new_datafiles
         self.initialize_somefiles(self.root)
 
+
     def remove_all(self):
         self.datafiles = []
         self.initialize_nofiles(self.root)
+
 
     def proceed(self, datafiles):
         message = 'This will overwrite your entries. Are you sure?'
@@ -239,6 +228,7 @@ class Wavegui:
 
         self.root.wait_window(d.top)
         return d.boolean
+
 
     def process_files(self):
         devices = [self.read_file(datafile) for datafile in
@@ -258,11 +248,13 @@ class Wavegui:
         d.top.destroy()
         self.root.destroy()
 
+
     def plot_pressure(self, device):
 
         e = EmbeddedPlot(self.root, device.pressure_data[:])
         self.root.wait_window(e.top)
         return e.xdata
+
 
     def read_file(self, datafile):
 
@@ -293,12 +285,14 @@ class Wavegui:
         d.top.destroy()
         return device
 
+
     def write_file(self, device, start_point):
         device.user_data_start_flag = start_point
         out_file = device.out_filename
         if os.path.isfile(out_file):
             os.remove(out_file)
         device.write()
+
 
     def load_per_file(self):
         # if none of the entries have been filled out...
@@ -314,12 +308,14 @@ class Wavegui:
                         for line, var in zip(f, l):
                             var.stringvar.set(line.rstrip())
 
+
     def save_globals(self):
         with open(self.global_history, 'w') as f:
             for var in self.global_fields.values():
                 if var.autosave:
                     print(var.stringvar.get())
                     f.write(var.stringvar.get() + '\n')
+
 
     def load_globals(self):
         b = not any(v.stringvar.get()
@@ -334,6 +330,7 @@ class Wavegui:
                     for line, var in zip(f, l):
                         var.stringvar.set(line.rstrip())
 
+
     def load_entries(self, datafile):
         b = not any(v.stringvar.get()
                     for v in datafile.fields.values()
@@ -347,6 +344,7 @@ class Wavegui:
                     for line, var in zip(f, l):
                         var.stringvar.set(line.rstrip())
 
+
     def save_entries(self, datafile):
         with open(self.per_file_history, 'w') as f:
             for var in datafile.fields.values():
@@ -354,12 +352,14 @@ class Wavegui:
                     print(var.stringvar.get())
                     f.write(var.stringvar.get() + '\n')
 
+
     def remove_file(self, datafile):
         self.datafiles.remove(datafile)
         if self.datafiles:
             self.initialize_somefiles(self.root)
         else:
             self.initialize_nofiles(self.root)
+
 
     def make_widget(self, frame, var, row):
         label = var.label
@@ -416,8 +416,7 @@ class Datafile:
              Variable('altitude',
                       name_in_device='z',
                       label='Altitude (meters):',
-                      doc="Altitude in meters with respect to the "
-                      "NAVD88 geoid.",
+                      doc="Depth below reference point",
                       valtype=np.float32,
                       autosave=False),
              Variable('salinity',
