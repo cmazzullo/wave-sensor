@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import Analysis.nc as nc
 from scipy.optimize import newton
-from Analysis.method2 import get_wave_data_method2
+import Analysis.pressure_to_depth as p2d
 
 
 # Constants
@@ -34,9 +34,9 @@ def make_test_pressure(z, H, t, *args):
         A = arg[0]
         k = arg[1]
         phase = arg[2]
-        omega = k_to_omega(k, H)
+        omega = p2d.k_to_omega(k, H)
         eta = A * np.cos(omega * t + phase)
-        p += eta_to_pressure(eta, k, z, H)
+        p += p2d.eta_to_pressure(eta, k, z, H)
     return p + hydrostatic_pressure(z)
 
 
@@ -108,47 +108,6 @@ def make_test_netcdf(fname, t, z, H, waves):
     p = make_test_pressure(z, t, *waves)
     nc.write(fname, t, p)
 
-
-# This is maybe a bad idea
-def make_height_data(t, p, z, H, timestep, amp_cutoff):
-    """Takes an array of pressure readings and creates wave height data.
-    
-    t -- the time array
-    p -- an array of pressure readings such that len(t) == len(p)
-    timestep -- the time interval in between pressure readings
-    amp_cutoff -- any fluctuations in the pressure that are less than this
-                  threshold won't be used in the height data. 
-    """
-    sample_freq = 1 / timestep
-    nyquist = sample_freq / 2
-    amps = np.fft.rfft(p)
-    freqs = np.fft.rfftfreq(len(p), d=timestep)
-    newamps = np.zeros_like(amps)
-    ks = []
-    for i in range(len(amps)):
-        if np.absolute(amps[i] / len(p)) < amp_cutoff:
-            newamps[i] = 0
-        else:
-            k = omega_to_k(freqs[i] * 2 * np.pi, H)
-            ks.append(coefficient(k, z, H))
-            newamps[i] = pressure_to_eta(amps[i], k, z, H)
-
-    eta = np.fft.irfft(newamps)    
-    return eta
-
-
-# This doesn't work right now
-def make_height_data_zero_crossings(t, p, z, H, timestep):
-    """Calculates eta using zero crossings and the dispersion relation."""
-    zero_crossings = [i for i in range(len(p) - 1) 
-                      if p[i] > 0 and p[i + 1] < 0]
-    eta = np.zeros_like(t)
-    for start, end in zip(zero_crossings[:-1], zero_crossings[1:]):
-        period = (end - start) * timestep
-        omega = 2 * np.pi / period
-        k = omega_to_k(omega, H)
-    return eta
-    
 
 def rmse_by_amp_cutoff(amp_cutoff, z, H, timestep, t, waves):
     real_eta = make_test_height(t, *waves)
