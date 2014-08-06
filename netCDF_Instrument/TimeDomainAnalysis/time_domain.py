@@ -10,7 +10,7 @@ import numpy as np
 from DepthCalculation.depth import Depth
 
 class Time_Domain_Analysis(Depth):
-    
+    """This calculates the number,length, and height of waves in a time series with depth, and pressure data"""
     def __init__(self):
         self.counter = 0
         self.Pmin = 0
@@ -37,6 +37,7 @@ class Time_Domain_Analysis(Depth):
         self.new_data = [x for x in self.pwave_data]
 
     def method1(self):
+        """Uses the average period and specified limits to identify waves"""
         self.initialize()
         self.dates = [x for x in self.pressure_data.index]
         pwave = [x for x in self.pwave_data]

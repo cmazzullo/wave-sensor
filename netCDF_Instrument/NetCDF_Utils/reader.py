@@ -41,7 +41,7 @@ class NetCDFReader(object):
         self.longitude = longitude[:]
        
         print(self.latitude,self.longitude)
-        #checks to see if ther is temperature or not
+        #checks to see if there is temperature or not
         if str(nc.variables.keys).find('temperature_at_transducer') != -1:
                 temperature = nc.variables['temperature_at_transducer']
       

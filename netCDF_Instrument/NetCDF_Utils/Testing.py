@@ -8,7 +8,8 @@ from bitarray import bitarray as bit
 import sys
 sys.path.append('..')
 class DataTests(object):
-    
+    """QC tests are performed on any data written to a netcdf file"""
+     
     def __init__(self):
         self.five_count_list = list()
         self.pressure_data = None
@@ -25,7 +26,8 @@ class DataTests(object):
        
     def select_tests(self, data_selection):
         '''Runs all of the netcdf Tests on the selected data, then performs an or binary mask (and) for
-        those that passed, 1 for pass 0 for fail, the documentation is also included in file'''  
+        those that passed, 1 for pass 0 for fail, and returns an unisgned 4bit integer, leading 1 is just a placeholder'''  
+        
         if data_selection == 'depth':
             return self.run_tests(self.depth_data, self.valid_depth_range, self.depth_max_rate_of_change)
         elif data_selection == 'temperature':
@@ -37,6 +39,8 @@ class DataTests(object):
         
   
     def run_tests(self, data, data_range, rate_of_change):
+        """Runs all of the data tests"""
+        
         bit_array1 = [self.get_1_value(x) for x in data]
         bit_array2 = [self.get_2_value(x, data_range) for x in data]
         bit_array3 = [self.get_3_value(x, rate_of_change) for x in data]
@@ -47,6 +51,8 @@ class DataTests(object):
     
    
     def get_1_value(self,x):
+        """Checks to see if the sensor recorded 5 identical measurements previous the the current measurement, if so
+        indicate an issue with a zero in the 1 bit"""
            
         if len(self.five_count_list) > 5:
             self.five_count_list.pop()
@@ -55,27 +61,29 @@ class DataTests(object):
         self.five_count_list.insert(0,x)
         
         if flags <= 4:
-            return bit('111')
+            return bit('1111')
         else:
-            return bit('110')  
+            return bit('1110')  
             
     def get_2_value(self, x, data_range):
+        '''Checks if the data point is within a valid range'''
         
         if np.greater_equal(x,data_range[0]) and \
         np.less_equal(x,data_range[1]):
-            return bit('111')
+            return bit('1111')
         else:
-            return bit('101')
+            return bit('1101')
         
     def get_3_value(self, x, rate_of_change):
-      
+        '''Checks to see if rate of change is within valid range'''
+        
         if np.isnan(self.prev_value) or \
         np.less_equal(np.abs(np.subtract(x,self.prev_value)), rate_of_change):
             self.prev_value = x
-            return bit('111')
+            return bit('1111')
         else:
             self.prev_value = x
-            return bit('011')
+            return bit('1011')
         
 if __name__ == '__main__':
     test = DataTests()

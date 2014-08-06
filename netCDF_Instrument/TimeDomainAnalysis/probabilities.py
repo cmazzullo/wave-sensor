@@ -8,6 +8,7 @@ from TimeDomainAnalysis.time_domain import Time_Domain_Analysis
 from TimeDomainAnalysis.rayleigh import Rayleigh as ray
 from TimeDomainAnalysis.BG import BG
 import matplotlib.pyplot as plt
+
 class Probabilities(Time_Domain_Analysis):
     """This class sorts the wave data from the depth script and caluculates the probability of exceedance
     using both a rayliegh, and a modified rayleigh probability distribution"""

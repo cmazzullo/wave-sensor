@@ -104,10 +104,10 @@ class DataStore(object):
                         'compression': "not used at this time",
                       }
         self.z_var_qc = {
-                                'flag_masks': '111 110 101 011',
-                                'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, \
+                                'flag_masks': '1111 1110 1101 1011',
+                                'flag_meanings': "no_known_bad_data last_five_vals_identical, outside_valid_range, \
                                     invalid_rate_of_change",
-                                'comment': '1 signifies the value passed all tests and a 0 flags a failed test'
+                                'comment': '1 signifies the value passed all tests and a 0 flags a failed test, leading 1 is a placeholder'
                                 }
         self.pressure_var = {
                              'long_name': "sensor pressure record",
@@ -318,6 +318,10 @@ class DataStore(object):
             
     
     def set_attributes(self, var_dict):
+        """Sets attributes in script
+        
+        var_dict -- key- attr name value- attr value"""
+        
         for x in var_dict:
             for y in var_dict[x]:
                 var1 = self.__dict__[x]
