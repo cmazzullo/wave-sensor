@@ -6,14 +6,14 @@ Created on Mon Aug  4 08:48:12 2014
 """
 import numpy as np
 from scipy.optimize import newton
-
+import matplotlib.pyplot as plt
 
 # Constants
 g = 9.8  # gravity (m / s**2)
 rho = 1030  # density of seawater (kg / m**3)
 
       
-def pressure_to_depth(t, p, z, H, timestep, amp_cutoff):
+def pressure_to_depth(t, p, z, H, timestep, gate=0, window=False, cutoff=-1):
     """Takes an array of pressure readings and creates wave height data.
     
     t -- the time array
@@ -23,21 +23,43 @@ def pressure_to_depth(t, p, z, H, timestep, amp_cutoff):
                   threshold won't be used in the height data. 
     """
     # Put the pressure data into frequency space
-    amps = np.fft.rfft(p)
-    freqs = np.fft.rfftfreq(len(p), d=timestep)
-    newamps = np.zeros_like(amps)
+    n = len(p)
+    
+    if window:
+        window_func = np.hamming(n)
+        scaled_p = p * window_func  # scale by a hamming window function
+    else:
+        scaled_p = p
+        
+    amps = np.fft.rfft(scaled_p)
+    freqs = np.fft.rfftfreq(n, d=timestep)
 
+    new_amps = np.zeros_like(amps)
+    
     for i in range(len(amps)):
         # Filter out the noise with amp_cutoff
-        if np.absolute(amps[i] / len(p)) >= amp_cutoff :
-            k = omega_to_k(freqs[i] * 2 * np.pi, H)
-            # Scale, applying the diffusion relation
-            a = pressure_to_eta(amps[i], k, z, H)
-            newamps[i] = a
-            
+        if np.absolute(amps[i] / n) >= gate:
+            if cutoff == -1 or freqs[i] < cutoff:
+                k = omega_to_k(freqs[i] * 2 * np.pi, H)
+                # Scale, applying the diffusion relation
+                a = pressure_to_eta(amps[i], k, z, H)
+                new_amps[i] = a
+    print(len(new_amps))
     # Convert back to time space
-    eta = np.fft.irfft(newamps)
+    eta = np.fft.irfft(new_amps)
+    if window:
+        eta = eta / window_func
     return eta
+    
+
+def _frequency_to_index(f, n, timestep):
+    """Gets the index of a frequency in np.fftfreq.
+    
+    f -- the desired frequency
+    n -- the length given to fftfreq
+    sample_freq -- the sampling frequency
+    """
+    return np.round(n * f * timestep)
     
     
 def omega_to_k(omega, H):
