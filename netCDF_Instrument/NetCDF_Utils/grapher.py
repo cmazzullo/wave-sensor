@@ -1,9 +1,3 @@
-'''
-Created on Jul 14, 2014
-
-@author: Gregory
-'''
-import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import numpy as np
@@ -17,6 +11,7 @@ from NetCDF_Utils.edit_netcdf import NetCDFReader
 # pd.set_option('display.mpl_style', 'default')
 #This is for pressure and temperature data for now, will be extended as needed
 class Grapher(NetCDFReader):
+    """These are utitlities to graph data, will be extended if there is time"""
     
     def __init__(self):
         super().__init__()
@@ -46,20 +41,27 @@ class Grapher(NetCDFReader):
         self.ymin = 10000000
         
     def plot_part(self, series, name, subplot = None, zero_mean = False):
+        """Plots the x and y of any data
+        
+        series -- the data in the form of a panda series
+        name -- name of the data
+        subplot -- if a subplot is passed in use it to plot data
+        zero_mean -- a bool to indicate that all points of data will be subtracted by the mean"""
+        
         skipIndex = 1
         if len(series) > 10000:
             skipIndex = int(len(series) / 10000)
             if skipIndex < 100:
                 skipIndex = 100
             
-        max = np.max(series[::skipIndex])   
-        min = np.min(series[::skipIndex])
+        max_val = np.max(series[::skipIndex])   
+        min_val = np.min(series[::skipIndex])
         mean = np.mean(series[::skipIndex])
-        print(min, max, mean)
-        if max > self.ymax:
-            self.ymax = max
-        if min < self.ymin:
-            self.ymin = min
+        
+        if max_val > self.ymax:
+            self.ymax = max_val
+        if min_val < self.ymin:
+            self.ymin = min_val
         
        
         #color check for subplots to keep consistent
@@ -99,6 +101,12 @@ class Grapher(NetCDFReader):
         self.ymin = 10000000
         
     def plot_multiple_series_graphs(self, pressure_bool, zero_mean = False, ylimits = None):
+        """Plots multiple pressure series together or multiple temperature series
+        
+        pressure_bool -- plot pressure data, otherwise plot temperature data
+        zero_mean -- subtract mean from all pint in data, or not
+        ylimits -- set limits for vertical axis
+        """
         self.re_initialize()
         
         fig = plt.figure(figsize=(12,4))
@@ -145,17 +153,18 @@ class Grapher(NetCDFReader):
             p3, = plt.plot(time,np.repeat(self.ymax, len(time)), color="orange", \
                     linewidth="1.0", linestyle="--")
             self.plot_data.append(p3)
-            p4, = plt.plot(time,np.repeat(self.ymin, len(time)), color="orange", \
-                    linewidth="1.0", linestyle="--")
+#             p4, = plt.plot(time,np.repeat(self.ymin, len(time)), color="orange", \
+#                     linewidth="1.0", linestyle="--")
         
         if ylimits != None:
             plt.ylim(ylimits[0],ylimits[1])
             
         plt.legend(self.plot_data, self.names,bbox_to_anchor=(.80, 1.10), loc=2, borderaxespad=0.0)
-   #     plt.xlim(time[0],time[::-1][0] + datetime.timedelta(minutes=5))
+        #plt.xlim(time[0],time[::-1][0] + datetime.timedelta(minutes=5))
         plt.show()
         
     def plot_both_together(self, zero_mean = False, pressure_ylimits = None, temperature_ylimits = None):
+        """Makes a subplot for both the pressure and temperature data"""
         self.re_initialize()
         self.get_pressure_temperature_data()
         fig = plt.figure(figsize=(16,8))
