@@ -10,7 +10,7 @@ import numpy as np
 from DepthCalculation.depth import Depth
 
 class Time_Domain_Analysis(Depth):
-    
+    """This calculates the number,length, and height of waves in a time series with depth, and pressure data"""
     def __init__(self):
         self.counter = 0
         self.Pmin = 0
@@ -37,6 +37,7 @@ class Time_Domain_Analysis(Depth):
         self.new_data = [x for x in self.pwave_data]
 
     def method1(self):
+        """Uses the average period and specified limits to identify waves"""
         self.initialize()
         self.dates = [x for x in self.pressure_data.index]
         pwave = [x for x in self.pwave_data]
@@ -80,19 +81,14 @@ class Time_Domain_Analysis(Depth):
         self.periods = np.repeat(self.tmean, len(pwave))
             
     def method2(self):
-            
+        """Downward crossing method: if the function crosses the x axis in
+        an interval and if its endpoint is below the x axis, we've found
+        a new wave."""  
+         
         self.initialize()
         Pwave = [x for x in self.pwave_data]
-#         P = pressure_data
-#         freq = 4
-#         t = np.arange(0, len(P)) / freq
-#         slope, intercept =  np.polyfit(t, P, 1)
-#         Pstatic = slope * t + intercept
-#         Pwave = P - Pstatic
         depth = [x for x in self.depth_data]
-        # Downward crossing method: if the function crosses the x axis in
-        # an interval and if its endpoint is below the x axis, we've found
-        # a new wave.
+        
         start = period = counter = Pmin = Pmax = 0
         periods = []                    # periods of found waves
         eta = np.zeros(len(Pwave))

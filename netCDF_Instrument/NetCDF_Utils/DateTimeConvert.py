@@ -1,7 +1,5 @@
 '''
-Created on Jul 21, 2014
-
-@author: Gregory
+This provides utilities to convert datetime to milliseconds and vice versa as needed
 '''
 import numpy as np
 import pytz

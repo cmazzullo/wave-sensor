@@ -9,6 +9,8 @@ from datetime import datetime
 import pytz
 
 class export_netCDF(NetCDFWriter):
+    """Exports the combined sin and cos waves that make up a time series of presure to a netcdf file"""
+    
     def __init__(self, values, equation):
         super().__init__()
         self.pressure_data = values
@@ -16,6 +18,7 @@ class export_netCDF(NetCDFWriter):
         self.out_filename = 'combo.nc'
         
     def export(self):
+        """Calculates milliseconds given the 4hz freq, then writes data to netcdf file"""
         self.vstore.pressure_data = self.pressure_data
         first_date_seconds = date_convert.convert_date_to_milliseconds(None, None, datetime.now(tz=pytz.utc))
         self.vstore.utc_millisecond_data = date_convert.convert_to_milliseconds(len(self.pressure_data), None, None,\

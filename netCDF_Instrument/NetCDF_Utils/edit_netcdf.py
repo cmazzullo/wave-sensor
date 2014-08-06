@@ -19,6 +19,7 @@ except:
     print('Check Packaging')
 
 class NetCDFReader(object):
+    """Reads netcdf4 file"""
     
     def __init__(self):
         self.in_file_name = os.path.join("..\Instruments","benchmark","RBRtester2.nc")
@@ -35,6 +36,12 @@ class NetCDFReader(object):
     
       
     def read_file(self,file_name,pressure_bool = True, series_bool = True, milliseconds_bool = False):
+        """Read a .nc file
+        
+        pressure_bool -- get pressure, otherwise get temperature
+        series_bool -- get a series, otherwise get a dataframe
+        milliseconds_bool -- get milliseconds as index (divide by 100 since panda series cannot take longs as indexes, 
+        otherwise convert to datetime"""
         
         nc = netCDF4.Dataset(file_name)
         times = nc.variables['time']
@@ -59,6 +66,12 @@ class NetCDFReader(object):
             return self.return_data(pressure, temperature, time_convert, series_bool, pressure_bool)
         
     def return_data(self, pressure, temperature, index, series_bool, pressure_bool, milli_bool = False):
+        """Read a .nc file
+        
+        pressure_bool -- get pressure, otherwise get temperature
+        series_bool -- get a series, otherwise get a dataframe
+        milliseconds_bool -- get milliseconds as index (divide by 100 since panda series cannot take longs as indexes, 
+        otherwise convert to datetime"""
         if series_bool == True:
             if milli_bool == True:
                 if type(index) != 'datetime.datetime':  # PAndas series cannot take a long as an index

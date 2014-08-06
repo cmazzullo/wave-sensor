@@ -4,7 +4,13 @@ Created on Jul 28, 2014
 @author: Gregory
 '''
 import numpy as np
+
+
 class BG(object):
+        """This class contains the values based on the Battjes-Gratnjik paper computing an offset for
+        the rayleigh probability distribution since the rayleigh tends to overestimate the probability of waves
+        which can possibly have financial implications"""
+
                     # Htr  H1     H2    H1/3   H1/10   H2%   H1%  H0.1%
         table = [[0.05, 12.193, 1.06, 1.279, 1.466, 1.548, 1.62, 1.813],
                     [0.1, 7.003, 1.06, 1.279, 1.466, 1.548, 1.62, 1.813],
