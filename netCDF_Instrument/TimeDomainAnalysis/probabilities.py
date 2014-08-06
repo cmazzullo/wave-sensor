@@ -37,6 +37,7 @@ class Probabilities(Time_Domain_Analysis):
     def analyze_probabilites(self):
         self.counter = len(self.individual_waves)
         self.Hsorted = np.sort(np.array(self.individual_waves))
+        
         self.Hrms = np.sqrt(np.mean(np.power(self.Hsorted,2)))
         self.HMean = np.mean(self.Hsorted)
         Tsorted = np.sort(np.array(self.periods))
@@ -86,7 +87,6 @@ class Probabilities(Time_Domain_Analysis):
         fig = plt.figure(figsize=(16,8))
         
         ax = fig.add_subplot(111)
-        
         rayleigh_plot = ray(self.Hsorted,self.probsorted2,xmark,self.Hrms,self.Htr)
         rayleigh_plot.exceedance_graph(ax)
 #         plt.setp(ax2.get_yticklabels(), visible=False)
@@ -98,22 +98,24 @@ class Probabilities(Time_Domain_Analysis):
         text += 'Hmean (m) = %i\n' % self.HMean
         text += 'Hrms (m) = %d\n' % self.Hrms
         text += 'Hs (m) = %d\n' % self.HS
-        text += 'T{mean} (s) = %d\n' % self.tmean
+        text += 'Tmean (s) = %d\n' % self.tmean
         text += 'T_1/3 = (s) = %d\n' % self.Htr
-        text += 'H_{tr} (m) (acc BG) = %d\n' % (1/self.TanAlfa)
+        text += 'Htr (m) (acc BG) = %d\n' % (1/self.TanAlfa)
         
         if self.H2_Percent_Measured != None or self.H1_Percent_Measured != None or self.H1_Per_Mile_Measured != None:
             text += 'Bedslope 1:'
             text += '              obs        Rayleigh     BG\n'
         
         if self.H2_Percent_Measured != None:
-            text += 'H_{2%%} (m)    %d         %d           %d\n' % (self.H2_Percent_Measured, self.H2_Percent_Rayleigh, H2)
+            text += 'H_2%% (m)                  %d          %d            %d\n' % (self.H2_Percent_Measured, self.H2_Percent_Rayleigh, H2)
         if self.H1_Percent_Measured != None:
-            text += 'H_{1%%} (m)    %d         %d           %d\n' % (self.H1_Percent_Measured, self.H1_Percent_Rayleigh, H1)
+            text += 'H_1%% (m)                  %d          %d            %d\n' % (self.H1_Percent_Measured, self.H1_Percent_Rayleigh, H1)
         if self.H1_Per_Mile_Measured != None:
-            text += 'H_{0.1%%} (m)  %d         %d           %d\n' % (self.H1_Per_Mile_Measured, self.H1_Per_Mile_Rayleigh, H01)
+            text += 'H_0.1%% (m)                %d          %d            %d\n' % (self.H1_Per_Mile_Measured, self.H1_Per_Mile_Rayleigh, H01)
          
-        ax.text(.4,2.10,text,fontsize=12)
+        ylimit = ax.get_ylim()[1]
+        xlimits = ax.get_xlim()
+        ax.text(xlimits[0] + (xlimits[1] / 50), ylimit - (ylimit / 50),text,fontsize=12,verticalalignment='top')
         plt.show()
         
     

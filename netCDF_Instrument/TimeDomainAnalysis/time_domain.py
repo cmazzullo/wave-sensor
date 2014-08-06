@@ -128,6 +128,9 @@ class Time_Domain_Analysis(Depth):
                     H.pop()
                     Hreduced = Hminimum
                     counter -= 1
+                if str(wavelength) == 'nan':
+                    print('nan pop')
+                    H.pop()
                 reduction = Hreduced / Hunreduced
                 for j in range(start, i):
                     eta[j] = ((Pwave[j] * reduction) / (self.rho * self.g)) * \
