@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numpy import fft
 from numpy.random import randn
+import netCDF4
 
 
 def transform(p, sample_f):
@@ -45,7 +46,7 @@ def quickplot(p, sample_f):
 # These methods fabricate data for testing purposes.
 
 def get_pressure_array(fname):
-    f = Dataset(fname, 'r', format='NETCDF4_CLASSIC')
+    f = netCDF4.Dataset(fname, 'r', format='NETCDF4_CLASSIC')
     v = f.variables
     P = v['sea_water_pressure'][:]
     return P

@@ -86,21 +86,24 @@ class Depth(NetCDFWriter, NetCDFReader):
     def create_pwave_data(self, correct_tides=False):
         range_index = np.multiply(np.arange(0,len(self.sea_pressure_data)),.25)
         a =  np.polyfit(range_index, self.sea_pressure_data, 1) # construct the polynomial #np.linalg.lstsq(A, self.sea_pressure_data)[0]
-       
-        p4 = np.poly1d(a)
+        
+        if correct_tides == False:
+            p1 = np.poly1d(a)
          
-        self.pwave_data = pd.Series(np.subtract(self.sea_pressure_data,p4(range_index)), \
+            self.pwave_data = pd.Series(np.subtract(self.sea_pressure_data,p1(range_index)), \
                                     index=self.pressure_data.index)
+            
+        else:
 
-        samfreq = 4  # the sampling frequency
-        p = self.sea_pressure_data
-        clean_p = (p - np.average(p)) / (max(p) - min(p))
-        Y = np.absolute(fft.fft(clean_p) / len(clean_p))**2
-        nu = fft.fftfreq(len(clean_p), 1 / samfreq)
-        max_freq = nu[np.argmax(Y[0:len(Y) / 2])]
-        tide = (np.average(p) + (max(p) - min(p)) *
-                np.sin(2 * np.pi * max_freq * t) / 2)
-        self.pwave_data = pd.Series(self.sea_pressure_data - tide, index=self.pressure_data.index)
+            samfreq = 4  # the sampling frequency
+            p = self.sea_pressure_data
+            clean_p = (p - np.average(p)) / (max(p) - min(p))
+            Y = np.absolute(np.fft.fft(clean_p) / len(clean_p))**2
+            nu = np.fft.fftfreq(len(clean_p), 1 / samfreq)
+            max_freq = nu[np.argmax(Y[0:len(Y) / 2])]
+            tide = (np.average(p) + (max(p) - min(p)) *
+                    np.sin(2 * np.pi * max_freq * self.sea_pressure_data.index) / 2)
+            self.pwave_data = pd.Series(self.sea_pressure_data - tide, index=self.pressure_data.index)
 #         plt.plot(self.sea_pressure_data.index,self.sea_pressure_data, label='Original data')
 #         plt.plot(self.sea_pressure_data.index, p4(range_index),'r', label='FittedLine', linewidth=1.0, color='red')
 #         plt.legend()

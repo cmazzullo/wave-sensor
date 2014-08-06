@@ -6,7 +6,7 @@ Created on Jul 25, 2014
 '''
 import numpy as np
 import matplotlib.pyplot as plt
-from Analysis.BG import BG
+from TimeDomainAnalysis.BG import BG
 class Rayleigh(BG):
     
     def __init__(self,xi,yi,xmark,Hrms,Htr):

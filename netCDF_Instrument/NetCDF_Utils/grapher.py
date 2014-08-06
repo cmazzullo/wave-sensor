@@ -9,10 +9,8 @@ import os
 import numpy as np
 import datetime
 
-try:
-    from NetCDF_Utils.edit_netcdf import NetCDFReader
-except:
-    from edit_netcdf import NetCDFReader
+from NetCDF_Utils.edit_netcdf import NetCDFReader
+
     
 
 

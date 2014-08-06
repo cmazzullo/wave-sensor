@@ -4,9 +4,9 @@ Created on Jul 28, 2014
 @author: Gregory
 '''
 import numpy as np
-from Analysis.time_domain import Time_Domain_Analysis
-from Analysis.rayleigh import Rayleigh as ray
-from Analysis.BG import BG
+from TimeDomainAnalysis.time_domain import Time_Domain_Analysis
+from TimeDomainAnalysis.rayleigh import Rayleigh as ray
+from TimeDomainAnalysis.BG import BG
 import matplotlib.pyplot as plt
 class Probabilities(Time_Domain_Analysis):
     
