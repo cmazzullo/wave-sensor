@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from TimeDomainAnalysis.BG import BG
 class Rayleigh(BG):
+    """Generates Ralyeigh and Rayleigh BG graph"""
     
     def __init__(self,xi,yi,xmark,Hrms,Htr):
         self.xi = xi

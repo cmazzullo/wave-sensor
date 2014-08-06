@@ -80,19 +80,14 @@ class Time_Domain_Analysis(Depth):
         self.periods = np.repeat(self.tmean, len(pwave))
             
     def method2(self):
-            
+        """Downward crossing method: if the function crosses the x axis in
+        an interval and if its endpoint is below the x axis, we've found
+        a new wave."""  
+         
         self.initialize()
         Pwave = [x for x in self.pwave_data]
-#         P = pressure_data
-#         freq = 4
-#         t = np.arange(0, len(P)) / freq
-#         slope, intercept =  np.polyfit(t, P, 1)
-#         Pstatic = slope * t + intercept
-#         Pwave = P - Pstatic
         depth = [x for x in self.depth_data]
-        # Downward crossing method: if the function crosses the x axis in
-        # an interval and if its endpoint is below the x axis, we've found
-        # a new wave.
+        
         start = period = counter = Pmin = Pmax = 0
         periods = []                    # periods of found waves
         eta = np.zeros(len(Pwave))

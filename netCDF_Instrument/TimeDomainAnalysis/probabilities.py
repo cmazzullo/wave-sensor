@@ -9,6 +9,8 @@ from TimeDomainAnalysis.rayleigh import Rayleigh as ray
 from TimeDomainAnalysis.BG import BG
 import matplotlib.pyplot as plt
 class Probabilities(Time_Domain_Analysis):
+    """This class sorts the wave data from the depth script and caluculates the probability of exceedance
+    using both a rayliegh, and a modified rayleigh probability distribution"""
     
     def __init__(self):
         self.Hsorted = None
@@ -35,6 +37,7 @@ class Probabilities(Time_Domain_Analysis):
         self.weibull_probability()
         
     def analyze_probabilites(self):
+        """Sorts wave data and calulates top 2, 1, and 1 per mile waves in terms of wave height"""
         self.counter = len(self.individual_waves)
         self.Hsorted = np.sort(np.array(self.individual_waves))
         
@@ -66,6 +69,7 @@ class Probabilities(Time_Domain_Analysis):
         self.H1_Per_Mile_Rayleigh = 1.85 * self.HS
         
     def weibull_probability(self):
+        """Generates exceedance graph using rayleigh and rayleigh BG methods"""
         self.Htr = (0.35 + (5.8 * self.TanAlfa)) * self.average_depth
         
         H3 = self.Hrms * self.BG.get_bg_value(self.Htr, 3)
@@ -89,17 +93,14 @@ class Probabilities(Time_Domain_Analysis):
         ax = fig.add_subplot(111)
         rayleigh_plot = ray(self.Hsorted,self.probsorted2,xmark,self.Hrms,self.Htr)
         rayleigh_plot.exceedance_graph(ax)
-#         plt.setp(ax2.get_yticklabels(), visible=False)
-#         plt.setp(ax2.get_yticklines(),visible=False)
-#         plt.setp(ax2.get_xticklabels(), visible=False)
-#         plt.setp(ax2.get_xticklines(),visible=False)
-      
+        
+        #Generate Graph
         text = ""
         text += 'Hmean (m) = %i\n' % self.HMean
         text += 'Hrms (m) = %d\n' % self.Hrms
         text += 'Hs (m) = %d\n' % self.HS
         text += 'Tmean (s) = %d\n' % self.tmean
-        text += 'T_1/3 = (s) = %d\n' % self.Htr
+        text += 'T 1/3 (s) = %d\n' % self.Htr
         text += 'Htr (m) (acc BG) = %d\n' % (1/self.TanAlfa)
         
         if self.H2_Percent_Measured != None or self.H1_Percent_Measured != None or self.H1_Per_Mile_Measured != None:
