@@ -9,9 +9,7 @@ This module assumes that p is a numpy array! Regular python arrays
 won't work!
 """
 import numpy as np
-import matplotlib.pyplot as plt
 from netCDF4 import Dataset
-import Analysis.fourier as fourier
 
 
 rho = 1030  # Density of water in kg / m**3
@@ -174,21 +172,6 @@ def make_test_data():
     Pwave = sum([amp * np.sin(2 * np.pi * t / period)
                  for amp, period in zip(amps, periods)]) + noise
     return Pwave
-
-
-def demonstration():
-    #    p = make_test_data()
-    fname = '/home/chris/measurement-systems.nc'
-    p = get_pressure_array(fname)
-    P, F = crosgk(p, p, len(p), 1, .25, 1)
-    plt.plot(fourier.compress(P[2]), 'b')
-    plt.xticks(np.arange(0, 1, .1), rotation=30, size='small')
-    plt.xlim((0, 1))
-
-    plt.ylim((0, .000001))
-    plt.xlabel('Frequency (Hz)')
-    plt.ylabel('Power spectrum (Pa**2 / Hz)')
-    plt.show()
 
     
 def get_pressure_array(fname):
