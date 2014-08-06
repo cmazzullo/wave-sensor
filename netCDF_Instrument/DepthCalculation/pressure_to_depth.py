@@ -34,9 +34,9 @@ def pressure_to_depth(t, p, z, H, timestep, amp_cutoff):
             # Scale, applying the diffusion relation
             a = pressure_to_eta(amps[i], k, z, H)
             newamps[i] = a
-
+            
     # Convert back to time space
-    eta = np.fft.irfft(newamps)    
+    eta = np.fft.irfft(newamps)
     return eta
     
     

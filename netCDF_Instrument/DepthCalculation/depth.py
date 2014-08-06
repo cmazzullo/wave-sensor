@@ -46,11 +46,8 @@ class Depth(NetCDFWriter, NetCDFReader):
         self.pressure_data = self.read_file(self.in_file_name, milliseconds_bool = True)
         self.pressure_data = pd.Series(np.multiply(self.pressure_data,10000), index = self.pressure_data.index)
         if pressure_file_bool == False:
-            start = '20140513'
-            fmt = '%Y%m%d'
-            start = datetime.strptime(start, fmt)
-            end = '20140515'
-            end = datetime.strptime(end, fmt)
+            start = datetime(year=2014, month=5, day=13)
+            end = datetime(year=2014, month=5, day=15)
             ts = self.Buoydata.get_data(start, end)
             self.Buoydata.write_to_netCDF(ts,'air_pressure.nc')
             self.air_pressure_data = pd.Series(np.multiply(ts,10000), index = ts.index)
