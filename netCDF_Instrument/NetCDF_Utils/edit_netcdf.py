@@ -4,11 +4,13 @@ Created on Jul 14, 2014
 @author: Gregory
 '''
 
-import netCDF4
+try:        
+    import netCDF4
+except:
+    raise Exception("netCDF4 is required") 
 import numpy as np
 import pandas as pd
 import os
-import re
 import pytz
 from datetime import datetime
 

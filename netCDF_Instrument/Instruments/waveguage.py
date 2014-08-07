@@ -1,21 +1,14 @@
 import sys
 sys.path.append('..')
 import os
-from Instruments.sensor import Sensor
-from Instruments.InstrumentTests import PressureTests
 import numpy as np
 from datetime import datetime
 from pytz import timezone
 import pandas as pd
 import pytz
+from NetCDF_Utils.Testing import DataTests
+from NetCDF_Utils.edit_netcdf import NetCDFWriter 
 
-try:
-    import NetCDF_Utils.DateTimeConvert as dateconvert
-    from NetCDF_Utils.Testing import DataTests
-    from NetCDF_Utils.edit_netcdf import NetCDFWriter 
-    from NetCDF_Utils.VarDatastore import DataStore
-except:
-    print('Check your packaging')
 
 class Waveguage(NetCDFWriter):
     """Reads in an ASCII file output by a Waveguage pressure sensor
@@ -56,6 +49,7 @@ class Waveguage(NetCDFWriter):
 
         final = np.zeros(0, dtype=np.float64)
         prev_stamp = None
+        prev_press = None
         for stamp, press in zip(t, chunks):
             if prev_stamp:
                 n = press_entries(stamp, prev_stamp) - len(prev_press)

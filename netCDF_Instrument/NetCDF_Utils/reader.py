@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Aug  5 13:11:49 2014
-
-@author: cmazzullo
-"""
-
 import netCDF4
 import numpy as np
 import pandas as pd

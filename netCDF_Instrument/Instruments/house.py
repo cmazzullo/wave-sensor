@@ -1,23 +1,5 @@
-'''
-Created on Jul 9, 2014
-
-@author: Gregory
-'''
-'''
-Created on Jul 7, 2014
-
-@author: Gregory
-'''
-'''
-Created on Jun 20, 2014
-
-@author: Gregory
-'''
-from Instruments.sensor import Sensor
-from Instruments.InstrumentTests import PressureTests
 import os
 import sys
-from datetime import datetime
 import pytz
 import pandas
 import re
@@ -33,21 +15,14 @@ try:
     import numpy as np
 except:
     raise Exception("numpy is required")
-try:        
-    import netCDF4
-except:
-    raise Exception("netCDF4 is required") 
 
-try:
-    import NetCDF_Utils.DateTimeConvert as dateconvert
-    from NetCDF_Utils.Testing import DataTests
-    from NetCDF_Utils.edit_netcdf import NetCDFWriter 
-    from NetCDF_Utils.VarDatastore import DataStore
-except:
-    print('Check your packaging')           
+import NetCDF_Utils.DateTimeConvert as dateconvert
+from NetCDF_Utils.Testing import DataTests
+from NetCDF_Utils.edit_netcdf import NetCDFWriter 
 
+        
 class House(NetCDFWriter):
-    '''derived class for house ascii files
+    '''derived class for house csv files
     '''
     def __init__(self):
         self.timezone_marker = "time zone"   

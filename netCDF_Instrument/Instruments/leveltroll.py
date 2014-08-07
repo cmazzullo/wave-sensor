@@ -1,8 +1,5 @@
-from Instruments.sensor import Sensor
-from Instruments.InstrumentTests import PressureTests
 import os
 import sys
-from datetime import datetime
 from pytz import timezone
 
 
@@ -16,18 +13,13 @@ try:
     import numpy as np
 except:
     raise Exception("numpy is required")
-try:        
-    import netCDF4
-except:
-    raise Exception("netCDF4 is required")  
 
-try:
-    import NetCDF_Utils.DateTimeConvert as dateconvert
-    from NetCDF_Utils.Testing import DataTests
-    from NetCDF_Utils.edit_netcdf import NetCDFWriter 
-    from NetCDF_Utils.VarDatastore import DataStore
-except:
-    print('Check your packaging')        
+
+
+import NetCDF_Utils.DateTimeConvert as dateconvert
+from NetCDF_Utils.Testing import DataTests
+from NetCDF_Utils.edit_netcdf import NetCDFWriter 
+      
 
 class Leveltroll(NetCDFWriter):
     '''derived class for leveltroll ascii files

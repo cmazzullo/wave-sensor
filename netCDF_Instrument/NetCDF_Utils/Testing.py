@@ -1,8 +1,3 @@
-'''
-Created on Jul 22, 2014
-
-@author: Gregory
-'''
 import numpy as np
 from bitarray import bitarray as bit
 import sys
