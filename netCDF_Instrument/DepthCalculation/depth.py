@@ -57,7 +57,7 @@ class Depth(NetCDFWriter, NetCDFReader):
             ts, lat, lon = slurp.get_data(self.station, start, end)
             fname = 'air_pressure.nc'
             slurp.write_to_netCDF(fname, ts, lat, lon)
-            self.air_pressure_data = pd.Series(np.multiply(ts,10000), index = ts.index)
+            self.air_pressure_data = pd.Series(np.multiply(ts,10000), index = np.divide(ts.index,1000))
         else:
             self.air_pressure_data = self.read_file(self.air_pressure_file, milliseconds_bool = True)
     

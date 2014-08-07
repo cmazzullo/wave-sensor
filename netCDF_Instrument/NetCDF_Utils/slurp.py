@@ -141,7 +141,7 @@ def write_to_netCDF(fname, ts, lat, lon):
     net_writer = NetCDFWriter()
     vs = net_writer.vstore
     vs.pressure_data = list(ts.values)
-    vs.utc_millisecond_data = list(ts.index * 1000)
+    vs.utc_millisecond_data = list(ts.index)
     vs.latitutde = lat
     vs.longitude = lon
 #        vs.z = self.z
@@ -161,21 +161,6 @@ def write_to_netCDF(fname, ts, lat, lon):
     net_writer.write_netCDF(vs, len(ts.values))
 
 
-import sys
-sys.path.append('C:\\Users\\cmazzullo\\wave-sensor\\netCDF_Instrument')
-
-
-fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
-         'logger3.csv.nc')
-
-air_fname = ''
-
-out_fname = ''
-# 1
-sea_p = nc.get_pressure(fname)
-sea_t = nc.get_time(fname)
-add_air_pressure(fname,  8454000)
-
 
 
 if __name__ == '__main__':
@@ -190,14 +175,30 @@ OUTFILE is formatted as a netCDF.
 	ENDTIME	     format: YYYYMMDD
 	OUTFILE	     dump to this file
 """
+    import sys
+    sys.path.append('C:\\Users\\cmazzullo\\wave-sensor\\netCDF_Instrument')
+    
+    
+    fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
+             'logger3.csv.nc')
+    
+    air_fname = ''
+    
+    out_fname = ''
+    # 1
+    sea_p = nc.get_pressure(fname)
+    sea_t = nc.get_time(fname)
+    add_air_pressure(fname,  8454000)
+    
+    
     if len(sys.argv) == 5:
-        station = sys.argv[1]
-        station = 8454000
-        start = sys.argv[2]
-        end = sys.argv[3]
-        outfile = sys.argv[4]
-        ts, lat, lon = get_data(station, start, end)
-        write_to_netCDF(outfile, ts, lat, lon)
+            station = sys.argv[1]
+            station = 8454000
+            start = sys.argv[2]
+            end = sys.argv[3]
+            outfile = sys.argv[4]
+            ts, lat, lon = get_data(station, start, end)
+            write_to_netCDF(outfile, ts, lat, lon)
     else:
-#        print(usage)
-        pass
+    #        print(usage)
+            pass
