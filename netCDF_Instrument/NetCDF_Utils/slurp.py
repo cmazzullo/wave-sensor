@@ -4,7 +4,11 @@ This module fetches pressure data from buoys from the internet.
 
 You can get the raw data (by date and station number) or dump the
 readings to a netCDF file.
+
+You should be able to do just about everything with the
+make_corresponding_file method!
 """
+
 from urllib.request import urlopen
 import sys
 from datetime import datetime
@@ -13,11 +17,57 @@ import pandas as pd
 import numpy as np
 import pytz
 
+import SpectralAnalysis.nc as nc
+
 import NetCDF_Utils.DateTimeConvert as dateconvert
 from NetCDF_Utils.edit_netcdf import NetCDFWriter
 
+
 delta = timedelta(days=30)
 day = timedelta(days=1)
+epoch_start = datetime(year=1970, month=1, day=1, tzinfo=pytz.utc)
+
+
+def add_air_pressure(fname, station):
+    data, lat, lon = get_corresponding_data(fname, station)
+    sea_t = nc.get_time(fname)
+    sea_p = nc.get_pressure(fname)
+    air_t = np.array(data.index)
+    air_p = data.values
+    print(data.index)
+    print(air_t)
+    print(type(air_t))
+    print(type(sea_t))
+    print(type(air_p))
+    interp_p = np.interp(sea_t, air_t, air_p)
+    print('sea_t', sea_t, 'air_t', air_t)
+    plt.plot(sea_t, sea_p)
+    plt.plot(air_t, air_p)
+
+
+def get_corresponding_data(fname, station):
+    """Gets air pressure data that covers the time span of the input
+    file.
+
+    Inputs:
+    fname -- the netCDF file that you'd like to get the corresponding
+    air pressure for
+    out_fname -- the name of the output file
+    station -- the station that you'd like to get your data from
+
+    You can look for buoys by location at:
+        http://www.ndbc.noaa.gov/
+    """
+
+    t_ms = nc.get_time(fname)
+    t = t_ms / 1000
+    sea_begin = datetime.fromtimestamp(t[0])
+    sea_end = datetime.fromtimestamp(t[-1])
+    air_begin = sea_begin - day
+    air_end = sea_end + day
+
+    data, lat, lon = get_data(station, air_begin, air_end)
+    return data, lat, lon
 
 
 def get_data(station, begin, end):
@@ -68,10 +118,15 @@ def _download(station, begin, end):
         elif line.startswith('<pre>'):
             precount += 1
     p = np.array(pressures)
-    to_ms = dateconvert.convert_date_to_milliseconds
-    times = [to_ms(None, None, date_time=t) for t in times]
-    return pd.Series(p / 100, index=times), lat, lon  # convert mbar to dbar
+    #    to_ms = dateconvert.convert_date_to_milliseconds
+    #    times = [to_ms(None, None, date_time=t) for t in times]
+    ms_times = [date_to_ms(t) for t in times]
+    # convert mbar to dbar
+    return pd.Series(p / 100, index=times), lat, lon
 
+
+def date_to_ms(date):
+    return (date - epoch_start).total_seconds() * 1000
 
 def convert_buoy_time_string(time_str):
     date_format = '%Y-%m-%d %H:%M'
@@ -105,6 +160,23 @@ def write_to_netCDF(fname, ts, lat, lon):
     net_writer.write_netCDF(vs, len(ts.values))
 
 
+import sys
+sys.path.append('C:\\Users\\cmazzullo\\wave-sensor\\netCDF_Instrument')
+
+
+fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
+         'logger3.csv.nc')
+
+air_fname = ''
+
+out_fname = ''
+# 1
+sea_p = nc.get_pressure(fname)
+sea_t = nc.get_time(fname)
+add_air_pressure(fname,  8454000)
+
+
+
 if __name__ == '__main__':
     usage = """
 usage: slurp STATIONID STARTTIME ENDTIME OUTFILE
@@ -126,4 +198,5 @@ OUTFILE is formatted as a netCDF.
         ts, lat, lon = get_data(station, start, end)
         write_to_netCDF(outfile, ts, lat, lon)
     else:
-        print(usage)
+#        print(usage)
+        pass
