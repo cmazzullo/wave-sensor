@@ -6,7 +6,6 @@ Created on Mon Aug  4 08:48:12 2014
 """
 import numpy as np
 from scipy.optimize import newton
-import matplotlib.pyplot as plt
 
 # Constants
 g = 9.8  # gravity (m / s**2)
