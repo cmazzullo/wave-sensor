@@ -1,8 +1,3 @@
-'''
-Created on Jul 31, 2014
-
-@author: Gregory
-'''
 from NetCDF_Utils.edit_netcdf import NetCDFWriter
 import NetCDF_Utils.DateTimeConvert as date_convert 
 from datetime import datetime

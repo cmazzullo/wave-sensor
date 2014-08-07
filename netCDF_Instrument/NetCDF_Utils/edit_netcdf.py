@@ -1,9 +1,3 @@
-'''
-Created on Jul 14, 2014
-
-@author: Gregory
-'''
-
 try:        
     import netCDF4
 except:
