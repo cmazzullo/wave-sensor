@@ -98,7 +98,7 @@ def _download(station, begin, end):
     pressures = []
     times = []
     precount = 0
-    lat, lon = -1
+    lat = lon = -1
     print('Downloading pressure data...')
     for line in urlopen(url):
         line = line.decode('utf-8')
@@ -123,7 +123,7 @@ def _download(station, begin, end):
     #    times = [to_ms(None, None, date_time=t) for t in times]
     ms_times = [date_to_ms(t) for t in times]
     # convert mbar to dbar
-    return pd.Series(p / 100, index=times), lat, lon
+    return pd.Series(p / 100, index=ms_times), lat, lon
 
 
 def date_to_ms(date):
@@ -161,20 +161,20 @@ def write_to_netCDF(fname, ts, lat, lon):
     net_writer.write_netCDF(vs, len(ts.values))
 
 
-# import sys
-# sys.path.append('C:\\Users\\cmazzullo\\wave-sensor\\netCDF_Instrument')
+import sys
+sys.path.append('C:\\Users\\cmazzullo\\wave-sensor\\netCDF_Instrument')
 
 
-# fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
-#          'logger3.csv.nc')
+fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
+         'logger3.csv.nc')
 
-# air_fname = ''
+air_fname = ''
 
-# out_fname = ''
-# # 1
-# sea_p = nc.get_pressure(fname)
-# sea_t = nc.get_time(fname)
-# add_air_pressure(fname,  8454000)
+out_fname = ''
+# 1
+sea_p = nc.get_pressure(fname)
+sea_t = nc.get_time(fname)
+add_air_pressure(fname,  8454000)
 
 
 
