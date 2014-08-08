@@ -12,7 +12,8 @@ g = 9.8  # gravity (m / s**2)
 rho = 1030  # density of seawater (kg / m**3)
 
       
-def pressure_to_depth(t, p, z, H, timestep, gate=0, window=False, cutoff=-1):
+def pressure_to_depth(t, p_dbar, z, H, timestep, gate=0, window=False, 
+                      cutoff=-1):
     """Takes an array of pressure readings and creates wave height data.
     
     t -- the time array
@@ -22,6 +23,7 @@ def pressure_to_depth(t, p, z, H, timestep, gate=0, window=False, cutoff=-1):
                   threshold won't be used in the height data. 
     """
     # Put the pressure data into frequency space
+    p = p_dbar * 1e4
     n = len(p)
     
     if window:
@@ -32,7 +34,6 @@ def pressure_to_depth(t, p, z, H, timestep, gate=0, window=False, cutoff=-1):
         
     amps = np.fft.rfft(scaled_p)
     freqs = np.fft.rfftfreq(n, d=timestep)
-
     new_amps = np.zeros_like(amps)
     
     for i in range(len(amps)):
@@ -43,14 +44,13 @@ def pressure_to_depth(t, p, z, H, timestep, gate=0, window=False, cutoff=-1):
                 # Scale, applying the diffusion relation
                 a = pressure_to_eta(amps[i], k, z, H)
                 new_amps[i] = a
-    print(len(new_amps))
     # Convert back to time space
     eta = np.fft.irfft(new_amps)
     if window:
         eta = eta / window_func
     return eta
-    
 
+        
 def _frequency_to_index(f, n, timestep):
     """Gets the index of a frequency in np.fftfreq.
     
