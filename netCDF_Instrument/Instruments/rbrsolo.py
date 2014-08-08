@@ -1,25 +1,11 @@
 import os
 import sys
-from datetime import datetime
 import pytz
 import pandas
 import re
-import netCDF4
+import numpy as np
 
-import sys
 sys.path.append('..')
-
-#--python 3 compatibility
-pyver = sys.version_info
-if pyver[0] == 3:
-    raw_input = input
-
-#--some import error trapping
-try:
-    import numpy as np
-except:
-    raise Exception("numpy is required")
-
 
 import NetCDF_Utils.DateTimeConvert as dateconvert
 from NetCDF_Utils.Testing import DataTests
@@ -31,7 +17,7 @@ class RBRSolo(NetCDFWriter):
     '''
     def __init__(self):
         self.timezone_marker = "time zone"      
-        super(RBRSolo,self).__init__()
+        super().__init__()
         
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 4
@@ -46,14 +32,13 @@ class RBRSolo(NetCDFWriter):
         #for skipping lines in case there is calibration header data
         df = pandas.read_csv(self.in_filename,skiprows=skip_index, delim_whitespace=True, \
                             header=None, engine='c', usecols=[0,1,2])
-        for x in df[0:1].itertuples():
-            if x[0] == 0:
-                self.utc_millisecond_data = dateconvert.convert_to_milliseconds(df.shape[0] - 1, \
-                                                            ('%s %s' % (x[1],x[2])), \
-                                                            self.date_format_string, self.frequency)
-                break
         
-        self.pressure_data = [x[1] for x in df[2][:-1].iteritems()]
+        #This gets the date and time since they are in two separate columns
+        self.utc_millisecond_data = dateconvert.convert_to_milliseconds(df.shape[0] - 1, \
+                                                            ('%s %s' % (df[0][0],df[1][0])), \
+                                                            self.date_format_string, self.frequency)
+               
+        self.pressure_data = [x for x in df[2][:-1]]
        
         print(len(self.pressure_data))
         
