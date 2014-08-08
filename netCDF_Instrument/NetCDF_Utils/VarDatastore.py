@@ -1,10 +1,8 @@
-import netCDF4
 from datetime import datetime
 import pytz
 import numpy as np
 import uuid
 import NetCDF_Utils.DateTimeConvert as timeconvert
-import pytz
 
 class DataStore(object):
     '''Use this as an abstract data store, then pass a netcdf write stream to send data method'''

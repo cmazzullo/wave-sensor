@@ -57,7 +57,9 @@ class Depth(NetCDFWriter, NetCDFReader):
             ts, lat, lon = slurp.get_data(self.station, start, end)
             fname = 'air_pressure.nc'
             slurp.write_to_netCDF(fname, ts, lat, lon)
-            self.air_pressure_data = pd.Series(np.multiply(ts,10000), index = np.divide(ts.index,1000))
+           
+            self.air_pressure_data = pd.Series(np.multiply(ts.values,10000), index = np.divide(ts.index,1000))
+            
         else:
             self.air_pressure_data = self.read_file(self.air_pressure_file, milliseconds_bool = True)
     
@@ -74,9 +76,11 @@ class Depth(NetCDFWriter, NetCDFReader):
         x_var = [x for x in self.pressure_data.index]
         fp = [x for x in self.air_pressure_data]
         xp = [x for x in self.air_pressure_data.index]
+        print(fp[0])
          
         self.interp_data = pd.Series(np.interp(x_var, xp, fp, left=-10000, right=-10000),\
                                       index = self.pressure_data.index)
+#         print(self.interp_data)
         
     def filter_data(self):
         """Filters any pressure data that does not fall within the start and end of air pressure data"""
@@ -91,6 +95,7 @@ class Depth(NetCDFWriter, NetCDFReader):
     def subtract_air_pressure(self):
         self.sea_pressure_data = pd.Series(np.subtract(self.pressure_data,self.interp_data),
                                 index = self.pressure_data.index)
+#         print(len(self.sea_pressure_data))
         
     def create_pwave_data(self, correct_tides=False):
         """Performs either simple 1d linear regression or accounts for tides with a sin interploation
@@ -105,6 +110,7 @@ class Depth(NetCDFWriter, NetCDFReader):
          
             self.pwave_data = pd.Series(np.subtract(self.sea_pressure_data,p1(range_index)), \
                                     index=self.pressure_data.index)
+#             print(self.pwave_data)
             
         else:
 
@@ -136,6 +142,7 @@ class Depth(NetCDFWriter, NetCDFReader):
         self.depth_data = pd.Series(divide_rho_and_g, index=self.pressure_data.index)
         
         self.average_depth = np.mean(self.depth_data)
+       
              
     def plot_data(self):
         pressure_mean = np.mean(self.pressure_data)
