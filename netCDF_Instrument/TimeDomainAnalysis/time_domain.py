@@ -37,9 +37,10 @@ class Time_Domain_Analysis(Depth):
         self.acquire_data()
         self.new_data = [x for x in self.pwave_data]
 
-    def method1(self):
+    def method1(self, initialize=True):
         """Uses the average period and specified limits to identify waves"""
-        self.initialize()
+        if initialize:
+            self.initialize()
         self.dates = [x for x in self.pressure_data.index]
         pwave = [x for x in self.pwave_data]
         depth = [x for x in self.depth_data]
@@ -81,18 +82,25 @@ class Time_Domain_Analysis(Depth):
             
         self.periods = np.repeat(self.tmean, len(pwave))
             
-    def method2(self):
+    def method2(self, initialize=True):
         """Downward crossing method: if the function crosses the x axis in
         an interval and if its endpoint is below the x axis, we've found
         a new wave."""  
+<<<<<<< HEAD
          
         self.initialize()
         Pwave = [x for x in self.pwave_data][0:1000]
         depth = [x for x in self.depth_data][0:1000]
         print(len(Pwave),len(depth))
+=======
+        if initialize:
+            self.initialize()
+        Pwave = [x for x in self.pwave_data]
+        depth = [x for x in self.depth_data]
+>>>>>>> origin/master
         
         start = period = counter = Pmin = Pmax = 0
-        periods = []                    # periods of found waves
+        periods = []  # periods of found waves
         eta = np.zeros(len(Pwave))
         interval = 1 / 4
         steepness = 0.03
@@ -146,9 +154,14 @@ class Time_Domain_Analysis(Depth):
       
         self.periods = np.sort(periods)
         self.tmean = np.mean(periods)
-        
+        return eta
   
     
 if __name__ == '__main__':
+    import matplotlib.pyplot as plt
     td = Time_Domain_Analysis() 
-    td.method2()
+    in_fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
+         'logger1.csv.nc')
+    td.in_file_name = in_fname
+    eta = td.method2()
+    plt.plot(eta)
