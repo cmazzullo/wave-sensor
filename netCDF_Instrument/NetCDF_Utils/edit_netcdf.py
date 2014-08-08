@@ -192,11 +192,9 @@ class NetCDFWriter(object):
         self.vdict = dict()
         self.data_tests = DataTests()
         
-        self.initial_pressure = None
-        self.water_depth = None
-        self.device_depth = None
-        
-        print('Done with initialization')
+        self.initial_pressure = 0
+        self.water_depth = 0
+        self.device_depth = 0
 
     def write_netCDF(self,var_datastore,series_length):
         ds = netCDF4.Dataset(os.path.join(self.out_filename),'w',format="NETCDF4_CLASSIC")

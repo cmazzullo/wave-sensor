@@ -73,8 +73,8 @@ if __name__ == "__main__":
     lt.creator_name = "Jurgen Klinnsmen"
     lt.creator_url = "www.test.com"
     #--for testing
-    lt.in_filename = os.path.join("benchmark","RBR_RSK.txt")
-    lt.out_filename = os.path.join("benchmark","RBRrsk.nc")
+    lt.in_filename = os.path.join("Instruments","benchmark","RBR_RSK.txt")
+    lt.out_filename = os.path.join("Instruments","benchmark","RBRrsk.nc")
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)
     lt.is_baro = True

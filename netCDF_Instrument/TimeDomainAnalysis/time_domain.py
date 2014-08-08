@@ -87,8 +87,9 @@ class Time_Domain_Analysis(Depth):
         a new wave."""  
          
         self.initialize()
-        Pwave = [x for x in self.pwave_data]
-        depth = [x for x in self.depth_data]
+        Pwave = [x for x in self.pwave_data][0:1000]
+        depth = [x for x in self.depth_data][0:1000]
+        print(len(Pwave),len(depth))
         
         start = period = counter = Pmin = Pmax = 0
         periods = []                    # periods of found waves

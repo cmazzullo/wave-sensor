@@ -9,6 +9,9 @@ ts = a.read_file(os.path.join("..\Instruments","benchmark", "infosys2.nc"), mill
 f = open('test.txt','w')
 f.write('test,12,33,45.5,1/2/2002\n')
 
+print(len(ts.values))
 for x in ts.values:
-    value = (x + 43250) / 254.1
+    print(x)
+    value = ((x * 10000) + 43250.1) /245.1
+    print(value)
     f.write('$D,2,%f,5\n' % value)
