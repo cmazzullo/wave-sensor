@@ -11,7 +11,7 @@ from NetCDF_Utils.edit_netcdf import NetCDFReader
 # pd.set_option('display.mpl_style', 'default')
 #This is for pressure and temperature data for now, will be extended as needed
 class Grapher(NetCDFReader):
-    """These are utitlities to graph data, will be extended if there is time"""
+    """These are utilities to graph data, will be extended if there is time"""
     
     def __init__(self):
         super().__init__()

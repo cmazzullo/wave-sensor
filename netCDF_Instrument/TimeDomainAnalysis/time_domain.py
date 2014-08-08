@@ -19,7 +19,7 @@ class Time_Domain_Analysis(Depth):
         self.period = 0
         self.start = 1
         super().__init__()
-        self.in_file_name = os.path.join("..\Instruments","benchmark", "RBRrsk.nc")
+        self.in_file_name = os.path.join("..\Instruments","benchmark", "infosys2.nc")
         self.TanAlfa = 0.001      #Bedslope
         self.individual_waves = []
         self.individual_wave_time = []

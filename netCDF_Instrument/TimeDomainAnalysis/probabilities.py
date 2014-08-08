@@ -14,22 +14,22 @@ class Probabilities(Time_Domain_Analysis):
     using both a rayliegh, and a modified rayleigh probability distribution"""
     
     def __init__(self):
-        self.Hsorted = None
-        self.HMean = None
-        self.Hrms = None
-        self.HS = None
+        self.Hsorted = -10000
+        self.HMean = -10000
+        self.Hrms = -10000
+        self.HS = -10000
         self.TanAlfa = 0.001
-        self.T3 = None
-        self.H2_Percent_Measured = None
-        self.H2_Percent_Rayleigh = None
-        self.H1_Percent_Measured = None
-        self.H1_Percent_Rayleigh = None
-        self.H1_Per_Mile_Measured = None
-        self.H1_Per_Mile_Rayleigh = None
-        self.Htr = None
+        self.T3 = -10000
+        self.H2_Percent_Measured = -10000
+        self.H2_Percent_Rayleigh = -10000
+        self.H1_Percent_Measured = -10000
+        self.H1_Percent_Rayleigh = -10000
+        self.H1_Per_Mile_Measured = -10000
+        self.H1_Per_Mile_Rayleigh = -10000
+        self.Htr = -10000
         self.BG = BG()
         super().__init__()
-        self.counter = None
+        self.counter = -10000
         self.probsorted2 = []
     
     def run_probabilities(self):
@@ -41,7 +41,6 @@ class Probabilities(Time_Domain_Analysis):
         """Sorts wave data and calulates top 2, 1, and 1 per mile waves in terms of wave height"""
         self.counter = len(self.individual_waves)
         self.Hsorted = np.sort(np.array(self.individual_waves))
-        
         self.Hrms = np.sqrt(np.mean(np.power(self.Hsorted,2)))
         self.HMean = np.mean(self.Hsorted)
         Tsorted = np.sort(np.array(self.periods))
@@ -97,29 +96,29 @@ class Probabilities(Time_Domain_Analysis):
         
         #Generate Graph
         text = ""
-        text += 'Hmean (m) = %i\n' % self.HMean
-        text += 'Hrms (m) = %d\n' % self.Hrms
-        text += 'Hs (m) = %d\n' % self.HS
-        text += 'Tmean (s) = %d\n' % self.tmean
-        text += 'T 1/3 (s) = %d\n' % self.Htr
-        text += 'Htr (m) (acc BG) = %d\n' % (1/self.TanAlfa)
+        text += 'Hmean (m) = %f\n' % self.HMean
+        text += 'Hrms (m) = %f\n' % self.Hrms
+        text += 'Hs (m) = %f\n' % self.HS
+        text += 'Tmean (s) = %f\n' % self.tmean
+        text += 'T 1/3 (s) = %f\n' % self.T3
+        text += 'Htr (m) (acc BG) = %f\n' % self.Htr
         
-        if self.H2_Percent_Measured != None or self.H1_Percent_Measured != None or self.H1_Per_Mile_Measured != None:
-            text += 'Bedslope 1:'
-            text += '              obs        Rayleigh     BG\n'
+        #-10000 is used as an arbitrary way of denoting None
+        if self.H2_Percent_Measured != -10000 or self.H1_Percent_Measured != -10000 or self.H1_Per_Mile_Measured != -10000:
+            text += '\n(Bedslope 1: %d, obs, Rayleigh, BG)\n' % (1/self.TanAlfa)
         
-        if self.H2_Percent_Measured != None:
-            text += 'H_2%% (m)                  %d          %d            %d\n' % (self.H2_Percent_Measured, self.H2_Percent_Rayleigh, H2)
-        if self.H1_Percent_Measured != None:
-            text += 'H_1%% (m)                  %d          %d            %d\n' % (self.H1_Percent_Measured, self.H1_Percent_Rayleigh, H1)
-        if self.H1_Per_Mile_Measured != None:
-            text += 'H_0.1%% (m)                %d          %d            %d\n' % (self.H1_Per_Mile_Measured, self.H1_Per_Mile_Rayleigh, H01)
+        if self.H2_Percent_Measured != -10000:
+            text += 'H_2%% (m) %f  %f  %f\n' % (self.H2_Percent_Measured, self.H2_Percent_Rayleigh, H2)
+        if self.H1_Percent_Measured != -10000:
+            text += 'H_1%% (m) %f  %f  %f\n' % (self.H1_Percent_Measured, self.H1_Percent_Rayleigh, H1)
+        if self.H1_Per_Mile_Measured != -10000:
+            text += 'H_0.1%% (m) %f  %f  %f\n' % (self.H1_Per_Mile_Measured, self.H1_Per_Mile_Rayleigh, H01)
          
         ylimit = ax.get_ylim()[1]
         xlimits = ax.get_xlim()
-        ax.text(xlimits[0] + (xlimits[1] / 50), ylimit - (ylimit / 50),text,fontsize=12,verticalalignment='top')
+        ax.text(xlimits[0] + (xlimits[1] / 50), ylimit - (ylimit / 50),text,fontsize=10,verticalalignment='top')
         plt.show()
-        
+        #go away...
     
     def array_utility(self,start,end,step):
         a = list([start])

@@ -86,7 +86,7 @@ if __name__ == "__main__":
     lt.creator_name = "Jurgen Klinnsmen"
     lt.creator_url = "www.test.com"
     #--for testing
-    lt.in_filename = os.path.join("benchmark","logger1.csv")
+    lt.in_filename = os.path.join("benchmark","logger2.csv")
     lt.out_filename = os.path.join("benchmark","infosys2.nc")
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)
