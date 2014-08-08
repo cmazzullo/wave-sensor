@@ -86,18 +86,13 @@ class Time_Domain_Analysis(Depth):
         """Downward crossing method: if the function crosses the x axis in
         an interval and if its endpoint is below the x axis, we've found
         a new wave."""  
-<<<<<<< HEAD
-         
-        self.initialize()
-        Pwave = [x for x in self.pwave_data][0:1000]
-        depth = [x for x in self.depth_data][0:1000]
-        print(len(Pwave),len(depth))
-=======
+
+
         if initialize:
             self.initialize()
         Pwave = [x for x in self.pwave_data]
         depth = [x for x in self.depth_data]
->>>>>>> origin/master
+
         
         start = period = counter = Pmin = Pmax = 0
         periods = []  # periods of found waves
