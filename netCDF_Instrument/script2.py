@@ -19,7 +19,7 @@ import shutil
 import netCDF4
 
 in_fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
-         'logger3.csv.nc')
+         'logger1.csv.nc')
 out_fname = 'C:\\Users\\cmazzullo\\Desktop\\script2_output.nc'
 station = 8454000
 
@@ -27,9 +27,10 @@ station = 8454000
 shutil.copy(in_fname, out_fname)
 
 air_pressure, lat, lon = slurp.get_air_pressure(in_fname, station)
+initial_pressure = nc.get_initial_pressure(in_fname)  # pressure inside the device
 
 sea_pressure = nc.get_pressure(out_fname)
-corrected_pressure = sea_pressure - air_pressure
+corrected_pressure = sea_pressure + initial_pressure - air_pressure
 
 nc.append_air_pressure(out_fname, air_pressure, station, lat, lon)
 nc.append_corrected_water_pressure(out_fname, corrected_pressure)
@@ -53,4 +54,7 @@ f = netCDF4.Dataset(out_fname, 'r', format='NETCDF4_CLASSIC')
 print(f.variables['air_pressure'])
 print(f.variables['sea_water_pressure'])
 print(f.variables['sea_water_pressure_due_to_sea_water'])
+print(f.water_depth)
+print(f.device_depth)
+print(f.initial_pressure)
 f.close()

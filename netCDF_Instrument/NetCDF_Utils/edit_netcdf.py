@@ -191,6 +191,11 @@ class NetCDFWriter(object):
         self.vstore = DataStore(1)
         self.vdict = dict()
         self.data_tests = DataTests()
+        
+        self.initial_pressure = None
+        self.water_depth = None
+        self.device_depth = None
+        
         print('Done with initialization')
 
     def write_netCDF(self,var_datastore,series_length):
@@ -210,7 +215,9 @@ class NetCDFWriter(object):
                        'creator_eamil': self.creator_email, 'geospatial_lat_min': self.latitude,
                        'geospatial_lat_max': self.latitude, 'geospatial_lon_min': self.longitude,
                        'geospatial_lon_max': self.longitude, 'geospatial_vertical_min': self.z,
-                       'geospatial_vertical_max': self.z, 'sea_name': self.sea_name}
+                       'geospatial_vertical_max': self.z, 'sea_name': self.sea_name,
+                       'initial_pressure': self.initial_pressure, 'water_depth': self.water_depth,
+                       'device_depth': self.device_depth}
         var_dict['global_vars_dict'] = global_vars
         
         return var_dict

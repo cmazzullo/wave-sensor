@@ -62,14 +62,6 @@ def append_corrected_water_pressure(fname, p):
     return True
 
 
-def nc_to_dict(fname):
-    """
-    Reads a netCDF file and returns the array inside
-    """
-    nc = netCDF4.Dataset(fname)
-    return nc.variables
-
-
 def get_time(fname):
     return get_variable_data(fname, 'time')
 
@@ -94,6 +86,22 @@ def get_variable_data(fname, variable_name):
     return v
 
 
+def get_initial_pressure(fname):
+    return get_global_attribute(fname, 'initial_pressure')
+
+
+def get_water_depth(fname):
+    return get_global_attribute(fname, 'water_depth')
+
+
+def get_device_depth(fname):
+    return get_global_attribute(fname, 'device_depth')
+
+
+def get_global_attribute(fname, name):
+    nc = netCDF4.Dataset(fname)
+    return getattr(nc, name)
+    
 def write(fname, in_t, in_p):
     remove_if_existing(fname)
     ds = netCDF4.Dataset(fname, 'w', format="NETCDF4_CLASSIC")
