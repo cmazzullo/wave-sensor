@@ -26,9 +26,8 @@ station = 8454000
 
 shutil.copy(in_fname, out_fname)
 
-air_pressure_series, lat, lon = slurp.get_air_pressure(in_fname, station)
+air_pressure, lat, lon = slurp.get_air_pressure(in_fname, station)
 
-air_pressure = air_pressure_series.values
 sea_pressure = nc.get_pressure(out_fname)
 corrected_pressure = sea_pressure - air_pressure
 

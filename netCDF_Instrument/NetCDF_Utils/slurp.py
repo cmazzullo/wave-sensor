@@ -16,10 +16,8 @@ from datetime import timedelta
 import pandas as pd
 import numpy as np
 import pytz
-
 import SpectralAnalysis.nc as nc
 
-import NetCDF_Utils.DateTimeConvert as dateconvert
 from NetCDF_Utils.edit_netcdf import NetCDFWriter
 
 
@@ -28,21 +26,13 @@ day = timedelta(days=1)
 epoch_start = datetime(year=1970, month=1, day=1, tzinfo=pytz.utc)
 
 
-def add_air_pressure(fname, station):
+def get_air_pressure(fname, station):
     data, lat, lon = get_corresponding_data(fname, station)
     sea_t = nc.get_time(fname)
-    sea_p = nc.get_pressure(fname)
     air_t = np.array(data.index)
     air_p = data.values
-    print(data.index)
-    print(air_t)
-    print(type(air_t))
-    print(type(sea_t))
-    print(type(air_p))
     interp_p = np.interp(sea_t, air_t, air_p)
-    print('sea_t', sea_t, 'air_t', air_t)
-    plt.plot(sea_t, sea_p)
-    plt.plot(air_t, air_p)
+    return interp_p, lat, lon
 
 
 def get_corresponding_data(fname, station):
@@ -175,7 +165,6 @@ OUTFILE is formatted as a netCDF.
 	ENDTIME	     format: YYYYMMDD
 	OUTFILE	     dump to this file
 """
-    import sys
     sys.path.append('C:\\Users\\cmazzullo\\wave-sensor\\netCDF_Instrument')
     
     
@@ -188,7 +177,7 @@ OUTFILE is formatted as a netCDF.
     # 1
     sea_p = nc.get_pressure(fname)
     sea_t = nc.get_time(fname)
-    add_air_pressure(fname,  8454000)
+    get_air_pressure(fname,  8454000)
     
     
     if len(sys.argv) == 5:
