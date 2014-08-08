@@ -21,7 +21,7 @@ class Depth(NetCDFWriter, NetCDFReader):
     def __init__(self):
         super().__init__()
         self.latitude = 30
-        self.in_file_name = os.path.join("..\Instruments","benchmark", "RBRrsk.nc")
+        self.in_file_name = os.path.join("..\Instruments","benchmark", "infosys2.nc")
         self.air_pressure_file = os.path.join("..\Instruments","benchmark",'infosys2.nc')
         self.pressure_data = None
         self.interp_data = None
@@ -52,12 +52,14 @@ class Depth(NetCDFWriter, NetCDFReader):
         self.pressure_data = self.read_file(self.in_file_name, milliseconds_bool = True)
         self.pressure_data = pd.Series(np.multiply(self.pressure_data,10000), index = self.pressure_data.index)
         if pressure_file_bool == False:
-            start = datetime(year=2014, month=5, day=13)
-            end = datetime(year=2014, month=5, day=15)
+            start = datetime(year=2014, month=7, day=3)
+            end = datetime(year=2014, month=7, day=6)
             ts, lat, lon = slurp.get_data(self.station, start, end)
             fname = 'air_pressure.nc'
             slurp.write_to_netCDF(fname, ts, lat, lon)
-            self.air_pressure_data = pd.Series(np.multiply(ts,10000), index = np.divide(ts.index,1000))
+           
+            self.air_pressure_data = pd.Series(np.multiply(ts.values,10000), index = np.divide(ts.index,1000))
+            
         else:
             self.air_pressure_data = self.read_file(self.air_pressure_file, milliseconds_bool = True)
     
@@ -74,7 +76,7 @@ class Depth(NetCDFWriter, NetCDFReader):
         x_var = [x for x in self.pressure_data.index]
         fp = [x for x in self.air_pressure_data]
         xp = [x for x in self.air_pressure_data.index]
-         
+    
         self.interp_data = pd.Series(np.interp(x_var, xp, fp, left=-10000, right=-10000),\
                                       index = self.pressure_data.index)
         
