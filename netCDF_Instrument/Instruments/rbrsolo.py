@@ -4,6 +4,7 @@ import pytz
 import pandas
 import re
 import numpy as np
+from datetime import datetime
 
 sys.path.append('..')
 
@@ -23,6 +24,9 @@ class RBRSolo(NetCDFWriter):
         self.frequency = 4
         self.date_format_string = '%d-%b-%Y %H:%M:%S.%f'  
         self.data_tests = DataTests()
+        self.transducer_distance_from_seabed = [0,0]
+        self.deployment_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
+        self.retrieval_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
         
     def read(self):
         '''load the data from in_filename
@@ -53,7 +57,15 @@ class RBRSolo(NetCDFWriter):
                 skip_index += 1   
         return skip_index  
     
-    def write(self):
+    def write(self, sea_pressure = True):
+        if sea_pressure == False:
+            self.vstore.pressure_name = "air_pressure"
+            self.vstore.pressure_var['standard_name'] = "air_pressure"
+        else:
+            self.vstore.global_vars_dict['distance_from_transducer_to_seabed'] = \
+            'When Deployed: %s - When Retrieved: %s' % (self.transducer_distance_from_seabed[0],self.transducer_distance_from_seabed[1]) 
+            self.vstore.global_vars_dict['time_of_deployment'] = self.deployment_time
+            self.vstore.global_vars_dict['time_of_retrieval'] = self.retrieval_time
         self.vstore.pressure_data = self.pressure_data
         self.vstore.utc_millisecond_data = self.utc_millisecond_data
         self.vstore.latitutde = self.latitude
@@ -73,8 +85,8 @@ if __name__ == "__main__":
     lt.creator_name = "Jurgen Klinnsmen"
     lt.creator_url = "www.test.com"
     #--for testing
-    lt.in_filename = os.path.join("Instruments","benchmark","RBR_RSK.txt")
-    lt.out_filename = os.path.join("Instruments","benchmark","RBRrsk.nc")
+    lt.in_filename = os.path.join("benchmark","RBR_RSK.txt")
+    lt.out_filename = os.path.join("benchmark","RBRrsk.nc")
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)
     lt.is_baro = True

@@ -22,6 +22,9 @@ class Waveguage(NetCDFWriter):
         self.tz_info = pytz.timezone("US/Eastern")
         super(Waveguage, self).__init__()
         self.data_tests = DataTests()
+        self.transducer_distance_from_seabed = [0,0]
+        self.deployment_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
+        self.retrieval_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
 
     def read(self):
         """Sets start_time to a datetime object, utc_millisecond_data
@@ -144,7 +147,15 @@ class Waveguage(NetCDFWriter):
         data.p = data.p.apply(lambda x: x.strip())
         return data.p
     
-    def write(self):
+    def write(self, sea_pressure = True):
+        if sea_pressure == False:
+            self.vstore.pressure_name = "air_pressure"
+            self.vstore.pressure_var['standard_name'] = "air_pressure"
+        else:
+            self.vstore.global_vars_dict['distance_from_transducer_to_seabed'] = \
+            'When Deployed: %s - When Retrieved: %s' % (self.transducer_distance_from_seabed[0],self.transducer_distance_from_seabed[1]) 
+            self.vstore.global_vars_dict['time_of_deployment'] = self.deployment_time
+            self.vstore.global_vars_dict['time_of_retrieval'] = self.retrieval_time
         self.vstore.pressure_data = self.pressure_data
         self.vstore.utc_millisecond_data = self.utc_millisecond_data
         self.vstore.latitutde = self.latitude

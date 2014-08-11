@@ -18,7 +18,7 @@ class DataStore(object):
         self.temperature_data = None
         self.temperature_qc_data = None
         self.temperature_range = [-20,50]
-        self.z_data = None
+        self.z_data = 0
         self.z_qc_data = None
         self.z_range = [-1000,1000]
         self.z_name = None
@@ -124,10 +124,10 @@ class DataStore(object):
                              'comment': "",
                              } 
         self.pressure_var_qc = {
-                                'flag_masks': '111 110 101 011',
+                                'flag_masks': '1111 1110 1101 1011',
                                 'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, \
                                     invalid_rate_of_change",
-                                'comment': '1 signifies the value passed all tests and a 0 flags a failed test'
+                                'comment': '1 signifies the value passed all tests and a 0 flags a failed test, leading 1 is a placeholder'
                                 }
         self.temp_var= {
                              'long_name': "sensor temperature record",
@@ -162,6 +162,7 @@ class DataStore(object):
                                  "creator_url": "gui url",
                                  "date_created": datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ"),
                                  "date_modified": datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ"),
+                                 "distance_from_transducer_to_seabed": None,
                                  "geospatial_lat_min": self.latitude_range[0],
                                  "geospatial_lat_max": self.latitude_range[1],
                                  "geospatial_lon_min": self.longitude_range[0],
@@ -198,6 +199,8 @@ class DataStore(object):
                                  "time_coverage_end": "utility coverage end",
                                  "time_coverage_duration": "utility coverage duration",
                                  "time_coverage_resolution": "P0.25S",
+                                 "time_of_deployment": None,
+                                 "time_of_retrieval": None,
                                  "time_zone": "UTC",
 #                                  "title": 'Measure of pressure at %s degrees latitude, %s degrees longitude' \
 #                                  ' from the date range of %s to %s' % (self.latitude, self.longitude,self.creator_name, \
@@ -295,7 +298,8 @@ class DataStore(object):
             
     def get_global_vars(self, ds):
         for x in self.global_vars_dict:
-            ds.setncattr(x,self.global_vars_dict[x])
+            if self.global_vars_dict[x] is not None:
+                ds.setncattr(x,self.global_vars_dict[x])
         
     def get_time_duration(self):
         first_milli = self.utc_millisecond_data[0]
