@@ -1,4 +1,6 @@
 eclipse.preferences.version=1
 encoding//DepthCalculation/pressure_to_depth.py=utf-8
+encoding//Instruments/gui_air.py=utf-8
+encoding//Instruments/gui_sea.py=utf-8
 encoding//SpectralAnalysis/integration_tests.py=utf-8
 encoding/script2.py=utf-8
