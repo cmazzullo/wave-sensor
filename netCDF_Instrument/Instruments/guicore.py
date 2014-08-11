@@ -37,11 +37,11 @@ class Wavegui:
         self.root = root
         self.per_file_history = 'gui_per_file_history.txt'
         self.global_history = 'gui_global_history.txt'
-        root.title("USGS Wave Data")
+        self.root.title("USGS Wave Data")
         
         self.air_pressure = air_pressure
         self.global_fields = self.make_global_fields()
-        self.initialize_nofiles(root)
+        self.initialize_nofiles(self.root)
 
 
     def initialize_nofiles(self, root):
@@ -151,7 +151,7 @@ class Wavegui:
         """This makes the frame containing buttons and populates it.
         This is for the case when there are no files selected by the
         user."""
-
+        
         buttons = ttk.Frame(f, padding="3 3 12 12")
         ttk.Button(buttons, text="Select File(s)",
                    command=self.select_files).grid(column=0, row=0)
@@ -160,7 +160,7 @@ class Wavegui:
         ttk.Button(buttons, text="Load Globals",
                    command=self.load_globals).grid(column=2, row=0)
         ttk.Button(buttons, text="Quit",
-                   command=root.destroy).grid(column=3, row=0)
+                   command=self.root.destroy).grid(column=3, row=0)
         return buttons
 
     def make_global_buttons_somefiles(self, f):
@@ -181,7 +181,7 @@ class Wavegui:
         ttk.Button(b, text="Process Files",
                    command=self.process_files).grid(column=5, row=0)
         ttk.Button(b, text="Quit",
-                   command=root.destroy).grid(column=6, row=0)
+                   command=self.root.destroy).grid(column=6, row=0)
         return b
 
 
@@ -231,7 +231,7 @@ class Wavegui:
 
     def proceed(self, datafiles):
         message = 'This will overwrite your entries. Are you sure?'
-        d = MessageDialog(root, message=message, title='Confirm',
+        d = MessageDialog(self.root, message=message, title='Confirm',
                           buttons=2)
 
         self.root.wait_window(d.top)
@@ -407,7 +407,7 @@ class Wavegui:
             w.grid(column=2, row=row, sticky=(W, E))
 
         if var.doc:
-            c = lambda: MessageDialog(root, message=var.doc,
+            c = lambda: MessageDialog(self.root, message=var.doc,
                                       title='Help')
 
             ttk.Button(frame, text='Help', command=c).\
