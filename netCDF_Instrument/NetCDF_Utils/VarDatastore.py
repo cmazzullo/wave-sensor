@@ -206,21 +206,26 @@ class DataStore(object):
                                  "uuid": str(uuid.uuid4())
                                  }
     def send_data(self,ds):
+        print('in VarDatastore.send_data')
         self.get_time_var(ds)
         self.get_pressure_var(ds)
         self.get_pressure_qc_var(ds)
         if self.temperature_data != None:
-            self.get_temp_var(ds)
-            
+            self.get_temp_var(ds) 
+
+        print('getting z var')            
         if type(self.z_data) != list:
             self.get_z_var(ds, False)
         else:
             self.get_z_var(ds, True)
             self.get_z_qc_var(ds)
-       
+        print('getting lat var')
         self.get_lat_var(ds)
+        print('getting lon var')
         self.get_lon_var(ds)
+        print('getting global_vars')
         self.get_global_vars(ds)
+        print('getting time duration')
         self.get_time_duration()
         print('done write')
         
@@ -239,7 +244,7 @@ class DataStore(object):
         lat = ds.createVariable("latitude","f8",fill_value=self.fill_value)
         for x in self.lat_var:
             lat.setncattr(x,self.lat_var[x])
-        lat[:] = self.latitutde
+        lat[:] = self.latitude
             
     def get_lon_var(self,ds):
         lon = ds.createVariable("longitude","f8",fill_value=self.fill_value)
@@ -248,14 +253,18 @@ class DataStore(object):
         lon[:] = self.longitude
           
     def get_z_var(self,ds,time_dimen_bool = False):
+        print('in get_z_var')
+        print(time_dimen_bool)
         if time_dimen_bool == False:
             z = ds.createVariable("altitude", "f8",
                                   fill_value=self.fill_value)
         else:
             z = ds.createVariable("altitude", "f8",("time",),
                                   fill_value=self.fill_value)
+        print('setting attributes')
         for x in self.z_var:
             z.setncattr(x,self.z_var[x])
+        print('assigning to slice')
         z[:] = self.z_data
            
     def get_z_qc_var(self,ds):

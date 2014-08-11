@@ -31,7 +31,7 @@ class NetCDFReader(object):
         
     
       
-    def read_file(self,file_name,pressure_bool = True, series_bool = True, milliseconds_bool = False):
+    def read_file(self,file_name,pressure_bool = True, series_bool=True, milliseconds_bool=False):
         """Read a .nc file
         
         pressure_bool -- get pressure, otherwise get temperature
@@ -56,8 +56,12 @@ class NetCDFReader(object):
       
         #this method converts the milliseconds in to date times
         time_convert = netCDF4.num2date(times[:],times.units)
-        if milliseconds_bool == True:
-            return self.return_data(pressure, temperature, times, series_bool, pressure_bool, True)
+        print('milliseconds_bool =', milliseconds_bool)
+        if milliseconds_bool:
+            time_array = times[:]
+            index = pd.Index(time_array)
+            pressure_array = pressure[:]
+            return self.return_data(pressure_array, temperature, index, series_bool, pressure_bool, True)
         else:
             return self.return_data(pressure, temperature, time_convert, series_bool, pressure_bool)
         
@@ -70,11 +74,19 @@ class NetCDFReader(object):
         otherwise convert to datetime"""
         if series_bool == True:
             if milli_bool == True:
+                print('pressure type =', type(pressure))
+                print(type(pressure[0]))
+                print('index type =', type(index))
+                print(type(index[0]))
                 if type(index) != 'datetime.datetime':  # PAndas series cannot take a long as an index
-                    index = np.divide(index,1000)
-                return pd.Series(pressure,index=index)
+                    print('index != datetime.datetime')
+                    #index = np.divide(index, 1000)
+                print(len(pressure), len(index))
+                ts = pd.Series(pressure, index=index)
+                return ts
             else:
                 if temperature != None:
+                    print('this file contains temperature')
                     return pd.Series(temperature,index=index)
                 else: return None
         else:

@@ -153,10 +153,8 @@ if __name__ == "__main__":
     lt.creator_name = "Jurgen Klinnsmen"
     lt.creator_url = "www.test.com"
     #--for testing
-    lt.in_filename = os.path.join("benchmark","data.csv")
-    lt.out_filename = os.path.join("benchmark","data.csv.nc")
-    if os.path.exists(lt.out_filename):
-        os.remove(lt.out_filename)
+    lt.in_filename = 'C:\\Users\\cmazzullo\\wave-sensor-test-data\\leveltroll1.csv'
+    lt.out_filename = 'leveltroll_output.nc.DELETEME'
     lt.is_baro = True
     lt.pressure_units = "psi"
     lt.z_units = "meters"

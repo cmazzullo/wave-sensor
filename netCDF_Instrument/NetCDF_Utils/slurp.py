@@ -130,11 +130,11 @@ def write_to_netCDF(fname, ts, lat, lon):
     print('Writing to netCDF...')
     net_writer = NetCDFWriter()
     vs = net_writer.vstore
+    print('type = ', type(ts.index))
     vs.pressure_data = list(ts.values)
     vs.utc_millisecond_data = list(ts.index)
-    vs.latitutde = lat
+    vs.latitude = lat
     vs.longitude = lon
-#        vs.z = self.z
     net_writer.out_filename = fname
     globs = vs.global_vars_dict
     globs['license'] = ''
@@ -149,6 +149,7 @@ def write_to_netCDF(fname, ts, lat, lon):
     ptest = net_writer.data_tests.select_tests('pressure')
     vs.pressure_qc_data = ptest
     net_writer.write_netCDF(vs, len(ts.values))
+
 
 
 

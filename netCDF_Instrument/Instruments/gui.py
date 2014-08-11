@@ -21,22 +21,28 @@ from Instruments.leveltroll import Leveltroll
 from Instruments.waveguage import Waveguage
 from Instruments.house import House
 from Instruments.measuresys import MeasureSysLogger
+from Instruments.hobo import Hobo
 
 
 class Wavegui:
 
-    def __init__(self, root):
-        self.instruments = {'LevelTroll': Leveltroll(),
-                            'RBRSolo': RBRSolo(),
-                            'Wave Guage': Waveguage(),
-                            'USGS Homebrew': House(),
-                            'Measurement Systems': MeasureSysLogger()}
+
+    def __init__(self, root, air_pressure=False):
+        self.instruments = {'LevelTroll': Leveltroll,
+                            'RBRSolo': RBRSolo,
+                            'Wave Guage': Waveguage,
+                            'USGS Homebrew': House,
+                            'Measurement Specialties': MeasureSysLogger,
+                            'HOBO': Hobo}
         self.root = root
         self.per_file_history = 'gui_per_file_history.txt'
         self.global_history = 'gui_global_history.txt'
         root.title("USGS Wave Data")
+        
+        self.air_pressure = air_pressure
         self.global_fields = self.make_global_fields()
         self.initialize_nofiles(root)
+
 
     def initialize_nofiles(self, root):
 
@@ -52,6 +58,7 @@ class Wavegui:
         root.update()
         root.minsize(root.winfo_width(), root.winfo_height())
 
+
     def initialize_somefiles(self, root):
 
         self.global_frame.destroy()
@@ -64,6 +71,7 @@ class Wavegui:
 
         root.update()
         root.minsize(root.winfo_width(), root.winfo_height())
+
 
     def make_file_frame(self, root):
 
@@ -239,6 +247,7 @@ class Wavegui:
 
      # start_points = [self.plot_pressure(d) for d in devices]
         start_points = [0 for d in devices]
+        print('writing files...')
         [self.write_file(d, s) for d, s in zip(devices, start_points)]
 
         d = MessageDialog(self.root, message="Success! Files saved.",
@@ -257,18 +266,24 @@ class Wavegui:
 
 
     def read_file(self, datafile):
-
+        print('reading file')        
         fields = self.global_fields
         fields.update(datafile.fields)
+
+        # if the variable is required for the type of file, make sure it's 
+        # filled out
         for var in fields.values():
-            if var.required and var.stringvar.get() == '':
+            if ((var.in_air_pressure and self.air_pressure) or \
+                (var.in_water_pressure and (not self.air_pressure))) and \
+                var.required and var.stringvar.get() == '':
                 d = MessageDialog(self.root, message="Incomplete "
                                   "entries, please fill out all "
                                   "fields.", title='Incomplete!')
                 self.root.wait_window(d.top)
                 return False
 
-        device = self.instruments[fields['instrument'].get()]
+        device_class = self.instruments[fields['instrument'].get()]
+        device = device_class()
         message = ('Processing file:\n\n%s\n\n'
                    'This may take a few minutes.')
         fname = datafile.fields['in_filename'].get()
@@ -277,8 +292,14 @@ class Wavegui:
                           title='Processing...', buttons=0)
 
         for var in fields.values():
-            if var.name_in_device:
-                setattr(device, var.name_in_device, var.get())
+            if ((var.in_air_pressure and self.air_pressure) or 
+            (var.in_water_pressure and not self.air_pressure) and
+            var.name_in_device):
+                print(var.label)
+                print('> ', var.name_in_device)
+                print('$ ', var.get())
+                if var.name_in_device != None:
+                    setattr(device, var.name_in_device, var.get())
 
         print('filename: %s' % device.in_filename)
         device.read()
@@ -291,7 +312,8 @@ class Wavegui:
         out_file = device.out_filename
         if os.path.isfile(out_file):
             os.remove(out_file)
-        device.write()
+        sea_pressure = not self.air_pressure
+        device.write(sea_pressure=sea_pressure)
 
 
     def load_per_file(self):
@@ -362,10 +384,15 @@ class Wavegui:
 
 
     def make_widget(self, frame, var, row):
+        if (not var.in_air_pressure) and self.air_pressure:
+            print('firstif')
+            return
+        if (not var.in_water_pressure) and (not self.air_pressure):
+            print('secondif')            
+            return
         label = var.label
         ttk.Label(frame, text=label).\
             grid(column=1, row=row, sticky=W)
-
         if var.filename:
             fname = os.path.basename(var.stringvar.get())
             w = ttk.Label(frame, text=fname)
@@ -418,12 +445,14 @@ class Datafile:
                       label='Altitude (meters):',
                       doc="Depth below reference point",
                       valtype=np.float32,
-                      autosave=False),
+                      autosave=False,
+                      in_air_pressure=False),
              Variable('salinity',
                       name_in_device='salinity',
                       label='Salinity (ppm):',
                       valtype=np.float32,
-                      autosave=False),
+                      autosave=False,
+                      in_air_pressure=False),
              Variable('initial_pressure',
                       name_in_device='initial_pressure',
                       label='Pressure inside device (dbar):',
@@ -433,12 +462,14 @@ class Datafile:
                       name_in_device='water_depth',
                       label='Water depth (meters):',
                       valtype=np.float32,
-                      autosave=False),
+                      autosave=False,
+                      in_air_pressure=False),
              Variable('device_depth',
                       name_in_device='device_depth',
                       label='Depth of device below surface (meters):',
                       valtype=np.float32,
-                      autosave=False),
+                      autosave=False,
+                      in_air_pressure=False),
              Variable('timezone',
                       name_in_device='tzinfo',
                       label='Timezone:',
@@ -450,6 +481,7 @@ class Datafile:
              Variable('sea_name',
                       name_in_device='sea_name',
                       label='Sea Name:',
+                      in_air_pressure=False,
                       options=('Chesapeake Bay',
                                'Great Lakes',
                                'Gulf of Alaska',
@@ -510,7 +542,8 @@ class Variable:
 
     def __init__(self, name, name_in_device=None, label=None,
                  doc=None, options=None, required=True,
-                 filename=False, valtype=str, autosave=True):
+                 filename=False, valtype=str, autosave=True, 
+                 in_air_pressure=True, in_water_pressure=True):
         self.name = name
         self.name_in_device = name_in_device
         self.label = label
@@ -522,6 +555,8 @@ class Variable:
         self.filename = filename
         self.valtype = valtype
         self.autosave = autosave
+        self.in_air_pressure = in_air_pressure
+        self.in_water_pressure = in_water_pressure
 
     def get(self):
         val = self.stringvar.get()
@@ -568,6 +603,5 @@ class EmbeddedPlot:
 
 if __name__ == '__main__':
     root = Tk()
-    gui = Wavegui(root)
+    gui = Wavegui(root, air_pressure=True)
     root.mainloop()
-

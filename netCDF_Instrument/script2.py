@@ -12,21 +12,19 @@ pressure, and water level.
 """
 
 import NetCDF_Utils.slurp as slurp
-import numpy as np
 import matplotlib.pyplot as plt
 import SpectralAnalysis.nc as nc
 import shutil
 import netCDF4
 from TimeDomainAnalysis.time_domain import Time_Domain_Analysis
 import DepthCalculation.pressure_to_depth as p2d
+from DepthCalculation.depth import Depth
 
 
 def make_depth_file(in_fname, out_fname, station, depth_method='crossings'):
     shutil.copy(in_fname, out_fname)
-    
-    initial_pressure = nc.get_initial_pressure(in_fname)  # pressure inside the device
+    initial_pressure = nc.get_initial_pressure(in_fname)
     water_depth = nc.get_water_depth(in_fname)
-    # Watch out for this negative sign!:
     device_depth = nc.get_device_depth(in_fname) * -1
     
     air_pressure, lat, lon = slurp.get_air_pressure(in_fname, station)

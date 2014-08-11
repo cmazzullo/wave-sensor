@@ -43,7 +43,7 @@ class Depth(NetCDFWriter, NetCDFReader):
         self.average_depth = None
         self.flat_test = False
         
-    def acquire_data(self, pressure_file_bool = False):
+    def acquire_data(self, pressure_file_bool=False):
         """Reads in an external netcdf4 file or downloads buoy pressure data from NOA website,
         runs depth calculation methods
         
@@ -52,19 +52,17 @@ class Depth(NetCDFWriter, NetCDFReader):
         self.pressure_data = self.read_file(self.in_file_name, milliseconds_bool = True)
         self.pressure_data = pd.Series(np.multiply(self.pressure_data,10000), index = self.pressure_data.index)
         if pressure_file_bool == False:
-            start = datetime(year=2014, month=7, day=3)
-            end = datetime(year=2014, month=7, day=6)
-            ts, lat, lon = slurp.get_data(self.station, start, end)
+            ts, lat, lon = slurp.get_corresponding_data(self.in_file_name, self.station)
             fname = 'air_pressure.nc'
             slurp.write_to_netCDF(fname, ts, lat, lon)
-           
-            self.air_pressure_data = pd.Series(np.multiply(ts.values,10000), index = np.divide(ts.index,1000))
+            self.air_pressure_data = ts
             
         else:
             self.air_pressure_data = self.read_file(self.air_pressure_file, milliseconds_bool = True)
     
         self.interpolate_data()
-        self.filter_data()
+        # Assume that air pressure time series covers all sea pressure points
+        #self.filter_data()
         self.subtract_air_pressure()
         self.create_pwave_data()
         self.create_hyrostatic_pressure_data()
@@ -72,13 +70,11 @@ class Depth(NetCDFWriter, NetCDFReader):
                    
     def interpolate_data(self):
         """Performs linear interpolation on data"""
-        
-        x_var = [x for x in self.pressure_data.index]
-        fp = [x for x in self.air_pressure_data]
-        xp = [x for x in self.air_pressure_data.index]
-    
-        self.interp_data = pd.Series(np.interp(x_var, xp, fp, left=-10000, right=-10000),\
-                                      index = self.pressure_data.index)
+        sea_time = self.pressure_data.index.values
+        air_time = self.air_pressure_data.index.values
+        air_pressure = self.air_pressure_data.values
+        interp_pressure = np.interp(sea_time, air_time, air_pressure)
+        self.interp_data = interp_pressure
         
     def filter_data(self):
         """Filters any pressure data that does not fall within the start and end of air pressure data"""
@@ -163,7 +159,7 @@ class Depth(NetCDFWriter, NetCDFReader):
         data_store.pressure_data = [x for x in self.hydrostat_pressure_data]
         data_store.utc_millisecond_data = [x * 1000 for x in self.pressure_data.index]
         data_store.z_data = [x for x in self.depth_data]
-        data_store.latitutde = self.latitude
+        data_store.latitude = self.latitude
         data_store.longitude = self.longitude
         self.out_filename = 'DepthCalc.nc'
 
@@ -182,5 +178,7 @@ class Depth(NetCDFWriter, NetCDFReader):
     
 if __name__ == "__main__":
     d = Depth()
+    d.in_file_name = 'C:\\Users\\cmazzullo\\wave-sensor-test-data\\logger1.csv.nc'
+
     d.acquire_data()
     d.write_data()

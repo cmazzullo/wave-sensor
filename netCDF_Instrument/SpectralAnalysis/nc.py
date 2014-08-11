@@ -17,7 +17,7 @@ def append_air_pressure(fname, p, station, lat, lon):
                     'given in the "station" attribute of this '
                     'variable.')
     long_name = 'buoy pressure record'
-    _append_variable(fname, name, p, comment, standard_name=name, 
+    _append_variable(fname, name, p, comment, standard_name=name,
                     short_name=name, long_name=long_name, station=station,
                     lat=lat, lon=lon, buoy=True)
 
@@ -26,7 +26,7 @@ def append_corrected_water_pressure(fname, p):
     comment = ('The corrected water pressure is the "sea_water_pressure" '
                'variable minus the "air_pressure" variable.')
     name = 'sea_water_pressure_due_to_sea_water'
-    _append_variable(fname, name, p, comment, standard_name=name, 
+    _append_variable(fname, name, p, comment, standard_name=name,
                     short_name='corrected_pressure', long_name=name)
 
 
@@ -34,9 +34,9 @@ def append_depth(fname, depth):
     comment = ('The depth, computed using the variable "corrected water '
                'pressure".')
     name = 'depth'
-    _append_variable(fname, name, depth, comment, standard_name=name, 
+    _append_variable(fname, name, depth, comment, standard_name=name,
                     short_name=name, long_name=name, depth=True)
-                    
+
 # Get variable data
 
 def get_time(fname):
@@ -63,8 +63,8 @@ def get_corrected_pressure(fname):
 def get_frequency(fname):
     freq_string = _get_global_attribute(fname, 'time_coverage_resolution')
     return float(freq_string[1:-1])
-    
-    
+
+
 def get_initial_pressure(fname):
     return _get_global_attribute(fname, 'initial_pressure')
 
@@ -83,15 +83,17 @@ def _get_variable_data(fname, variable_name):
     v = var[:]
     nc.close()
     return v
-    
-    
+
+
 def _get_global_attribute(fname, name):
     nc = netCDF4.Dataset(fname)
-    return getattr(nc, name)
-    
-    
-def _append_variable(fname, name, p, comment='', standard_name='', 
-                    short_name='', long_name='', station=None, lat=None, 
+    attr = getattr(nc, name)
+    nc.close()    
+    return attr
+
+
+def _append_variable(fname, name, p, comment='', standard_name='',
+                    short_name='', long_name='', station=None, lat=None,
                     lon=None, buoy=False, depth=False):
     nc = netCDF4.Dataset(fname, 'a', format='NETCDF4_CLASSIC')
     pvar = nc.createVariable(name, 'f8', ('time',))
@@ -119,3 +121,4 @@ def _append_variable(fname, name, p, comment='', standard_name='',
         pvar.station_latitude = lat
         pvar.station_longitude = lon
     pvar[:] = p
+    nc.close()
