@@ -34,6 +34,7 @@ class Leveltroll(NetCDFWriter):
         self.temperature_data = None
         self.data_tests = DataTests()
         self.transducer_distance_from_seabed = [0,0]
+        self.reference_point_distance_to_transducer = [0,0]
         self.deployment_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
         self.retrieval_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
         
@@ -117,12 +118,19 @@ class Leveltroll(NetCDFWriter):
         return offset.total_seconds()       
     
     def write(self, sea_pressure = True):
+        '''Write netCDF files
+        
+        sea_pressure - if true write sea_pressure data, otherwise write air_pressure data'''
+        
         if sea_pressure == False:
             self.vstore.pressure_name = "air_pressure"
             self.vstore.pressure_var['standard_name'] = "air_pressure"
         else:
+            self.vstore.global_vars_dict['distance_from_referencepoint_to_transducer'] = \
+            'When Deployed: %s - When Retrieved: %s' % (self.reference_point_distance_to_transducer[0], \
+                                                        self.reference_point_distance_to_transducer[1])
             self.vstore.global_vars_dict['distance_from_transducer_to_seabed'] = \
-            'When Deployed: %s - When Retrieved: %s' % (self.transducer_distance_from_seabed[0],self.transducer_distance_from_seabed[1]) 
+            'When Deployed: %s - When Retrieved: %s' % (self.transducer_distance_from_seabed[0],self.transducer_distance_from_seabed[1])
             self.vstore.global_vars_dict['time_of_deployment'] = self.deployment_time
             self.vstore.global_vars_dict['time_of_retrieval'] = self.retrieval_time
         self.vstore.pressure_data = self.pressure_data

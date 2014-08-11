@@ -95,7 +95,7 @@ class DataStore(object):
                         'valid_min': self.z_range[0],
                         'valid_max': self.z_range[1],
                         'ancillary_variables': '',
-                        'comment': "latitiude 0 equals equator",
+                        'comment': "altitude of instrument",
                         'ioos_category': "Location",
                         'add_offset': 0.0,
                         'scale_factor': 1.0,
@@ -103,9 +103,8 @@ class DataStore(object):
                       }
         self.z_var_qc = {
                                 'flag_masks': '1111 1110 1101 1011',
-                                'flag_meanings': "no_known_bad_data last_five_vals_identical, outside_valid_range, \
-                                    invalid_rate_of_change",
-                                'comment': '1 signifies the value passed all tests and a 0 flags a failed test, leading 1 is a placeholder'
+                                'flag_meanings': "no_known_bad_data last_five_vals_identical, outside_valid_range, invalid_rate_of_change",
+                                'comment': '1 signifies the value passed the test while a 0 flags a failed test, leading 1 is a placeholder'
                                 }
         self.pressure_var = {
                              'long_name': "sensor pressure record",
@@ -125,9 +124,8 @@ class DataStore(object):
                              } 
         self.pressure_var_qc = {
                                 'flag_masks': '1111 1110 1101 1011',
-                                'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, \
-                                    invalid_rate_of_change",
-                                'comment': '1 signifies the value passed all tests and a 0 flags a failed test, leading 1 is a placeholder'
+                                'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, invalid_rate_of_change",
+                                 'comment': '1 signifies the value passed the test while a 0 flags a failed test, leading 1 is a placeholder'
                                 }
         self.temp_var= {
                              'long_name': "sensor temperature record",
@@ -147,9 +145,8 @@ class DataStore(object):
                              } 
         self.temp_var_qc = {
                              'flag_masks': '111 110 101 011',
-                             'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, \
-                                    invalid_rate_of_change",
-                             'comment': '1 signifies the value passed all tests and a 0 flags a failed test'
+                             'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, invalid_rate_of_change",
+                             'comment': '1 signifies the value passed the test while a 0 flags a failed test, leading 1 is a placeholder'
                             }
        
         self.global_vars_dict = {"cdm_data_type": "station",
@@ -162,6 +159,7 @@ class DataStore(object):
                                  "creator_url": "gui url",
                                  "date_created": datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ"),
                                  "date_modified": datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ"),
+                                 "distance_from_referencepoint_to_transducer": None,
                                  "distance_from_transducer_to_seabed": None,
                                  "geospatial_lat_min": self.latitude_range[0],
                                  "geospatial_lat_max": self.latitude_range[1],
