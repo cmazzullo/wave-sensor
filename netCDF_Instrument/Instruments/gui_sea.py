@@ -4,7 +4,6 @@ Created on Mon Aug 11 15:20:35 2014
 
 @author: cmazzullo
 """
-
 import Instruments.guicore as core
 from tkinter import *
 

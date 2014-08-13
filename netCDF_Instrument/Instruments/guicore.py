@@ -38,7 +38,7 @@ class Wavegui:
         self.per_file_history = 'gui_per_file_history.txt'
         self.global_history = 'gui_global_history.txt'
         self.root.title("USGS Wave Data")
-        
+
         self.air_pressure = air_pressure
         self.global_fields = self.make_global_fields()
         self.initialize_nofiles(self.root)
@@ -151,7 +151,7 @@ class Wavegui:
         """This makes the frame containing buttons and populates it.
         This is for the case when there are no files selected by the
         user."""
-        
+
         buttons = ttk.Frame(f, padding="3 3 12 12")
         ttk.Button(buttons, text="Select File(s)",
                    command=self.select_files).grid(column=0, row=0)
@@ -245,7 +245,6 @@ class Wavegui:
         if not all(devices):
             return
 
-     # start_points = [self.plot_pressure(d) for d in devices]
         start_points = [0 for d in devices]
         print('writing files...')
         [self.write_file(d, s) for d, s in zip(devices, start_points)]
@@ -258,19 +257,12 @@ class Wavegui:
         self.root.destroy()
 
 
-    def plot_pressure(self, device):
-
-        e = EmbeddedPlot(self.root, device.pressure_data[:])
-        self.root.wait_window(e.top)
-        return e.xdata
-
-
     def read_file(self, datafile):
-        print('reading file')        
+        print('reading file')
         fields = self.global_fields
         fields.update(datafile.fields)
 
-        # if the variable is required for the type of file, make sure it's 
+        # if the variable is required for the type of file, make sure it's
         # filled out
         for var in fields.values():
             if ((var.in_air_pressure and self.air_pressure) or \
@@ -292,7 +284,7 @@ class Wavegui:
                           title='Processing...', buttons=0)
 
         for var in fields.values():
-            if ((var.in_air_pressure and self.air_pressure) or 
+            if ((var.in_air_pressure and self.air_pressure) or
             (var.in_water_pressure and not self.air_pressure) and
             var.name_in_device):
                 print(var.label)
@@ -388,7 +380,7 @@ class Wavegui:
             print('firstif')
             return
         if (not var.in_water_pressure) and (not self.air_pressure):
-            print('secondif')            
+            print('secondif')
             return
         label = var.label
         ttk.Label(frame, text=label).\
@@ -453,14 +445,15 @@ class Datafile:
                       valtype=np.float32,
                       autosave=False,
                       in_air_pressure=False),
-             Variable('initial_pressure',
-                      name_in_device='initial_pressure',
-                      label='Pressure inside device (dbar):',
+             Variable('initial_water_depth',
+                      name_in_device='initial_water_depth',
+                      label='Initial water depth (meters):',
                       valtype=np.float32,
-                      autosave=False),
-             Variable('water_depth',
-                      name_in_device='water_depth',
-                      label='Water depth (meters):',
+                      autosave=False,
+                      in_air_pressure=False),
+             Variable('final_water_depth',
+                      name_in_device='final_water_depth',
+                      label='Final water depth (meters):',
                       valtype=np.float32,
                       autosave=False,
                       in_air_pressure=False),
@@ -468,6 +461,16 @@ class Datafile:
                       name_in_device='device_depth',
                       label='Depth of device below surface (meters):',
                       valtype=np.float32,
+                      autosave=False,
+                      in_air_pressure=False),
+             Variable('deployment_time',
+                      name_in_device='deployment_time',
+                      label='Deployment time (YYYYMMDD HHMM):',
+                      autosave=False,
+                      in_air_pressure=False),
+             Variable('retrieval_time',
+                      name_in_device='retrieval_time',
+                      label='Retrieval time (YYYYMMDD HHMM):',
                       autosave=False,
                       in_air_pressure=False),
              Variable('timezone',
@@ -542,7 +545,7 @@ class Variable:
 
     def __init__(self, name, name_in_device=None, label=None,
                  doc=None, options=None, required=True,
-                 filename=False, valtype=str, autosave=True, 
+                 filename=False, valtype=str, autosave=True,
                  in_air_pressure=True, in_water_pressure=True):
         self.name = name
         self.name_in_device = name_in_device
@@ -563,45 +566,14 @@ class Variable:
         return self.valtype(val)
 
 
-class EmbeddedPlot:
-
-    def __init__(self, root, data):
-        top = self.top = Toplevel(root)
-        message = ('Please select the point that you think is the '
-                   'start of the useful data - probably when the '
-                   'device was put in the water.')
-        header = ttk.Label(top, text=message)
-        header.pack(fill=BOTH, expand=1)
-
-        f = Figure(figsize=(5, 4), dpi=100)
-        self.a = a = f.add_subplot(111)
-        a.plot(data)
-
-        self.canvas = canvas = FigureCanvasTkAgg(f, master=top)
-        canvas.show()
-        canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
-        self.toolbar = toolbar = NavigationToolbar2TkAgg(canvas, top)
-        toolbar.update()
-        canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=1)
-        canvas.mpl_connect('button_press_event',
-                           self.onclick)
-        button = Button(master=top, text='Accept',
-                        command=self.top.destroy)
-        button.pack(side=BOTTOM)
-        top.update()
-        top.grab_set()
-        self.dot = None
-        self.xdata = 0
-
-    def onclick(self, event):
-        if self.dot:
-            self.dot = self.a.plot(event.xdata, event.ydata, 'ro')
-            self.canvas.show()
-
-        self.xdata = event.xdata
-
-
 if __name__ == '__main__':
+
     root = Tk()
-    gui = Wavegui(root, air_pressure=True)
+    gui = Wavegui(root, air_pressure=False)
     root.mainloop()
+    fname = 'C:\\Users\\cmazzullo\\wave-sensor-test-data\\leveltroll1.csv.nc'
+    import SpectralAnalysis.nc as nc
+    p = nc.get_pressure(fname)
+    plt.plot(p)
+    import netCDF4
+    f = netCDF4.Dataset(fname)
