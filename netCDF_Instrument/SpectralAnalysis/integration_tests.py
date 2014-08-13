@@ -169,43 +169,45 @@ def run_test():
     H = 30  # water depth in meters
     timestep = .25
     t = np.arange(0, 600, timestep)  # time in seconds
-    # tuple containing wave coefficients
-    waves = ((1, .05, 0), (.5, .01, 1), (.5, .1, 0), (.5, .08, 2))
+    # tuple containing wave coefficients (A, k, phase)
+    waves = ((1, .005, 0), (.5, .01, 1), (.5, .001, 0), (.5, .08, 2))
 
     real_eta = make_test_height(t, H, *waves)  # Hopefully our script can get
                                                # this from the netCDF
-    p = make_test_pressure(z, H, t, *waves)
+    p_pascals = make_test_pressure(z, H, t, *waves)
+    p = p_pascals / 1e4
+    eta_window = p2d.fft_method(t, p, z, H, timestep,
+                                       window=True, gate=30, cutoff=1)
+    eta = p2d.fft_method(t, p, z, H, timestep, gate=80, cutoff=1)
+    n = p2d.hydrostatic_method(p)
 
-    eta_window = p2d.pressure_to_depth(t, p, z, H, timestep,
-                                       window=True, gate=2, cutoff=-1)
-    eta = p2d.pressure_to_depth(t, p, z, H, timestep, gate=80, cutoff=-1)
+    def rmse(real, calc):
+        error = abs(real - calc)
+        return np.sqrt(sum(error**2) / len(error))
 
-    window_error = abs(real_eta - eta_window)
-    nowindow_error = abs(real_eta - eta)
-
-    window_rmse = rmse(window_error)
-    nowindow_rmse = rmse(nowindow_error)
+    window_rmse = rmse(real_eta, eta_window)
+    nowindow_rmse = rmse(real_eta, eta)
+    nrmse = rmse(real_eta, n)
 
     print('window rmse =', window_rmse)
-    print('nowindow_rmse =', nowindow_rmse)
+    print('no window rmse =', nowindow_rmse)
+    print('naive rmse =', nrmse)
 
-    plt.plot(t, real_eta, color='b', label='Real eta')
-    plt.plot(t, eta_window, color='r', label='Calculated eta with windowing')
-    plt.plot(t, eta, color='y', label='Calculated eta')
-
+    plt.plot(t, real_eta, 'b', label='Real eta')
+    plt.plot(t, eta_window, 'r', label='Calculated eta with windowing')
+    #plt.plot(t, eta, 'y', label='Calculated eta')
+    plt.plot(t, n, 'y', label='Naive eta')
     plt.legend()
     plt.show()
-
-def rmse(errors):
-    return np.sqrt(sum(errors**2) / len(errors))
 
 
 def dbar_to_pascals(p):
     return p * 1e4
 
 
-
-run_test()
-fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
-         'logger3.csv.nc')
+if __name__ == '__main__':
+    run_test()
+    fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
+             'logger3.csv.nc')
+    print('hello')
     #run_test_real_data(fname)
