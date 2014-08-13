@@ -14,7 +14,7 @@ options = {
 }
 
 executables = [
-    Executable('ForzenBinaryScript.py', base = "Win32GUI")
+    Executable('FrozenBinaryScript1_Air.py', base = "Win32GUI")
 ]
 
 setup(name='advanced_cx_Freeze_sample',
