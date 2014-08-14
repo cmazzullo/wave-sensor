@@ -17,6 +17,8 @@ import shutil
 import DepthCalculation.pressure_to_depth as p2d
 import numpy as np
 
+
+
 def make_depth_file(water_fname, air_fname, out_fname, depth_method='fft'):
     # get time series for air and water pressure
     device_depth = -1 * nc.get_device_depth(water_fname)
@@ -43,15 +45,14 @@ def make_depth_file(water_fname, air_fname, out_fname, depth_method='fft'):
     print(len(sea_pressure), len(depth))
     shutil.copy(water_fname, out_fname)
     nc.append_air_pressure(out_fname, air_pressure)
-    nc.append_corrected_water_pressure(out_fname, corrected_pressure)
     nc.append_depth(out_fname, depth)
     print('Success!')
 
 
 if __name__ == '__main__':
+    # testing
     import matplotlib.pyplot as plt
     import netCDF4
-    # testing
     sea_fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\test-ncs\\'
                  'logger3.csv.nc')
     air_fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\test-ncs\\'
@@ -63,23 +64,21 @@ if __name__ == '__main__':
 
     make_depth_file(sea_fname, air_fname, out_fname, depth_method='naive')
 
+
     depth = nc.get_depth(out_fname)
     air_p = nc.get_air_pressure(out_fname)
     sea_p = nc.get_pressure(out_fname)
-    corrected_p = nc.get_corrected_pressure(out_fname)
     time = nc.get_time(out_fname)
 
     plt.plot(time, air_p, color='y', label='Air pressure')
     plt.plot(time, sea_p, color='b', label='Water pressure')
     plt.plot(time, depth, color='r', label='Depth')
-    #plt.plot(time, corrected_p, color='r', label='Corrected water pressure')
     plt.legend()
     plt.show()
 
     f = netCDF4.Dataset(out_fname, 'r', format='NETCDF4_CLASSIC')
     print(f.variables['air_pressure'])
     print(f.variables['sea_water_pressure'])
-    print(f.variables['sea_water_pressure_due_to_sea_water'])
     print(f.variables['depth'])
     print(f.device_depth)
     f.close()
