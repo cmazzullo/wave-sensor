@@ -3,9 +3,9 @@ netCDFs
 
 """
 
+from datetime import datetime, timedelta
 import netCDF4
 import os
-from datetime import datetime, timedelta
 import pytz
 
 # Append new variables
@@ -15,15 +15,6 @@ def append_air_pressure(fname, p):
     long_name = 'air pressure record'
     _append_variable(fname, name, p, '', standard_name=name,
                     short_name=name, long_name=long_name)
-
-
-
-def append_corrected_water_pressure(fname, p):
-    comment = ('The corrected water pressure is the "sea_water_pressure" '
-               'variable minus the "air_pressure" variable.')
-    name = 'sea_water_pressure_due_to_sea_water'
-    _append_variable(fname, name, p, comment, standard_name=name,
-                    short_name='corrected_pressure', long_name=name)
 
 
 def append_depth(fname, depth):
@@ -42,7 +33,6 @@ def get_water_depth(in_fname):
     tf = get_retrieval_time(in_fname)
     time = get_time(in_fname)
     m = (Hf - H0) / (tf - t0)
-
     H = m * time + H0 - m * t0
     return H
 
@@ -61,10 +51,6 @@ def get_air_pressure(fname):
 
 def get_pressure(fname):
     return _get_variable_data(fname, 'sea_water_pressure')
-
-
-def get_corrected_pressure(fname):
-    return _get_variable_data(fname, 'sea_water_pressure_due_to_sea_water')
 
 # Get global data
 
@@ -146,6 +132,9 @@ def _append_variable(fname, name, p, comment='', standard_name='',
 
 
 if __name__ == '__main__':
+    ## UNIT TESTS ##
+    import matplotlib.pyplot as plt
+    print('Running unit test...')
     in_fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
                 'test-ncs\\logger1.csv.nc')
 
@@ -164,5 +153,4 @@ if __name__ == '__main__':
     print(f.device_depth)
     print(f.initial_water_depth)
     print(f.final_water_depth)
-
     f.close()

@@ -3,7 +3,10 @@
 Created on Mon Aug  4 08:48:12 2014
 
 @author: Chris Mazzullo
+
+Provides methods to convert water pressure into water depth.
 """
+
 import numpy as np
 from scipy.optimize import newton
 
@@ -104,13 +107,9 @@ def method2(p_dbar):
     an interval and if its endpoint is below the x axis, we've found
     a new wave."""
     p = p_dbar * 1e4            # convert to Pascals
-
     Pstatic = make_pstatic(p)
     Pwave = p - Pstatic
     depth = Pstatic / (rho * g)
-
-
-
     start = period = counter = Pmin = Pmax = 0
     periods = []  # periods of found waves
     eta = np.zeros(len(Pwave))
@@ -164,50 +163,3 @@ def make_pstatic(p):
     slope, intercept = np.polyfit(x, p, 1)
     pwave = slope * x + intercept
     return pwave
-
-
-if __name__ == '__main__':
-    import SpectralAnalysis.nc as nc
-    fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
-             'test-ncs\\logger3.csv.nc')
-    p = nc.get_pressure(fname)
-    t = nc.get_time(fname)
-    z = -2
-    H = 20 * np.ones_like(t)
-    timestep = .25
-    dfft = fft_method(t, p, z, H, timestep, gate=.7, window=True)
-    d = method2(p)
-    d[d < 8] = np.nan
-    d[d > 13] = np.nan
-    n = hydrostatic_method(p)
-    import matplotlib.pyplot as plt
-    plt.clf()
-    plt.cla()
-    plt.subplot(2, 1, 1)
-    plt.xlabel('time (ms)')
-    plt.ylabel('water level (m)')
-    plt.plot(d+.005, 'y,', label='Height from method 2')
-    plt.plot(n, 'b,', label='Naive method')
-    plt.plot(dfft, 'r,', label='Height from fft')
-
-    fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
-             'test-ncs\\logger1.csv.nc')
-    p = nc.get_pressure(fname)
-    t = nc.get_time(fname)
-    z = -2
-    H = 20 * np.ones_like(t)
-    timestep = .25
-    dfft = fft_method(t, p, z, H, timestep, gate=1, window=False)
-    d = method2(p)
-    d[d < 8] = np.nan
-    d[d > 13] = np.nan
-    n = hydrostatic_method(p)
-    plt.subplot(2, 1, 2)
-
-    plt.plot(d+.0005, 'y-', label='Height from method 2')
-    plt.plot(dfft, 'r-', label='Height from fft')
-    plt.plot(n, 'b-', label='Naive method')
-    plt.legend()
-    plt.xlabel('time (ms)')
-    plt.ylabel('water level (m)')
-    plt.show()

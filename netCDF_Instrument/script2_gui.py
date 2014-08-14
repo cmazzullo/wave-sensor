@@ -1,12 +1,21 @@
+"""
+Created on Thu Aug  7 2014
+
+@author: cmazzullo
+
+A frontend for script2, which takes one water pressure and one air
+pressure file and outputs a file containing water pressure, air
+pressure and depth.
+"""
+
 from tkinter import *
 from tkinter import filedialog
-import script2
 from tkinter import ttk
+
+import script2
 
 
 class Script2gui:
-    """A frontend for script2, which takes a water and air pressure
-    file and outputs a depth file."""
     def __init__(self, root):
         methods = [('Naive', 'naive'),
                    ('Linear Wave', 'fft'),
