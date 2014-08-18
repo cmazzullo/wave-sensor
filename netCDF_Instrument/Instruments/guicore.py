@@ -2,7 +2,7 @@ from functools import partial
 from collections import OrderedDict
 from tkinter import *
 from tkinter import ttk
-from tkinter import filedialog
+from tkinter.filedialog import askopenfilename as fileprompt
 from pytz import timezone
 import os
 import numpy as np
@@ -38,38 +38,38 @@ class Wavegui:
             Variable(label='Your personal url:', autosave=True,
                      name_in_device='creator_url'),
             Variable(label='Project name:',  autosave=True,)]
-        self.initialize(self.root)
         self.datafiles = list()
         self.filenames = set()
+        self.initialize()
 
 
-    def initialize(self, root, files=False):
+    def initialize(self):
         try:
             self.global_frame.destroy()
             self.file_frame.destroy()
         except AttributeError:
             pass
-        self.global_frame = make_frame(root)
+        self.global_frame = make_frame(self.root)
         add_label(self.global_frame, 'Global Settings:')
         entries = make_frame(self.global_frame)
         for row, var in enumerate(self.global_fields):
             self.make_widget(entries, var, row)
         entries.pack(fill=BOTH, expand=1)
-        def save_global():
+        def save_globals():
             self.save_history(self.global_history, self.global_fields)
+        def load_globals():
+            self.load_history(self.global_history, self.global_fields)
         buttons = [("Add File(s)", self.add_files, 0 , 0),
-                   ("Save Globals", save_global, 0 , 1),
-                   ("Load Globals", self.load_globals, 0 , 2),
+                   ("Save Globals", save_globals, 0 , 1),
+                   ("Load Globals", load_globals, 0 , 2),
                    ("Quit", self.root.destroy, 0 , 5)]
-        if files:
-            buttons += [("Load Default", self.load_per_file, 0 , 3),
+        if self.filenames:
+            def load_per_file():
+                for df in self.datafiles:
+                    self.load_history(self.df_history, df.fields)
+            buttons += [("Load Default", load_per_file, 0 , 3),
                         ("Process Files", self.process_files, 0 , 4)]
-        make_buttonbox(self.global_frame, buttons)
-        self.global_frame.update()
-        self.global_frame.grid(row=1, column=0, sticky=(N, W, E, S))
-
-        if files:
-            self.file_frame = make_frame(root)
+            self.file_frame = make_frame(self.root)
             add_label(self.file_frame, 'File specific settings:')
             tabs = make_frame(self.file_frame)
             book = ttk.Notebook(tabs, width=50)
@@ -81,7 +81,11 @@ class Wavegui:
                 widgets.pack(fill=BOTH, expand=1)
                 save = partial(self.save_history, self.df_history,
                                df.fields)
-                rm = partial(self.remove_file, df)
+                def remove_file(datafile):
+                    self.filenames.remove(datafile.in_filename.get())
+                    self.datafiles.remove(datafile)
+                    self.initialize()
+                rm = partial(remove_file, df)
                 load = partial(self.load_history, self.df_history,
                                df.fields)
                 buttonlist = [
@@ -94,34 +98,25 @@ class Wavegui:
                 if len(fname) > maxlen:
                     fname = fname[:maxlen] + '...'
                 book.add(tab, text=fname)
-            book.enable_traversal()
-            book.pack(fill=BOTH, expand=1)
             tabs.pack(fill=BOTH, expand=1)
+            book.pack(fill=BOTH, expand=1)
+
             self.file_frame.grid(row=0, column=0, sticky=(N, W, E, S))
-        root.update()
+
+        make_buttonbox(self.global_frame, buttons)
+        self.global_frame.update()
+        self.global_frame.grid(row=1, column=0, sticky=(N, W, E, S))
+        self.root.update()
 
 
     def add_files(self):
-        fnames = set(filedialog.askopenfilename(multiple=True))
-        new_fnames = fnames - self.filenames
+        new_fnames = set(fileprompt(multiple=True)) - self.filenames
         self.filenames |= new_fnames
         new_datafiles = [Datafile(fname, self.instruments)
                          for fname in new_fnames]
         self.datafiles += new_datafiles
         if self.filenames:
-            self.initialize(self.root, files=True)
-
-
-    def remove_all(self):
-        self.datafiles = []
-        self.initialize(self.root)
-
-
-    def proceed(self):
-        message = 'This will overwrite your entries. Are you sure?'
-        d = MessageDialog(self.root, message=message, title='Confirm',
-                          buttons=2, wait=True)
-        return d.boolean
+            self.initialize()
 
 
     def process_files(self):
@@ -135,21 +130,22 @@ class Wavegui:
         if not all(devices):
             return
         start_points = [0 for d in devices]
-        [self.write_file(d, s) for d, s in zip(devices, start_points)]
+        for device, s in zip(devices, start_points):
+            self.write_file(device, s)
         d.destroy()
         MessageDialog(self.root, message="Success! Files saved.",
                       title='Success!')
-        self.remove_all()
+        self.datafiles = list()
+        self.filenames = set()
+        self.initialize()
 
 
     def read_file(self, datafile, dialog):
         fields = self.global_fields + datafile.fields
-        # if the variable is required for the type of file, make sure
-        # it's filled out
         for var in fields:
             if ((var.in_air_pressure and self.air_pressure) or \
-                (var.in_water_pressure and (not self.air_pressure))) and \
-                var.required and not var.stringvar.get():
+                (var.in_water_pressure and (not self.air_pressure))) \
+                and var.required and not var.stringvar.get():
                 dialog.destroy()
                 MessageDialog(self.root, message="Incomplete entries,"
                               " please fill out all fields.",
@@ -174,20 +170,11 @@ class Wavegui:
         device.write(sea_pressure=sea_pressure)
 
 
-    def load_per_file(self):
-        for datafile in self.datafiles:
-            self.load_history(self.df_history, datafile.fields)
-
-
     def save_history(self, filename, varlist):
         with open(filename, 'w') as f:
             for var in varlist:
                 if var.autosave:
                     f.write(var.stringvar.get() + '\n')
-
-
-    def load_globals(self):
-        self.load_history(self.global_history, self.global_fields)
 
 
     def load_history(self, filename, fields):
@@ -196,18 +183,16 @@ class Wavegui:
                 for v in self.global_fields
                 if not v.filename))
         l = [v for v in fields if v.autosave]
-        if not any_fields_filled or self.proceed():
+        message = 'This will overwrite your entries. Are you sure?'
+        def proceed():
+            d = MessageDialog(self.root, message=message,
+                              title='Confirm', buttons=2, wait=True)
+            return d.boolean
+        if not any_fields_filled or proceed():
             if os.path.isfile(filename):
                 with open(filename, 'r') as f:
                     for line, var in zip(f, l):
                         var.stringvar.set(line.rstrip())
-
-
-    def remove_file(self, datafile):
-        filename = datafile.in_filename.get()
-        self.filenames.remove(filename)
-        self.datafiles.remove(datafile)
-        self.initialize(self.root, files=bool(self.datafiles))
 
 
     def make_widget(self, frame, var, row):
