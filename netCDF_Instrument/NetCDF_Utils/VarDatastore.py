@@ -309,15 +309,18 @@ class DataStore(object):
                 ds.setncattr(x,self.global_vars_dict[x])
         
     def get_time_duration(self):
+        print(type(self.utc_millisecond_data))
         first_milli = self.utc_millisecond_data[0]
-        second_milli = self.utc_millisecond_data[::-1][0]
+        print(first_milli)
+        second_milli = self.utc_millisecond_data[-1]
+        print(second_milli)
         self.global_vars_dict["time_coverage_start"] = \
         timeconvert.convert_milliseconds_to_datetime(first_milli, pytz.utc)
         
         self.global_vars_dict["time_coverage_end"] = \
         timeconvert.convert_milliseconds_to_datetime(second_milli, pytz.utc)
         
-        self.global_vars_dict["time_coverage_end"] = \
+        self.global_vars_dict["time_coverage_duration"] = \
         timeconvert.get_time_duration(second_milli - first_milli)
         
         self.global_vars_dict['title'] = 'Measure of pressure at %s degrees latitude, %s degrees longitude  by %s' \
