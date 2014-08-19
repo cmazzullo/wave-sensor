@@ -17,13 +17,18 @@ import pandas as pd
 import numpy as np
 import pytz
 import SpectralAnalysis.nc as nc
-
+import netCDF4
 from NetCDF_Utils.edit_netcdf import NetCDFWriter
 
 
 delta = timedelta(days=30)
 day = timedelta(days=1)
 epoch_start = datetime(year=1970, month=1, day=1, tzinfo=pytz.utc)
+
+
+def make_corresponding_file(in_fname, out_fname, station):
+    ts, lat, lon = get_corresponding_data(in_fname, station)
+    write_to_netCDF(out_fname, ts, lat, lon)
 
 
 def get_air_pressure(fname, station):
@@ -108,12 +113,11 @@ def _download(station, begin, end):
             times.append(time)
         elif line.startswith('<pre>'):
             precount += 1
-    p = np.array(pressures)
-    #    to_ms = dateconvert.convert_date_to_milliseconds
-    #    times = [to_ms(None, None, date_time=t) for t in times]
-    ms_times = [date_to_ms(t) for t in times]
+
     # convert mbar to dbar
-    return pd.Series(p / 100, index=ms_times), lat, lon
+    p = np.array(pressures) / 100
+    ms_times = [date_to_ms(t) for t in times]
+    return pd.Series(p, index=ms_times), lat, lon
 
 
 def date_to_ms(date):
@@ -130,7 +134,6 @@ def write_to_netCDF(fname, ts, lat, lon):
     print('Writing to netCDF...')
     net_writer = NetCDFWriter()
     vs = net_writer.vstore
-    print('type = ', type(ts.index))
     vs.pressure_data = list(ts.values)
     vs.utc_millisecond_data = list(ts.index)
     vs.latitude = lat
@@ -151,9 +154,6 @@ def write_to_netCDF(fname, ts, lat, lon):
     net_writer.write_netCDF(vs, len(ts.values))
 
 
-
-
-
 if __name__ == '__main__':
     usage = """
 usage: slurp STATIONID STARTTIME ENDTIME OUTFILE
@@ -166,29 +166,23 @@ OUTFILE is formatted as a netCDF.
 	ENDTIME	     format: YYYYMMDD
 	OUTFILE	     dump to this file
 """
-    sys.path.append('C:\\Users\\cmazzullo\\wave-sensor\\netCDF_Instrument')
-    
-    
-    fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
-             'logger3.csv.nc')
-    
-    air_fname = ''
-    
-    out_fname = ''
-    # 1
-    sea_p = nc.get_pressure(fname)
-    sea_t = nc.get_time(fname)
-    get_air_pressure(fname,  8454000)
-    
-    
+    in_fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\test-csvs\\'
+                'logger3.csv.nc')
+
+    out_fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
+                 'air3.nc')
+
+    station = 8454000
+    make_corresponding_file(in_fname, out_fname, station)
+
     if len(sys.argv) == 5:
-            station = sys.argv[1]
-            station = 8454000
-            start = sys.argv[2]
-            end = sys.argv[3]
-            outfile = sys.argv[4]
-            ts, lat, lon = get_data(station, start, end)
-            write_to_netCDF(outfile, ts, lat, lon)
-    else:
-    #        print(usage)
-            pass
+        station = sys.argv[1]
+        station = 8454000
+        start = sys.argv[2]
+        end = sys.argv[3]
+        outfile = sys.argv[4]
+        ts, lat, lon = get_data(station, start, end)
+        write_to_netCDF(outfile, ts, lat, lon)
+        f = netCDF4.Dataset(outfile)
+
+        f.close()
