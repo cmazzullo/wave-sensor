@@ -8,6 +8,9 @@ import netCDF4
 import os
 import pytz
 
+# Constant
+fill_value = -1e10
+
 # Append new variables
 
 def append_air_pressure(fname, p):

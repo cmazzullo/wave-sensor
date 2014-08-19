@@ -173,7 +173,7 @@ def make_test_data():
                  for amp, period in zip(amps, periods)]) + noise
     return Pwave
 
-    
+
 def get_pressure_array(fname):
     f = Dataset(fname, 'r', format='NETCDF4_CLASSIC')
     v = f.variables

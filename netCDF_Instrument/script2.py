@@ -14,9 +14,10 @@ pressure, and water level.
 
 import numpy as np
 import shutil
-
+from numpy import arange
 import DepthCalculation.pressure_to_depth as p2d
 import SpectralAnalysis.nc as nc
+n = arange(10)
 
 
 def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
@@ -28,19 +29,22 @@ def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
     raw_air_pressure = nc.get_air_pressure(air_fname)
     air_time = nc.get_time(air_fname)
 
-    air_pressure = np.interp(sea_time, air_time, raw_air_pressure)
+    air_pressure = np.interp(sea_time, air_time, raw_air_pressure,
+                             left=nc.fill_value, right=nc.fill_value)
     corrected_pressure = sea_pressure - air_pressure
 
     if method == 'fft':
         depth = p2d.fft_method(sea_time, corrected_pressure,
                                device_depth, water_depth, timestep)
     elif method == 'method2':
-        depth = p2d.method2(sea_pressure)
+        depth = p2d.method2(corrected_pressure)
     elif method == 'naive':
-        depth = p2d.hydrostatic_method(sea_pressure)
+        depth = p2d.hydrostatic_method(corrected_pressure)
     else:
         raise TypeError('Accepted values for "method" are: fft, '
                         'method2 and naive.')
     shutil.copy(water_fname, out_fname)
     nc.append_air_pressure(out_fname, air_pressure)
     nc.append_depth(out_fname, depth)
+
+import matplotlib.pyplot as plt

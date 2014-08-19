@@ -12,7 +12,9 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
 
+import SpectralAnalysis.nc as nc
 import script2
+import Instruments.guicore as gc
 
 
 class Script2gui:
@@ -21,6 +23,7 @@ class Script2gui:
                    ('Linear Wave', 'fft'),
                    ('Delft Paper', 'method2')]
         self.v = StringVar()
+
         ttk.Label(root, text='Depth calculation:').pack(anchor=W)
         for name, kwarg in methods:
             Radiobutton(root, text=name, variable=self.v,
@@ -28,13 +31,15 @@ class Script2gui:
         self.v.set('naive')
         self.sea_fname = None
         self.air_fname = None
-        c1 = lambda: self.select_file('sea_fname')
-        self.make_button(root, "Select Water Pressure File", c1)
-        c2 = lambda: self.select_file('air_fname')
-        self.make_button(root, "Select Air Pressure File", c2)
+        self.make_fileselect(root, "Open Water Pressure File",
+                             "the selected filename should go here", 'sea_fname')
+        self.make_fileselect(root, "Open Air Pressure File",
+                             "the selected filename should go here", 'air_fname')
         c3 = lambda: self.select_output_file(root)
         self.b3 = self.make_button(root, "Export to File", c3,
                                    state=DISABLED)
+        self.b3.pack(anchor=W, fill=BOTH)
+
 
     def select_file(self, varname):
         fname = filedialog.askopenfilename()
@@ -44,14 +49,29 @@ class Script2gui:
 
     def make_button(self, root, text, command, state=None):
         b = ttk.Button(root, text=text, command=command, state=state)
-        b.pack(anchor=W, fill=BOTH)
         return b
+
+    def make_fileselect(self, root, buttontext, labeltext, varname):
+        command = lambda: self.select_file(varname)
+        frame = gc.make_frame(root)
+        b = self.make_button(frame, buttontext, command)
+        b.grid(row=0, column=0, sticky=W)
+        l = ttk.Label(frame, text=labeltext, justify=RIGHT)
+        l.grid(row=0, column=1, sticky=W)
+        frame.pack(anchor=W, fill=BOTH)
 
     def select_output_file(self, root):
         output_fname = filedialog.asksaveasfilename()
         m = self.v.get()
-        script2.make_depth_file(self.sea_fname, self.air_fname,
-                                output_fname, depth_method=m)
+        sea_t = nc.get_time(self.sea_fname)
+        air_t = nc.get_time(self.air_fname)
+        if (air_t[-1] < sea_t[0]) or (air_t[0] > sea_t[-1]):
+            message = ("Air pressure and water pressure files have no"
+                       " overlap!\nPlease choose other files.")
+            gc.MessageDialog(root, message=message, title='Error!')
+        else:
+            script2.make_depth_file(self.sea_fname, self.air_fname,
+                                    output_fname, method=m)
         root.destroy()
 
 
