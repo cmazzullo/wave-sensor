@@ -503,10 +503,9 @@ def convert_date_to_milliseconds(datestring, date_format_string, date_time = Non
             return (first_date - epoch_start).total_seconds()
         
 def convert_milliseconds_to_datetime(milliseconds, tzinfo):
-        date = datetime.fromtimestamp(milliseconds / 1000)
-        new_dt = tzinfo.localize(date)
-        final_date = new_dt.astimezone(pytz.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
-        return(final_date)
+        date = datetime.fromtimestamp(milliseconds / 1000, tzinfo)
+        final_date = date.strftime('%Y-%m-%dT%H:%M:%SZ')
+        return final_date
     
 def get_time_duration(seconds_difference):
 
@@ -517,6 +516,7 @@ def get_time_duration(seconds_difference):
 
         data_duration_time = "P%sDT%sH%sM%sS" % (days, hours, minutes, seconds)
         print(data_duration_time)
+        return data_duration_time
 
 
 import uuid
@@ -740,11 +740,13 @@ class DataStore(object):
         self.get_lat_var(ds)
         print('getting lon var')
         self.get_lon_var(ds)
-        print('getting global_vars')
-        self.get_global_vars(ds)
         print('getting time duration')
         self.get_time_duration()
+        print('getting global_vars')
+        self.get_global_vars(ds)
         print('done write')
+        
+        
         
     def get_instrument_var(self,ds):
         instrument = ds.createVariable("instrument","i4")
@@ -1013,34 +1015,30 @@ class Hobo(NetCDFWriter):
     '''derived class for hobo csv files
     '''
     def __init__(self):
-        self.timezone_marker = "time zone"      
+        self.timezone_marker = "time zone"
         super().__init__()
-        
+
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 1.0/30.0
-        self.date_format_string = '%m/%d/%y %I:%M:%S %p'  
+        self.date_format_string = '%m/%d/%y %I:%M:%S %p'
         self.data_tests = DataTests()
-        self.transducer_distance_from_seabed = [0,0]
-        self.reference_point_distance_to_transducer = [0,0]
-        self.deployment_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
-        self.retrieval_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
-        
-        
+
+
     def read(self):
         '''load the data from in_filename
         only parse the initial datetime = much faster
         '''
         skip_index = self.read_start('"#"',',')
-        #for skipping lines in case there is calibration header data
+        # for skipping lines in case there is calibration header data
         df = pandas.read_table(self.in_filename,skiprows=skip_index, header=None, engine='c', sep=',')
-       
+
         self.utc_millisecond_data = convert_to_milliseconds(df.shape[0], df[1][0], \
                                                             self.date_format_string, self.frequency)
-        
+
         self.pressure_data = [x for x in np.divide(df[2], 1.45037738)]
-       
+
         print(len(self.pressure_data))
-        
+
     def read_start(self, expression, delimeter):
         skip_index = 0;
         with open(self.in_filename,'r') as fileText:
@@ -1049,84 +1047,72 @@ class Hobo(NetCDFWriter):
                 if expression == file_string:
                     print('Success! Index %s' % skip_index)
                     break
-                skip_index += 1   
-        return skip_index + 1 
-    
+                skip_index += 1
+        return skip_index + 1
+
     def write(self, sea_pressure = True):
         '''Write netCDF files
-        
+
         sea_pressure - if true write sea_pressure data, otherwise write air_pressure data'''
         if sea_pressure == False:
             self.vstore.pressure_name = "air_pressure"
             self.vstore.pressure_var['standard_name'] = "air_pressure"
-        else:
-            self.vstore.global_vars_dict['distance_from_referencepoint_to_transducer'] = \
-            'When Deployed: %s - When Retrieved: %s' % (self.reference_point_distance_to_transducer[0], \
-                                                        self.reference_point_distance_to_transducer[1])
-            self.vstore.global_vars_dict['distance_from_transducer_to_seabed'] = \
-            'When Deployed: %s - When Retrieved: %s' % (self.transducer_distance_from_seabed[0],self.transducer_distance_from_seabed[1])
-            self.vstore.global_vars_dict['time_of_deployment'] = self.deployment_time
-            self.vstore.global_vars_dict['time_of_retrieval'] = self.retrieval_time
-            
+
         self.vstore.pressure_data = self.pressure_data
         self.vstore.utc_millisecond_data = self.utc_millisecond_data
         self.vstore.latitutde = self.latitude
         self.vstore.longitude = self.longitude
-       
+
         #Tests#
         self.data_tests.pressure_data = self.pressure_data
         self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
-        
-        self.write_netCDF(self.vstore, len(self.pressure_data))  
+
+        self.write_netCDF(self.vstore, len(self.pressure_data)) 
         
 class House(NetCDFWriter):
     '''derived class for house csv files
     '''
     def __init__(self):
-        self.timezone_marker = "time zone"   
-        self.temperature_data = None   
+        self.timezone_marker = "time zone"
+        self.temperature_data = None
         super(House,self).__init__()
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 4
-       
+
         self.date_format_string = '%Y.%m.%d %H:%M:%S '
-        self.data_tests = DataTests() 
-        self.transducer_distance_from_seabed = [0,0]
-        self.reference_point_distance_to_transducer = [0,0]
-        self.deployment_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
-        self.retrieval_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
-    
+        self.data_tests = DataTests()
+
 
     def read(self):
         '''load the data from in_filename
         only parse the initial datetime = much faster
         '''
-       
-        skip_index = self.read_start('^[0-9]{4},[0-9]{4}$',' ') 
+
+        skip_index = self.read_start('^[0-9]{4},[0-9]{4}$',' ')
         df = pandas.read_table(self.in_filename,skiprows=skip_index, header=None, engine='c', sep=',', names=('a','b'))
-       
+
         self.pressure_data = [self.pressure_convert(np.float64(x)) for x in df[df.b.isnull() == False].a]
         self.temperature_data = [self.temperature_convert(np.float64(x)) for x in df[df.b.isnull() == False].b]
-            
+
         with open(self.in_filename, 'r') as wavelog:
             for x in wavelog:
                 if re.match('^[0-9]{4}.[0-9]{2}.[0-9]{2}', x):
                     self.utc_millisecond_data = convert_to_milliseconds(len(self.pressure_data), x, \
                                                                         self.date_format_string, self.frequency) #second arg has extra space that is unnecessary
                     break
-       
+
         print(len(self.pressure_data))
-        
+
     def pressure_convert(self, x):
         # gets volt to psig
         # gets psig to pascals
         return ((x * (30 / 8184) - 6) + 14.7) / 1.45037738
-    
+
     def temperature_convert(self, x):
         # gets volts to farenheit
         # gets farenheit to celsius
         return (x * (168 / 8184) - 32) * (5.0/9)
-    
+
     def read_start(self, expression, delimeter):
         skip_index = 0;
         with open(self.in_filename,'r') as fileText:
@@ -1135,34 +1121,27 @@ class House(NetCDFWriter):
                 if re.match(expression, file_string):
                     print('Success! Index %s' % skip_index)
                     break
-                skip_index += 1   
-        return skip_index  
-    
+                skip_index += 1
+        return skip_index
+
     def write(self, sea_pressure = True):
         '''Write netCDF files
-        
+
         sea_pressure - if true write sea_pressure data, otherwise write air_pressure data'''
-        
+
         if sea_pressure == False:
             self.vstore.pressure_name = "air_pressure"
             self.vstore.pressure_var['standard_name'] = "air_pressure"
-        else:
-            self.vstore.global_vars_dict['distance_from_referencepoint_to_transducer'] = \
-            'When Deployed: %s - When Retrieved: %s' % (self.reference_point_distance_to_transducer[0], \
-                                                        self.reference_point_distance_to_transducer[1])
-            self.vstore.global_vars_dict['distance_from_transducer_to_seabed'] = \
-            'When Deployed: %s - When Retrieved: %s' % (self.transducer_distance_from_seabed[0],self.transducer_distance_from_seabed[1])
-            self.vstore.global_vars_dict['time_of_deployment'] = self.deployment_time
-            self.vstore.global_vars_dict['time_of_retrieval'] = self.retrieval_time
+
         self.vstore.pressure_data = self.pressure_data
         self.vstore.utc_millisecond_data = self.utc_millisecond_data
         self.vstore.latitutde = self.latitude
         self.vstore.longitude = self.longitude
-       
+
         #Tests#
         self.data_tests.pressure_data = self.pressure_data
         self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
-        
+
         self.write_netCDF(self.vstore, len(self.pressure_data))
 
 class Leveltroll(NetCDFWriter):
@@ -1171,64 +1150,61 @@ class Leveltroll(NetCDFWriter):
     def __init__(self):
         self.numpy_dtype = np.dtype([("seconds",np.float32),("pressure",np.float32)])
         self.record_start_marker = "date and time,seconds"
-        self.timezone_marker = "time zone" 
+        self.timezone_marker = "time zone"
         super(Leveltroll,self).__init__()
         self.date_format_string = "%m/%d/%Y %I:%M:%S %p "
         self.temperature_data = None
         self.data_tests = DataTests()
-        self.transducer_distance_from_seabed = [0,0]
-        self.reference_point_distance_to_transducer = [0,0]
-        self.deployment_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
-        self.retrieval_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
-        
+
+
     def read(self):
         '''load the data from in_filename
         only parse the initial datetime = much faster
         '''
         f = open(self.in_filename,'rb')
-        
+
         self.read_header(f)
         self.read_datetime(f)
 
-        data = np.genfromtxt(f,dtype=self.numpy_dtype,delimiter=',',usecols=[1,2,3])     
+        data = np.genfromtxt(f,dtype=self.numpy_dtype,delimiter=',',usecols=[1,2,3])
         f.close()
-        
-        
+
+
         long_seconds = data["seconds"]
         print(long_seconds[::-1])
         self.utc_millisecond_data = [(x * 1000) + self.data_start for x in long_seconds]
-        
+
         self.pressure_data = np.divide(data["pressure"], 1.45037738)
 #         self.temperature_data = [x for x in data["temperature"]]
-        
+
         print(len(self.pressure_data))
 
     def read_header(self,f):
         ''' read the header from the level troll ASCII file
         '''
         line = ""
-        line_count = 0    
+        line_count = 0
         while not line.lower().startswith(self.record_start_marker):
-            bit_line = f.readline() 
+            bit_line = f.readline()
             line = bit_line.decode()
             line_count += 1
             if line.lower().startswith(self.timezone_marker):
-                self.timezone_string = line.split(':')[1].strip()        
+                self.timezone_string = line.split(':')[1].strip()
         if self.timezone_string is None:
             raise Exception("ERROR - could not find time zone in file "+\
-                self.in_filename+" header before line "+str(line_count)+'\n') 
-        self.set_timezone()        
-        
+                self.in_filename+" header before line "+str(line_count)+'\n')
+        self.set_timezone()
+
 
     def read_datetime(self,f):
         '''read the first datetime and cast
-        '''        
+        '''
         dt_fmt = "%m/%d/%Y %I:%M:%S %p "
 #         dt_converter = lambda x: datetime.strptime(str(x),dt_fmt)\
 #             .replace(tzinfo=self.tzinfo)
-        reset_point = f.tell()  
-        bit_line = f.readline()          
-        line = bit_line.decode()  
+        reset_point = f.tell()
+        bit_line = f.readline()
+        line = bit_line.decode()
 
         raw = line.strip().split(',')
         dt_str = raw[0]
@@ -1239,69 +1215,58 @@ class Leveltroll(NetCDFWriter):
         except Exception as e:
             raise Exception("ERROR - cannot parse first date time stamp: "+str(self.td_str)+" using format: "+dt_fmt+'\n')
         f.seek(reset_point)
-        
+
 
 
     def set_timezone(self):
-        '''set the timezone from the timezone string found in the header - 
+        '''set the timezone from the timezone string found in the header -
         needed to get the times into UTC
         '''
         tz_dict = {"central":"US/Central","eastern":"US/Eastern"}
         for tz_str,tz in tz_dict.items():
             if self.timezone_string.lower().startswith(tz_str):
                 self.tzinfo = timezone(tz)
-                return               
-        raise Exception("could not find a timezone match for " + self.timezone_string)  
-    
-    @property    
+                return
+        raise Exception("could not find a timezone match for " + self.timezone_string)
+
+    @property
     def offset_seconds(self):
         '''offsets seconds from specified epoch using UTC time
-        '''        
-        offset = self.data_start - self.epoch_start            
-        return offset.total_seconds()       
-    
+        '''
+        offset = self.data_start - self.epoch_start
+        return offset.total_seconds()
+
     def write(self, sea_pressure = True):
         '''Write netCDF files
-        
+
         sea_pressure - if true write sea_pressure data, otherwise write air_pressure data'''
-        
+
         if sea_pressure == False:
             self.vstore.pressure_name = "air_pressure"
             self.vstore.pressure_var['standard_name'] = "air_pressure"
-        else:
-            self.vstore.global_vars_dict['distance_from_referencepoint_to_transducer'] = \
-            'When Deployed: %s - When Retrieved: %s' % (self.reference_point_distance_to_transducer[0], \
-                                                        self.reference_point_distance_to_transducer[1])
-            self.vstore.global_vars_dict['distance_from_transducer_to_seabed'] = \
-            'When Deployed: %s - When Retrieved: %s' % (self.transducer_distance_from_seabed[0],self.transducer_distance_from_seabed[1])
-            self.vstore.global_vars_dict['time_of_deployment'] = self.deployment_time
-            self.vstore.global_vars_dict['time_of_retrieval'] = self.retrieval_time
+
         self.vstore.pressure_data = self.pressure_data
         self.vstore.utc_millisecond_data = self.utc_millisecond_data
         self.vstore.latitutde = self.latitude
         self.vstore.longitude = self.longitude
-       
+
         #Tests#
         self.data_tests.pressure_data = self.pressure_data
         self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
-        
-        self.write_netCDF(self.vstore, len(self.pressure_data))   
+
+        self.write_netCDF(self.vstore, len(self.pressure_data))
 
 class MeasureSysLogger(NetCDFWriter):
     '''derived class for Measurement Systems cvs files
     '''
     def __init__(self):
-        self.timezone_marker = "time zone"      
+        self.timezone_marker = "time zone"
         super(MeasureSysLogger,self).__init__()
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 4
-        self.date_format_string = '%m/%d/%Y %H:%M:%S.%f %p' 
-        self.data_tests = DataTests() 
-        self.transducer_distance_from_seabed = [0,0]
-        self.reference_point_distance_to_transducer = [0,0]
-        self.deployment_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
-        self.retrieval_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
-        
+        self.date_format_string = '%m/%d/%Y %I:%M:%S.%f %p'
+        self.data_tests = DataTests()
+
     def read(self):
         '''load the data from in_filename
         only parse the initial datetime = much faster
@@ -1309,18 +1274,18 @@ class MeasureSysLogger(NetCDFWriter):
         skip_index = self.read_start('^ID$',',')
         #for skipping lines in case there is calibration header data
         df = pandas.read_table(self.in_filename,skiprows=skip_index + 1, header=None, engine='c', sep=',', usecols=[3,4,5,6])
-       
+
         first_date = df[3][0][1:]
         self.data_start = convert_date_to_milliseconds(first_date, self.date_format_string)
         self.utc_millisecond_data = [(x * 1000) + self.data_start for x in df[4]]
-  
+
         self.pressure_data = [x / 1.45037738 for x in df[5]]
-       
+
         if re.match('^[0-9]{1,3}.[0-9]+$', str(df[6][0])):
             self.temperature_data = [x for x in df[6]]
-            
+
         print(len(self.pressure_data))
-        
+
     def read_start(self, expression, delimeter):
         skip_index = 0;
         with open(self.in_filename,'r') as fileText:
@@ -1329,54 +1294,42 @@ class MeasureSysLogger(NetCDFWriter):
                 if re.match(expression, file_string):
                     print('Success! Index %s' % skip_index)
                     break
-                skip_index += 1   
-        return skip_index 
-    
+                skip_index += 1
+        return skip_index
+
     def write(self, sea_pressure = True):
         '''Write netCDF files
-        
+
         sea_pressure - if true write sea_pressure data, otherwise write air_pressure data'''
-        
+
         if sea_pressure == False:
             self.vstore.pressure_name = "air_pressure"
             self.vstore.pressure_var['standard_name'] = "air_pressure"
-        else:
-            self.vstore.global_vars_dict['distance_from_referencepoint_to_transducer'] = \
-            'When Deployed: %s - When Retrieved: %s' % (self.reference_point_distance_to_transducer[0], \
-                                                        self.reference_point_distance_to_transducer[1])
-            self.vstore.global_vars_dict['distance_from_transducer_to_seabed'] = \
-            'When Deployed: %s - When Retrieved: %s' % (self.transducer_distance_from_seabed[0],self.transducer_distance_from_seabed[1])
-            self.vstore.global_vars_dict['time_of_deployment'] = self.deployment_time
-            self.vstore.global_vars_dict['time_of_retrieval'] = self.retrieval_time
-        
+
         self.vstore.pressure_data = self.pressure_data
         self.vstore.utc_millisecond_data = self.utc_millisecond_data
         self.vstore.latitutde = self.latitude
         self.vstore.longitude = self.longitude
-       
+
         #Tests#
         self.data_tests.pressure_data = self.pressure_data
         self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
-        
+
         self.write_netCDF(self.vstore, len(self.pressure_data))
         
 class RBRSolo(NetCDFWriter):
     '''derived class for RBR solo engineer text files, (exported via ruskin software)
     '''
     def __init__(self):
-        self.timezone_marker = "time zone"      
+        self.timezone_marker = "time zone"
         super().__init__()
-        
+
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 4
-        self.date_format_string = '%d-%b-%Y %H:%M:%S.%f'  
+        self.date_format_string = '%d-%b-%Y %H:%M:%S.%f'
         self.data_tests = DataTests()
-        self.transducer_distance_from_seabed = [0,0]
-        self.reference_point_distance_to_transducer = [0,0]
-        self.reference_point_distance_to_transducer = [0,0]
-        self.deployment_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
-        self.retrieval_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
-        
+
+
     def read(self):
         '''load the data from in_filename
         only parse the initial datetime = much faster
@@ -1385,16 +1338,16 @@ class RBRSolo(NetCDFWriter):
         #for skipping lines in case there is calibration header data
         df = pandas.read_csv(self.in_filename,skiprows=skip_index, delim_whitespace=True, \
                             header=None, engine='c', usecols=[0,1,2])
-        
+
         #This gets the date and time since they are in two separate columns
         self.utc_millisecond_data = convert_to_milliseconds(df.shape[0] - 1, \
                                                             ('%s %s' % (df[0][0],df[1][0])), \
                                                             self.date_format_string, self.frequency)
-               
+
         self.pressure_data = [x for x in df[2][:-1]]
-       
+
         print(len(self.pressure_data))
-        
+
     def read_start(self, expression, delimeter):
         skip_index = 0;
         with open(self.in_filename,'r') as fileText:
@@ -1403,35 +1356,28 @@ class RBRSolo(NetCDFWriter):
                 if re.match(expression, file_string):
                     print('Success! Index %s' % skip_index)
                     break
-                skip_index += 1   
-        return skip_index  
-    
+                skip_index += 1
+        return skip_index
+
     def write(self, sea_pressure = True):
         '''Write netCDF files
-        
+
         sea_pressure - if true write sea_pressure data, otherwise write air_pressure data'''
-        
+
         if sea_pressure == False:
             self.vstore.pressure_name = "air_pressure"
             self.vstore.pressure_var['standard_name'] = "air_pressure"
-        else:
-            self.vstore.global_vars_dict['distance_from_referencepoint_to_transducer'] = \
-            'When Deployed: %s - When Retrieved: %s' % (self.reference_point_distance_to_transducer[0], \
-                                                        self.reference_point_distance_to_transducer[1])
-            self.vstore.global_vars_dict['distance_from_transducer_to_seabed'] = \
-            'When Deployed: %s - When Retrieved: %s' % (self.transducer_distance_from_seabed[0],self.transducer_distance_from_seabed[1])
-            self.vstore.global_vars_dict['time_of_deployment'] = self.deployment_time
-            self.vstore.global_vars_dict['time_of_retrieval'] = self.retrieval_time
+
         self.vstore.pressure_data = self.pressure_data
         self.vstore.utc_millisecond_data = self.utc_millisecond_data
         self.vstore.latitutde = self.latitude
         self.vstore.longitude = self.longitude
-#       
+#
         #Tests#
         self.data_tests.pressure_data = self.pressure_data
         self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
-        
-        self.write_netCDF(self.vstore, len(self.pressure_data))        
+
+        self.write_netCDF(self.vstore, len(self.pressure_data))     
         
 class Waveguage(NetCDFWriter):
     """Reads in an ASCII file output by a Waveguage pressure sensor

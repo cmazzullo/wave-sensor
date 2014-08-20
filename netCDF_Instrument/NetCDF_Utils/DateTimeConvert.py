@@ -28,10 +28,8 @@ def convert_date_to_milliseconds(datestring, date_format_string, date_time = Non
         
 def convert_milliseconds_to_datetime(milliseconds, tzinfo):
         date = datetime.fromtimestamp(milliseconds / 1000, tzinfo)
-        print('new datetime', date)
         final_date = date.strftime('%Y-%m-%dT%H:%M:%SZ')
-        print('new datetime', final_date)
-        return(final_date)
+        return final_date
     
 def get_time_duration(seconds_difference):
 
