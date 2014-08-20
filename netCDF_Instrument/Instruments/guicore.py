@@ -124,7 +124,7 @@ class Wavegui:
         d = MessageDialog(self.root, message=message,
                           title='Processing...', buttons=0,
                           wait=False)
-        root.update()
+        self.root.update()
         devices = [self.read_file(datafile, d) for datafile in
                    self.datafiles]
         if not all(devices):
@@ -154,9 +154,10 @@ class Wavegui:
         device = self.instruments[datafile.instrument.get()]()
         for var in fields:
             if ((var.in_air_pressure and self.air_pressure) or
-                (var.in_water_pressure and not self.air_pressure) and
-                var.name_in_device):
-                setattr(device, var.name_in_device, var.get())
+                (var.in_water_pressure and not self.air_pressure)):
+                if var.name_in_device:
+                    print(var.name_in_device)
+                    setattr(device, var.name_in_device, var.get())
         device.read()
         return device
 
@@ -395,5 +396,5 @@ class Variable:
 
 if __name__ == '__main__':
     root = Tk()
-    gui = Wavegui(root, air_pressure=False)
+    gui = Wavegui(root, air_pressure=True)
     root.mainloop()
