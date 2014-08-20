@@ -1,6 +1,6 @@
-"""A few convenience methods for quickly extracting/changing data in
+"""
+A few convenience methods for quickly extracting/changing data in
 netCDFs
-
 """
 
 from datetime import datetime, timedelta
@@ -9,11 +9,25 @@ import os
 import pytz
 
 # Constant
+
 fill_value = -1e10
+
+# Utility methods
+
+def parse_time(fname, time_name):
+    """Convert a UTC offset in attribute "time_name" to a datetime."""
+    tz = pytz.timezone(_get_global_attribute(fname, 'time_zone'))
+    time_str = _get_global_attribute(fname, time_name)
+    fmt = '%Y%m%d %H%M'
+    time = tz.localize(datetime.strptime(time_str, fmt))
+    epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
+    time_ms = (time - epoch_start).total_seconds() * 1000
+    return time_ms
 
 # Append new variables
 
 def append_air_pressure(fname, p):
+    """Insert air pressure array p into the netCDF file fname"""
     name = 'air_pressure'
     long_name = 'air pressure record'
     _append_variable(fname, name, p, '', standard_name=name,
@@ -21,8 +35,9 @@ def append_air_pressure(fname, p):
 
 
 def append_depth(fname, depth):
-    comment = ('The depth, computed using the variable "corrected water '
-               'pressure".')
+    """Insert depth array into the netCDF file at fname"""
+    comment = ('The depth, computed using the variable "corrected '
+               'water pressure".')
     name = 'depth'
     _append_variable(fname, name, depth, comment, standard_name=name,
                     short_name=name, long_name=name, depth=True)
@@ -30,6 +45,7 @@ def append_depth(fname, depth):
 # Get variable data
 
 def get_water_depth(in_fname):
+    """Get the static water depth from the netCDF at fname"""
     H0 = get_initial_water_depth(in_fname)
     Hf = get_final_water_depth(in_fname)
     t0 = get_deployment_time(in_fname)
@@ -41,66 +57,70 @@ def get_water_depth(in_fname):
 
 
 def get_depth(fname):
+    """Get the wave height array from the netCDF at fname"""
     return _get_variable_data(fname, 'depth')
 
 
 def get_time(fname):
+    """Get the time array from the netCDF at fname"""
     return _get_variable_data(fname, 'time')
 
 
 def get_air_pressure(fname):
+    """Get the air pressure array from the netCDF at fname"""
     return _get_variable_data(fname, 'air_pressure')
 
 
 def get_pressure(fname):
+    """Get the water pressure array from the netCDF at fname"""
     return _get_variable_data(fname, 'sea_water_pressure')
 
 # Get global data
 
 def get_frequency(fname):
+    """Get the frequency of the data in the netCDF at fname"""
     freq_string = _get_global_attribute(fname, 'time_coverage_resolution')
     return float(freq_string[1:-1])
 
 
 def get_initial_water_depth(fname):
+    """Get the initial water depth from the netCDF at fname"""
     return _get_global_attribute(fname, 'initial_water_depth')
 
 
 def get_final_water_depth(fname):
+    """Get the final water depth from the netCDF at fname"""
     return _get_global_attribute(fname, 'final_water_depth')
 
 
 def get_deployment_time(fname):
+    """Get the deployment time from the netCDF at fname"""
     return parse_time(fname, 'deployment_time')
 
 
 def get_retrieval_time(fname):
+    """Get the retrieval time from the netCDF at fname"""
     return parse_time(fname, 'retrieval_time')
 
 
-def parse_time(fname, time_name):
-    tz = pytz.timezone(_get_global_attribute(fname, 'time_zone'))
-    time_str = _get_global_attribute(fname, time_name)
-    fmt = '%Y%m%d %H%M'
-    time = tz.localize(datetime.strptime(time_str, fmt))
-    epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
-    time_ms = (time - epoch_start).total_seconds() * 1000
-    return time_ms
-
 
 def get_device_depth(fname):
+    """Get the retrieval time from the netCDF at fname"""
     return _get_global_attribute(fname, 'device_depth')
 
 
 def _get_variable_data(fname, variable_name):
+    """Get the values of a variable from a netCDF file."""
     nc = netCDF4.Dataset(fname)
     var = nc.variables[variable_name]
     v = var[:]
     nc.close()
     return v
 
+# Private methods
 
 def _get_global_attribute(fname, name):
+    """Get the value of a global attibute from a netCDF file."""
     nc = netCDF4.Dataset(fname)
     attr = getattr(nc, name)
     nc.close()
@@ -109,6 +129,7 @@ def _get_global_attribute(fname, name):
 
 def _append_variable(fname, name, p, comment='', standard_name='',
                      short_name='', long_name='', depth=False):
+    """Append a new variable to an existing netCDF."""
     nc = netCDF4.Dataset(fname, 'a', format='NETCDF4_CLASSIC')
     pvar = nc.createVariable(name, 'f8', ('time',))
     pvar.ioos_category = ''
