@@ -17,30 +17,26 @@ try:
     import numpy as np
 except:
     raise Exception("numpy is required")
-     
+
 
 
 import NetCDF_Utils.DateTimeConvert as dateconvert
 from NetCDF_Utils.Testing import DataTests
-from NetCDF_Utils.edit_netcdf import NetCDFWriter 
+from NetCDF_Utils.edit_netcdf import NetCDFWriter
 from datetime import datetime
-   
+
 
 class MeasureSysLogger(NetCDFWriter):
     '''derived class for Measurement Systems cvs files
     '''
     def __init__(self):
-        self.timezone_marker = "time zone"      
+        self.timezone_marker = "time zone"
         super(MeasureSysLogger,self).__init__()
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 4
-        self.date_format_string = '%m/%d/%Y %H:%M:%S.%f %p' 
-        self.data_tests = DataTests() 
-        self.transducer_distance_from_seabed = [0,0]
-        self.reference_point_distance_to_transducer = [0,0]
-        self.deployment_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
-        self.retrieval_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
-        
+        self.date_format_string = '%m/%d/%Y %H:%M:%S.%f %p'
+        self.data_tests = DataTests()
+
     def read(self):
         '''load the data from in_filename
         only parse the initial datetime = much faster
@@ -48,18 +44,18 @@ class MeasureSysLogger(NetCDFWriter):
         skip_index = self.read_start('^ID$',',')
         #for skipping lines in case there is calibration header data
         df = pandas.read_table(self.in_filename,skiprows=skip_index + 1, header=None, engine='c', sep=',', usecols=[3,4,5,6])
-       
+
         first_date = df[3][0][1:]
         self.data_start = dateconvert.convert_date_to_milliseconds(first_date, self.date_format_string)
         self.utc_millisecond_data = [(x * 1000) + self.data_start for x in df[4]]
-  
+
         self.pressure_data = [x / 1.45037738 for x in df[5]]
-       
+
         if re.match('^[0-9]{1,3}.[0-9]+$', str(df[6][0])):
             self.temperature_data = [x for x in df[6]]
-            
+
         print(len(self.pressure_data))
-        
+
     def read_start(self, expression, delimeter):
         skip_index = 0;
         with open(self.in_filename,'r') as fileText:
@@ -68,41 +64,33 @@ class MeasureSysLogger(NetCDFWriter):
                 if re.match(expression, file_string):
                     print('Success! Index %s' % skip_index)
                     break
-                skip_index += 1   
-        return skip_index 
-    
+                skip_index += 1
+        return skip_index
+
     def write(self, sea_pressure = True):
         '''Write netCDF files
-        
+
         sea_pressure - if true write sea_pressure data, otherwise write air_pressure data'''
-        
+
         if sea_pressure == False:
             self.vstore.pressure_name = "air_pressure"
             self.vstore.pressure_var['standard_name'] = "air_pressure"
-        else:
-            self.vstore.global_vars_dict['distance_from_referencepoint_to_transducer'] = \
-            'When Deployed: %s - When Retrieved: %s' % (self.reference_point_distance_to_transducer[0], \
-                                                        self.reference_point_distance_to_transducer[1])
-            self.vstore.global_vars_dict['distance_from_transducer_to_seabed'] = \
-            'When Deployed: %s - When Retrieved: %s' % (self.transducer_distance_from_seabed[0],self.transducer_distance_from_seabed[1])
-            self.vstore.global_vars_dict['time_of_deployment'] = self.deployment_time
-            self.vstore.global_vars_dict['time_of_retrieval'] = self.retrieval_time
-        
+
         self.vstore.pressure_data = self.pressure_data
         self.vstore.utc_millisecond_data = self.utc_millisecond_data
         self.vstore.latitutde = self.latitude
         self.vstore.longitude = self.longitude
-       
+
         #Tests#
         self.data_tests.pressure_data = self.pressure_data
         self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
-        
-        self.write_netCDF(self.vstore, len(self.pressure_data))     
+
+        self.write_netCDF(self.vstore, len(self.pressure_data))
 
 if __name__ == "__main__":
-    
-    #--create an instance    
-    lt = MeasureSysLogger()        
+
+    #--create an instance
+    lt = MeasureSysLogger()
     lt.creator_email = "a@aol.com"
     lt.creator_name = "Jurgen Klinnsmen"
     lt.creator_url = "www.test.com"
@@ -118,14 +106,12 @@ if __name__ == "__main__":
     lt.latitude = np.float(0.0)
     lt.salinity_ppm = np.float32(0.0)
     lt.z = np.float32(0.0)
-    
+
     #--get input
     #lt.get_user_input()
-    
+
     #--read the ASCII level troll file
-    lt.read()    
+    lt.read()
 
     #--write the netcdf file
     lt.write()
-    
-    

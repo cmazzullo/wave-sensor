@@ -204,17 +204,18 @@ class NetCDFWriter(object):
         self.vdict = dict()
         self.data_tests = DataTests()
 
-        self.initial_water_depth = 0
-        self.final_water_depth = 0
-        self.device_depth = 0
-        self.deployment_time = 0
-        self.retrieval_time = 0
+        self.initial_water_depth = None
+        self.final_water_depth = None
+        self.device_depth = None
+        self.deployment_time = None
+        self.retrieval_time = None
 
     def write_netCDF(self,var_datastore,series_length):
         ds = netCDF4.Dataset(os.path.join(self.out_filename),'w',format="NETCDF4_CLASSIC")
         time_dimen = ds.createDimension("time",series_length)
         var_datastore.set_attributes(self.var_dict())
         var_datastore.send_data(ds)
+        ds.close()
 
     def var_dict(self):
         var_dict = dict()

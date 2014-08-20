@@ -445,5 +445,5 @@ class Variable:
 
 if __name__ == '__main__':
     root = tkinter.Tk()
-    gui = Wavegui(root, air_pressure=True)
+    gui = Wavegui(root, air_pressure=False)
     root.mainloop()

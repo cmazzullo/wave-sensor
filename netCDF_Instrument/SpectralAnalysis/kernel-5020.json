@@ -1,0 +1,11 @@
+{
+  "key": "10a01656-ceaa-4c69-9e68-d52c6935eeab",
+  "hb_port": 64023,
+  "signature_scheme": "hmac-sha256",
+  "ip": "127.0.0.1",
+  "iopub_port": 64020,
+  "control_port": 55861,
+  "shell_port": 64019,
+  "transport": "tcp",
+  "stdin_port": 64021
+}

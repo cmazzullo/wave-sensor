@@ -21,7 +21,8 @@ def hydrostatic_method(p):
 
 def fft_method(t, p_dbar, z, H, timestep, gate=0, window=True,
                       cutoff=-1):
-    """Takes an array of pressure readings and creates wave height data.
+    """
+    Takes an array of pressure readings and creates wave height data.
 
     t -- the time array
     p_dbar -- an array of pressure readings such that len(t) == len(p)
@@ -65,7 +66,8 @@ def fft_method(t, p_dbar, z, H, timestep, gate=0, window=True,
 
 
 def _frequency_to_index(f, n, timestep):
-    """Gets the index of a frequency in np.fftfreq.
+    """
+    Gets the index of a frequency in np.fftfreq.
 
     f -- the desired frequency
     n -- the length given to fftfreq
@@ -75,8 +77,10 @@ def _frequency_to_index(f, n, timestep):
 
 
 def omega_to_k(omega, H):
-    """Gets the wave number from the angular frequency using the dispersion
-    relation for water waves and Newton's method."""
+    """
+    Gets the wave number from the angular frequency using the
+    dispersion relation for water waves and Newton's method.
+    """
     f = lambda k: omega**2 - k * g * np.tanh(k * H)
     return newton(f, 0)
 

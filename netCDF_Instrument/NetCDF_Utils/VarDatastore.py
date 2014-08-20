@@ -121,7 +121,7 @@ class DataStore(object):
                              'coordinates': "time latitude longitude altitude",
                              'ioos_category': "Pressure",
                              'comment': "",
-                             } 
+                             }
         self.pressure_var_qc = {
                                 'flag_masks': '1111 1110 1101 1011',
                                 'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, invalid_rate_of_change",
@@ -142,13 +142,13 @@ class DataStore(object):
                              'coordinates': "time latitude longitude altitude",
                              'ioos_category': "Temperature",
                              'comment': "",
-                             } 
+                             }
         self.temp_var_qc = {
                              'flag_masks': '111 110 101 011',
                              'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, invalid_rate_of_change",
                              'comment': '1 signifies the value passed the test while a 0 flags a failed test, leading 1 is a placeholder'
                             }
-       
+
         self.global_vars_dict = {"cdm_data_type": "station",
                                  "comment": "not used at this time",
                                  "contributor_name": "USGS",
@@ -197,8 +197,8 @@ class DataStore(object):
                                  "time_coverage_end": "utility coverage end",
                                  "time_coverage_duration": "utility coverage duration",
                                  "time_coverage_resolution": "P0.25S",
-                                 "time_of_deployment": None,
-                                 "time_of_retrieval": None,
+                                 # "time_of_deployment": None,
+                                 # "time_of_retrieval": None,
                                  "time_zone": "UTC",
 #                                  "title": 'Measure of pressure at %s degrees latitude, %s degrees longitude' \
 #                                  ' from the date range of %s to %s' % (self.latitude, self.longitude,self.creator_name, \
@@ -211,9 +211,9 @@ class DataStore(object):
         self.get_pressure_var(ds)
         self.get_pressure_qc_var(ds)
         if self.temperature_data != None:
-            self.get_temp_var(ds) 
+            self.get_temp_var(ds)
 
-        print('getting z var')            
+        print('getting z var')
         if type(self.z_data) != list:
             self.get_z_var(ds, False)
         else:
@@ -228,30 +228,30 @@ class DataStore(object):
         print('getting time duration')
         self.get_time_duration()
         print('done write')
-        
+
     def get_instrument_var(self,ds):
         instrument = ds.createVariable("instrument","i4")
         for x in self.instrument_var:
             instrument.setncattr(x,self.instrument_var[x])
-        
+
     def get_time_var(self,ds):
         time = ds.createVariable("time","f8",("time",))
         for x in self.time_var:
-            time.setncattr(x,self.time_var[x]) 
+            time.setncattr(x,self.time_var[x])
         time[:] = self.utc_millisecond_data
-        
+
     def get_lat_var(self,ds):
         lat = ds.createVariable("latitude","f8",fill_value=self.fill_value)
         for x in self.lat_var:
             lat.setncattr(x,self.lat_var[x])
         lat[:] = self.latitude
-            
+
     def get_lon_var(self,ds):
         lon = ds.createVariable("longitude","f8",fill_value=self.fill_value)
         for x in self.lon_var:
             lon.setncattr(x,self.lon_var[x])
         lon[:] = self.longitude
-          
+
     def get_z_var(self,ds,time_dimen_bool = False):
         print('in get_z_var')
         print(time_dimen_bool)
@@ -266,7 +266,7 @@ class DataStore(object):
             z.setncattr(x,self.z_var[x])
         print('assigning to slice')
         z[:] = self.z_data
-           
+
     def get_z_qc_var(self,ds):
         if self.z_name != None:
             z_qc = ds.createVariable(self.z_name,'i4',('time'))
@@ -275,7 +275,7 @@ class DataStore(object):
         for x in self.z_var_qc:
             z_qc.setncattr(x,self.z_var_qc[x])
         z_qc[:] = self.z_qc_data
-                   
+
     def get_pressure_var(self,ds):
         if self.pressure_name != None:
             pressure = ds.createVariable(self.pressure_name,"f8",("time",))
@@ -284,30 +284,30 @@ class DataStore(object):
         for x in self.pressure_var:
             pressure.setncattr(x,self.pressure_var[x])
         pressure[:] = self.pressure_data
-            
+
     def get_pressure_qc_var(self,ds):
         pressure_qc = ds.createVariable("pressure_qc",'i4',('time'))
         for x in self.pressure_var_qc:
             pressure_qc.setncattr(x,self.pressure_var_qc[x])
         pressure_qc[:] = self.pressure_qc_data
-        
+
     def get_temperature_var(self,ds):
         temperature = ds.createVariable("temperature_at_transducer","f8", ("time",))
         for x in self.temperature_var:
             temperature.setncattr(x,self.temp_var[x])
         temperature[:] = self.temperature_data
-            
+
     def get_temperature_qc_var(self,ds):
         temperature_qc = ds.createVariable("temperature_qc",'i4',('time'))
         for x in self.temp_var_qc:
             temperature_qc.setncattr(x,self.temp_var_qc[x])
         temperature_qc[:] = self.temperature_qc_data
-            
+
     def get_global_vars(self, ds):
         for x in self.global_vars_dict:
             if self.global_vars_dict[x] is not None:
                 ds.setncattr(x,self.global_vars_dict[x])
-        
+
     def get_time_duration(self):
         print(type(self.utc_millisecond_data))
         first_milli = self.utc_millisecond_data[0]
@@ -316,32 +316,31 @@ class DataStore(object):
         print(second_milli)
         self.global_vars_dict["time_coverage_start"] = \
         timeconvert.convert_milliseconds_to_datetime(first_milli, pytz.utc)
-        
+
         self.global_vars_dict["time_coverage_end"] = \
         timeconvert.convert_milliseconds_to_datetime(second_milli, pytz.utc)
-        
+
         self.global_vars_dict["time_coverage_duration"] = \
         timeconvert.get_time_duration(second_milli - first_milli)
-        
+
         self.global_vars_dict['title'] = 'Measure of pressure at %s degrees latitude, %s degrees longitude  by %s' \
         ' from the date range of %s to %s' % (self.latitude, self.longitude, self.global_vars_dict["creator_name"], \
                                                   self.global_vars_dict["time_coverage_start"], \
                                                   self.global_vars_dict["time_coverage_end"])
-            
-    
+
+
     def set_attributes(self, var_dict):
         """Sets attributes in script
-        
+
         var_dict -- key- attr name value- attr value"""
-        
+
         for x in var_dict:
             for y in var_dict[x]:
                 var1 = self.__dict__[x]
                 var1[y] = var_dict[x][y]
         print('done set')
-    
-    
+
+
 #     'Measure of pressure at %s degrees latitude, %s degrees longitude, %s altitude by %s' \
 #                                 ' from the date range of %s to %s' % (self.latitude, self.longitude, self.z,self.creator_name, \
 #                                                                           self.data_start_date, self.data_end_date),
-        
