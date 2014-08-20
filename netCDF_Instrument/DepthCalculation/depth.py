@@ -178,7 +178,7 @@ class Depth(NetCDFWriter, NetCDFReader):
     
 if __name__ == "__main__":
     d = Depth()
-    d.in_file_name = 'C:\\Users\\cmazzullo\\wave-sensor-test-data\\logger1.csv.nc'
+   # d.in_file_name = 'C:\\Users\\cmazzullo\\wave-sensor-test-data\\logger1.csv.nc'
 
     d.acquire_data()
     d.write_data()
