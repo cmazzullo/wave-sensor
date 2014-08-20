@@ -121,7 +121,7 @@ def _download(station, begin, end):
 
 
 def date_to_ms(date):
-    return (date - epoch_start).total_seconds() * 1000
+    return (date - epoch_start).total_seconds()
 
 def convert_buoy_time_string(time_str):
     date_format = '%Y-%m-%d %H:%M'
