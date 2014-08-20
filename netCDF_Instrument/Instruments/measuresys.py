@@ -34,19 +34,9 @@ class MeasureSysLogger(NetCDFWriter):
         super(MeasureSysLogger,self).__init__()
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 4
-<<<<<<< HEAD
-        self.date_format_string = '%m/%d/%Y %H:%M:%S.%f %p'
+        self.date_format_string = '%m/%d/%Y %I:%M:%S.%f %p'
         self.data_tests = DataTests()
 
-=======
-        self.date_format_string = '%m/%d/%Y %I:%M:%S.%f %p' 
-        self.data_tests = DataTests() 
-        self.transducer_distance_from_seabed = [0,0]
-        self.reference_point_distance_to_transducer = [0,0]
-        self.deployment_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
-        self.retrieval_time = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
-        
->>>>>>> e2f428bfeb95fae707cdc7336898acbea9eb5c66
     def read(self):
         '''load the data from in_filename
         only parse the initial datetime = much faster
