@@ -29,4 +29,5 @@ def dump_all(fname):
 
 for fname in glob(folder + '*.nc'):
     with netCDF4.Dataset(fname) as f:
-        print(f.deployment_time)
+        print(f.time_coverage_start)
+# dump_all(fname)

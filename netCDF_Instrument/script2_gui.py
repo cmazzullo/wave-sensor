@@ -27,7 +27,7 @@ class Script2gui:
 
         ttk.Label(root, text='Depth calculation:').pack(anchor=W)
         for name, kwarg in methods:
-            Radiobutton(root, text=name, variable=self.methodvar,
+            ttk.Radiobutton(root, text=name, variable=self.methodvar,
                             value=kwarg).pack(anchor=W)
         self.methodvar.set('naive')
         self.sea_fname = None
@@ -85,13 +85,12 @@ class Script2gui:
             message = ("The air pressure file doesn't span the "
             "entire time period covered by the water pressure "
             "file.\nThe period not covered by both files will be "
-            "set to the fill value:%d" % nc.fill_value)
+            "set to the fill value:%d" % nc.FILL_VALUE)
             gc.MessageDialog(root, message=message, title='Warning')
         script2.make_depth_file(self.sea_fname, self.air_fname,
                                 output_fname, method=method)
         gc.MessageDialog(root, message="Success! Files saved.",
                          title='Success!')
-        # root.destroy()
 
 
 if __name__ == '__main__':

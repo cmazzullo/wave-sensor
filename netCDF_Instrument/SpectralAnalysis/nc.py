@@ -3,35 +3,35 @@ A few convenience methods for quickly extracting/changing data in
 netCDFs
 """
 
-from datetime import datetime, timedelta
-import netCDF4
-import os
+from datetime import datetime
+from netCDF4 import Dataset
 import pytz
 
 # Constant
 
-fill_value = -1e10
+FILL_VALUE = -1e10
 
 # Utility methods
 
 def parse_time(fname, time_name):
     """Convert a UTC offset in attribute "time_name" to a datetime."""
-    tz = pytz.timezone(_get_global_attribute(fname, 'time_zone'))
+    timezone_str = _get_global_attribute(fname, 'time_zone')
+    timezone = pytz.timezone(timezone_str)
     time_str = _get_global_attribute(fname, time_name)
     fmt = '%Y%m%d %H%M'
-    time = tz.localize(datetime.strptime(time_str, fmt))
-    epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
+    time = timezone.localize(datetime.strptime(time_str, fmt))
+    epoch_start = datetime(year=1970, month=1, day=1, tzinfo=pytz.utc)
     time_ms = (time - epoch_start).total_seconds() * 1000
     return time_ms
 
 # Append new variables
 
-def append_air_pressure(fname, p):
-    """Insert air pressure array p into the netCDF file fname"""
+def append_air_pressure(fname, pressure):
+    """Insert air pressure array into the netCDF file fname"""
     name = 'air_pressure'
     long_name = 'air pressure record'
-    _append_variable(fname, name, p, '', standard_name=name,
-                    short_name=name, long_name=long_name)
+    _append_variable(fname, name, pressure, comment='',
+                     long_name=long_name)
 
 
 def append_depth(fname, depth):
@@ -39,21 +39,21 @@ def append_depth(fname, depth):
     comment = ('The depth, computed using the variable "corrected '
                'water pressure".')
     name = 'depth'
-    _append_variable(fname, name, depth, comment, standard_name=name,
-                    short_name=name, long_name=name, depth=True)
+    _append_variable(fname, name, depth, comment=comment,
+                     long_name=name)
 
 # Get variable data
 
 def get_water_depth(in_fname):
     """Get the static water depth from the netCDF at fname"""
-    H0 = get_initial_water_depth(in_fname)
-    Hf = get_final_water_depth(in_fname)
-    t0 = get_deployment_time(in_fname)
-    tf = get_retrieval_time(in_fname)
+    initial_depth = get_initial_water_depth(in_fname)
+    final_depth = get_final_water_depth(in_fname)
+    initial_time = get_deployment_time(in_fname)
+    final_time = get_retrieval_time(in_fname)
     time = get_time(in_fname)
-    m = (Hf - H0) / (tf - t0)
-    H = m * time + H0 - m * t0
-    return H
+    slope = (final_depth - initial_depth) / (final_time - initial_time)
+    depth_approx = slope * time + initial_depth - slope * initial_time
+    return depth_approx
 
 
 def get_depth(fname):
@@ -103,7 +103,6 @@ def get_retrieval_time(fname):
     return parse_time(fname, 'retrieval_time')
 
 
-
 def get_device_depth(fname):
     """Get the retrieval time from the netCDF at fname"""
     return _get_global_attribute(fname, 'device_depth')
@@ -111,66 +110,41 @@ def get_device_depth(fname):
 
 def _get_variable_data(fname, variable_name):
     """Get the values of a variable from a netCDF file."""
-    with netCDF4.Dataset(fname) as nc:
-        var = nc.variables[variable_name]
-        v = var[:]
-        return v
+    with Dataset(fname) as nc_file:
+        var = nc_file.variables[variable_name]
+        var_data = var[:]
+        return var_data
 
 # Private methods
 
 def _get_global_attribute(fname, name):
     """Get the value of a global attibute from a netCDF file."""
-    with netCDF4.Dataset(fname) as nc:
-        attr = getattr(nc, name)
+    with Dataset(fname) as nc_file:
+        attr = getattr(nc_file, name)
         return attr
 
 
-def _append_variable(fname, name, p, comment='', standard_name='',
-                     short_name='', long_name='', depth=False):
+def _append_variable(fname, standard_name, data, comment='',
+                     long_name=''):
     """Append a new variable to an existing netCDF."""
-    with netCDF4.Dataset(fname, 'a', format='NETCDF4_CLASSIC') as nc:
-        pvar = nc.createVariable(name, 'f8', ('time',))
+    with Dataset(fname, 'a', format='NETCDF4_CLASSIC') as nc_file:
+        pvar = nc_file.createVariable(standard_name, 'f8', ('time',))
         pvar.ioos_category = ''
         pvar.comment = comment
         pvar.standard_name = standard_name
         pvar.max = 1000
         pvar.min = -1000
-        pvar.short_name = short_name
+        pvar.short_name = standard_name
         pvar.ancillary_variables = ''
         pvar.add_offset = 0.0
         pvar.coordinates = 'time latitude longitude altitude'
         pvar.long_name = long_name
         pvar.scale_factor = 1.0
-        if depth:
+        if standard_name == 'depth':
             pvar.units = 'meters'
             pvar.nodc_name = 'WATER DEPTH'
         else:
             pvar.units = 'decibars'
             pvar.nodc_name = 'PRESSURE'
         pvar.compression = 'not used at this time'
-        pvar[:] = p
-
-
-if __name__ == '__main__':
-    ## UNIT TESTS ##
-    import matplotlib.pyplot as plt
-    print('Running unit test...')
-    in_fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
-                'test-ncs\\logger1.csv.nc')
-
-    time = get_time(in_fname)
-    sea_p = get_pressure(in_fname)
-    depth = get_water_depth(in_fname)
-
-    plt.plot(time, sea_p, color='b', label='Water pressure')
-    plt.plot(time, depth, color='b', label='Water depth')
-    plt.legend()
-    plt.show()
-
-    f = netCDF4.Dataset(in_fname, 'r', format='NETCDF4_CLASSIC')
-    print(f.variables['sea_water_pressure'])
-    print(dir(f))
-    print(f.device_depth)
-    print(f.initial_water_depth)
-    print(f.final_water_depth)
-    f.close()
+        pvar[:] = data

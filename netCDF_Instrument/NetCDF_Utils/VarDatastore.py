@@ -204,28 +204,21 @@ class DataStore(object):
                                  "uuid": str(uuid.uuid4())
                                  }
     def send_data(self,ds):
-        print('in VarDatastore.send_data')
         self.get_time_var(ds)
         self.get_pressure_var(ds)
         self.get_pressure_qc_var(ds)
         if self.temperature_data != None:
             self.get_temp_var(ds)
 
-        print('getting z var')
         if type(self.z_data) != list:
             self.get_z_var(ds, False)
         else:
             self.get_z_var(ds, True)
             self.get_z_qc_var(ds)
-        print('getting lat var')
         self.get_lat_var(ds)
-        print('getting lon var')
         self.get_lon_var(ds)
-        print('getting time duration')
         self.get_time_duration()
-        print('getting global_vars')
         self.get_global_vars(ds)
-        print('done write')
 
     def get_instrument_var(self,ds):
         instrument = ds.createVariable("instrument","i4")
@@ -251,18 +244,14 @@ class DataStore(object):
         lon[:] = self.longitude
 
     def get_z_var(self,ds,time_dimen_bool = False):
-        print('in get_z_var')
-        print(time_dimen_bool)
         if time_dimen_bool == False:
             z = ds.createVariable("altitude", "f8",
                                   fill_value=self.fill_value)
         else:
             z = ds.createVariable("altitude", "f8",("time",),
                                   fill_value=self.fill_value)
-        print('setting attributes')
         for x in self.z_var:
             z.setncattr(x,self.z_var[x])
-        print('assigning to slice')
         z[:] = self.z_data
 
     def get_z_qc_var(self,ds):
@@ -308,9 +297,7 @@ class DataStore(object):
 
     def get_time_duration(self):
         first_milli = self.utc_millisecond_data[0]
-        print(first_milli)
         second_milli = self.utc_millisecond_data[-1]
-        print(second_milli)
         self.global_vars_dict["time_coverage_start"] = \
         timeconvert.convert_milliseconds_to_datetime(first_milli, pytz.utc)
 
@@ -325,7 +312,6 @@ class DataStore(object):
                                                   self.global_vars_dict["time_coverage_start"], \
                                                   self.global_vars_dict["time_coverage_end"])
 
-
     def set_attributes(self, var_dict):
         """Sets attributes in script
 
@@ -335,7 +321,6 @@ class DataStore(object):
             for y in var_dict[x]:
                 var1 = self.__dict__[x]
                 var1[y] = var_dict[x][y]
-        print('done set')
 
 
 #     'Measure of pressure at %s degrees latitude, %s degrees longitude, %s altitude by %s' \
