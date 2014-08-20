@@ -34,7 +34,7 @@ class MeasureSysLogger(NetCDFWriter):
         super(MeasureSysLogger,self).__init__()
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 4
-        self.date_format_string = '%m/%d/%Y %H:%M:%S.%f %p' 
+        self.date_format_string = '%m/%d/%Y %I:%M:%S.%f %p' 
         self.data_tests = DataTests() 
         self.transducer_distance_from_seabed = [0,0]
         self.reference_point_distance_to_transducer = [0,0]

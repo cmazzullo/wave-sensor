@@ -154,10 +154,10 @@ class Depth(NetCDFWriter, NetCDFReader):
         
     def write_data(self):
         """Writes data to netcdf file"""
-        
+        print('write end data')
         data_store = v_store.DataStore(1)
         data_store.pressure_data = [x for x in self.hydrostat_pressure_data]
-        data_store.utc_millisecond_data = [x * 1000 for x in self.pressure_data.index]
+        data_store.utc_millisecond_data = [x for x in self.pressure_data.index]
         data_store.z_data = [x for x in self.depth_data]
         data_store.latitude = self.latitude
         data_store.longitude = self.longitude

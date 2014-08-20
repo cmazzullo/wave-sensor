@@ -223,10 +223,10 @@ class DataStore(object):
         self.get_lat_var(ds)
         print('getting lon var')
         self.get_lon_var(ds)
-        print('getting global_vars')
-        self.get_global_vars(ds)
         print('getting time duration')
         self.get_time_duration()
+        print('getting global_vars')
+        self.get_global_vars(ds)
         print('done write')
         
     def get_instrument_var(self,ds):
@@ -309,7 +309,6 @@ class DataStore(object):
                 ds.setncattr(x,self.global_vars_dict[x])
         
     def get_time_duration(self):
-        print(type(self.utc_millisecond_data))
         first_milli = self.utc_millisecond_data[0]
         print(first_milli)
         second_milli = self.utc_millisecond_data[-1]

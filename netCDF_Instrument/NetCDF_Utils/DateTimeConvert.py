@@ -27,9 +27,10 @@ def convert_date_to_milliseconds(datestring, date_format_string, date_time = Non
             return (first_date - epoch_start).total_seconds()
         
 def convert_milliseconds_to_datetime(milliseconds, tzinfo):
-        date = datetime.fromtimestamp(milliseconds / 1000)
-        new_dt = tzinfo.localize(date)
-        final_date = new_dt.astimezone(pytz.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+        date = datetime.fromtimestamp(milliseconds / 1000, tzinfo)
+        print('new datetime', date)
+        final_date = date.strftime('%Y-%m-%dT%H:%M:%SZ')
+        print('new datetime', final_date)
         return(final_date)
     
 def get_time_duration(seconds_difference):
@@ -41,3 +42,4 @@ def get_time_duration(seconds_difference):
 
         data_duration_time = "P%sDT%sH%sM%sS" % (days, hours, minutes, seconds)
         print(data_duration_time)
+        return data_duration_time
