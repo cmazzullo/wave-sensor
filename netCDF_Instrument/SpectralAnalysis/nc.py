@@ -111,48 +111,44 @@ def get_device_depth(fname):
 
 def _get_variable_data(fname, variable_name):
     """Get the values of a variable from a netCDF file."""
-    nc = netCDF4.Dataset(fname)
-    var = nc.variables[variable_name]
-    v = var[:]
-    nc.close()
-    return v
+    with netCDF4.Dataset(fname) as nc:
+        var = nc.variables[variable_name]
+        v = var[:]
+        return v
 
 # Private methods
 
 def _get_global_attribute(fname, name):
     """Get the value of a global attibute from a netCDF file."""
-    nc = netCDF4.Dataset(fname)
-    attr = getattr(nc, name)
-    nc.close()
-    return attr
+    with netCDF4.Dataset(fname) as nc:
+        attr = getattr(nc, name)
+        return attr
 
 
 def _append_variable(fname, name, p, comment='', standard_name='',
                      short_name='', long_name='', depth=False):
     """Append a new variable to an existing netCDF."""
-    nc = netCDF4.Dataset(fname, 'a', format='NETCDF4_CLASSIC')
-    pvar = nc.createVariable(name, 'f8', ('time',))
-    pvar.ioos_category = ''
-    pvar.comment = comment
-    pvar.standard_name = standard_name
-    pvar.max = 1000
-    pvar.min = -1000
-    pvar.short_name = short_name
-    pvar.ancillary_variables = ''
-    pvar.add_offset = 0.0
-    pvar.coordinates = 'time latitude longitude altitude'
-    pvar.long_name = long_name
-    pvar.scale_factor = 1.0
-    if depth:
-        units = 'meters'
-        pvar.nodc_name = 'WATER DEPTH'
-    else:
-        units = 'decibars'
-        pvar.nodc_name = 'PRESSURE'
-    pvar.units = units
-    pvar.compression = 'not used at this time'
-    pvar[:] = p
-    nc.close()
+    with netCDF4.Dataset(fname, 'a', format='NETCDF4_CLASSIC') as nc:
+        pvar = nc.createVariable(name, 'f8', ('time',))
+        pvar.ioos_category = ''
+        pvar.comment = comment
+        pvar.standard_name = standard_name
+        pvar.max = 1000
+        pvar.min = -1000
+        pvar.short_name = short_name
+        pvar.ancillary_variables = ''
+        pvar.add_offset = 0.0
+        pvar.coordinates = 'time latitude longitude altitude'
+        pvar.long_name = long_name
+        pvar.scale_factor = 1.0
+        if depth:
+            pvar.units = 'meters'
+            pvar.nodc_name = 'WATER DEPTH'
+        else:
+            pvar.units = 'decibars'
+            pvar.nodc_name = 'PRESSURE'
+        pvar.compression = 'not used at this time'
+        pvar[:] = p
 
 
 if __name__ == '__main__':

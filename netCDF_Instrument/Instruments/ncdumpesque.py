@@ -28,6 +28,5 @@ def dump_all(fname):
     f.close()
 
 for fname in glob(folder + '*.nc'):
-    f = netCDF4.Dataset(fname)
-    print(f.deployment_time)
-    f.close()
+    with netCDF4.Dataset(fname) as f:
+        print(f.deployment_time)
