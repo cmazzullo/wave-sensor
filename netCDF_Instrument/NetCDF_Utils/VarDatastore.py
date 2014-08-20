@@ -159,8 +159,6 @@ class DataStore(object):
                                  "creator_url": "gui url",
                                  "date_created": datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ"),
                                  "date_modified": datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ"),
-                                 "distance_from_referencepoint_to_transducer": None,
-                                 "distance_from_transducer_to_seabed": None,
                                  "geospatial_lat_min": self.latitude_range[0],
                                  "geospatial_lat_max": self.latitude_range[1],
                                  "geospatial_lon_min": self.longitude_range[0],
