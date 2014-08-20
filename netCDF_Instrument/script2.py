@@ -17,7 +17,6 @@ import shutil
 from numpy import arange
 import DepthCalculation.pressure_to_depth as p2d
 import SpectralAnalysis.nc as nc
-n = arange(10)
 
 
 def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
@@ -46,5 +45,3 @@ def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
     shutil.copy(water_fname, out_fname)
     nc.append_air_pressure(out_fname, air_pressure)
     nc.append_depth(out_fname, depth)
-
-import matplotlib.pyplot as plt

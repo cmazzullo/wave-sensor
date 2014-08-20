@@ -30,19 +30,22 @@ class Script2gui:
                             value=kwarg).pack(anchor=W)
         self.v.set('naive')
         self.sea_fname = None
+        self.sea_var = StringVar()
         self.air_fname = None
+        self.air_var = StringVar()
         self.make_fileselect(root, "Open Water Pressure File",
-                             "the selected filename should go here", 'sea_fname')
+                             self.sea_var, 'sea_fname')
         self.make_fileselect(root, "Open Air Pressure File",
-                             "the selected filename should go here", 'air_fname')
+                             self.air_var, 'air_fname')
         c3 = lambda: self.select_output_file(root)
         self.b3 = self.make_button(root, "Export to File", c3,
                                    state=DISABLED)
         self.b3.pack(anchor=W, fill=BOTH)
 
 
-    def select_file(self, varname):
+    def select_file(self, varname, stringvar):
         fname = filedialog.askopenfilename()
+        stringvar.set(fname)
         setattr(self, varname, fname)
         if self.sea_fname and self.air_fname:
             self.b3['state'] = 'ENABLED'
@@ -51,12 +54,12 @@ class Script2gui:
         b = ttk.Button(root, text=text, command=command, state=state)
         return b
 
-    def make_fileselect(self, root, buttontext, labeltext, varname):
-        command = lambda: self.select_file(varname)
+    def make_fileselect(self, root, buttontext, stringvar, varname):
+        command = lambda: self.select_file(varname, stringvar)
         frame = gc.make_frame(root)
         b = self.make_button(frame, buttontext, command)
         b.grid(row=0, column=0, sticky=W)
-        l = ttk.Label(frame, text=labeltext, justify=RIGHT)
+        l = ttk.Label(frame, textvariable=stringvar, justify=RIGHT)
         l.grid(row=0, column=1, sticky=W)
         frame.pack(anchor=W, fill=BOTH)
 
@@ -65,10 +68,18 @@ class Script2gui:
         m = self.v.get()
         sea_t = nc.get_time(self.sea_fname)
         air_t = nc.get_time(self.air_fname)
+        air_t[0] = 1; sea_t[0] = 0
         if (air_t[-1] < sea_t[0]) or (air_t[0] > sea_t[-1]):
-            message = ("Air pressure and water pressure files have no"
-                       " overlap!\nPlease choose other files.")
+            message = ("Air pressure and water pressure files don't "
+                       "cover the same time period!\nPlease choose "
+                       "other files.")
             gc.MessageDialog(root, message=message, title='Error!')
+        elif (air_t[0] > sea_t[0] or air_t[-1] < sea_t[-1]):
+            message = ("The air pressure file doesn't span the "
+            "entire time period covered by the water pressure "
+            "file.\nThe period not covered by both files will be "
+            "set to the fill value:%d" % nc.fill_value)
+            gc.MessageDialog(root, message=message, title='Warning')
         else:
             script2.make_depth_file(self.sea_fname, self.air_fname,
                                     output_fname, method=m)
