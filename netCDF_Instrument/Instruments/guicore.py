@@ -1,5 +1,4 @@
 from functools import partial
-from collections import OrderedDict
 from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import askopenfilename as fileprompt
@@ -37,7 +36,7 @@ class Wavegui:
                      name_in_device='creator_email'),
             Variable(label='Your personal url:', autosave=True,
                      name_in_device='creator_url'),
-            Variable(label='Project name:',  autosave=True,)]
+            Variable(label='Project name:', autosave=True,)]
         self.datafiles = list()
         self.filenames = set()
         self.initialize()
@@ -59,16 +58,16 @@ class Wavegui:
             self.save_history(self.global_history, self.global_fields)
         def load_globals():
             self.load_history(self.global_history, self.global_fields)
-        buttons = [("Add File(s)", self.add_files, 0 , 0),
-                   ("Save Globals", save_globals, 0 , 1),
-                   ("Load Globals", load_globals, 0 , 2),
-                   ("Quit", self.root.destroy, 0 , 5)]
+        buttons = [("Add File(s)", self.add_files, 0, 0),
+                   ("Save Globals", save_globals, 0, 1),
+                   ("Load Globals", load_globals, 0, 2),
+                   ("Quit", self.root.destroy, 0, 5)]
         if self.filenames:
             def load_per_file():
                 for df in self.datafiles:
                     self.load_history(self.df_history, df.fields)
-            buttons += [("Load Default", load_per_file, 0 , 3),
-                        ("Process Files", self.process_files, 0 , 4)]
+            buttons += [("Load Default", load_per_file, 0, 3),
+                        ("Process Files", self.process_files, 0, 4)]
             self.file_frame = make_frame(self.root)
             add_label(self.file_frame, 'File specific settings:')
             tabs = make_frame(self.file_frame)
@@ -129,7 +128,7 @@ class Wavegui:
                    self.datafiles]
         if not all(devices):
             return
-        start_points = [0 for d in devices]
+        start_points = [0] * len(devices)
         for device, s in zip(devices, start_points):
             self.write_file(device, s)
         d.destroy()
@@ -337,7 +336,7 @@ class Datafile:
 
 class MessageDialog(Toplevel):
 
-    def __init__(self, parent, message="", title="",  buttons=1,
+    def __init__(self, parent, message="", title="", buttons=1,
                  wait=True):
         Toplevel.__init__(self, parent)
         body = Frame(self)
