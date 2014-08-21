@@ -15,24 +15,24 @@ g = 9.8  # gravity (m / s**2)
 rho = 1030  # density of seawater (kg / m**3)
 
 
-def hydrostatic_method(p):
-    return (p *  1e4) / (rho * g)
+def hydrostatic_method(pressure):
+    """Return the depth corresponding to a hydrostatic pressure."""
+    return (pressure *  1e4) / (rho * g)
 
 
 def fft_method(t, p_dbar, z, H, timestep, gate=0, window=True,
                       cutoff=-1):
     """
-    Takes an array of pressure readings and creates wave height data.
+    Create wave height data from an array of pressure readings.
 
-    t -- the time array
-    p_dbar -- an array of pressure readings such that len(t) == len(p)
-    z -- the depth of the sensor
-    H -- the water depth (array)
-    timestep -- the time interval in between pressure readings
-    amp_cutoff -- any fluctuations in the pressure that are less than this
-                  threshold won't be used in the height data.
+    t             the time array
+    p_dbar        an array of pressure readings such that len(t) == len(p)
+    z             the depth of the sensor
+    H             the water depth (array)
+    timestep      the time interval in between pressure readings
+    amp_cutoff    any fluctuations in the pressure that are less than
+                    this threshold won't be used in the height data.
     """
-    print('Calculating depth...')
     # Put the pressure data into frequency space
     p = p_dbar * 1e4
     n = len(p)
@@ -92,24 +92,29 @@ def k_to_omega(k, H):
 
 
 def pressure_to_eta(del_p, k, z, H):
-    """Converts the non-hydrostatic pressure to height above z=0."""
+    """Convert the non-hydrostatic pressure to height above z=0."""
     c = _coefficient(k, z, H)
     return del_p / c
 
 
 def eta_to_pressure(eta, k, z, H):
+    """Convert wave height to pressure using linear wave theory."""
     c = _coefficient(k, z, H)
     return eta * c
 
 
 def _coefficient(k, z, H):
-    """Returns C, a coefficient to transform pressure to eta and vice versa."""
+    """Return a conversion factor for pressure and wave height."""
     return rho * g * np.cosh(k * (H + z)) / np.cosh(k * H)
 
 def method2(p_dbar):
-    """Downward crossing method: if the function crosses the x axis in
-    an interval and if its endpoint is below the x axis, we've found
-    a new wave."""
+    """
+    Convert pressure to wave height using downward crossings.
+
+    Downward crossing method: if the function crosses the x axis in an
+    interval and if its endpoint is below the x axis, we've found a
+    new wave.
+    """
     p = p_dbar * 1e4            # convert to Pascals
     Pstatic = make_pstatic(p)
     Pwave = p - Pstatic
@@ -162,8 +167,9 @@ def method2(p_dbar):
     return eta + depth
 
 
-def make_pstatic(p):
-    x = np.arange(len(p))
-    slope, intercept = np.polyfit(x, p, 1)
+def make_pstatic(pressure):
+    """Extract hydrostatic pressure from a pressure array."""
+    x = np.arange(len(pressure))
+    slope, intercept = np.polyfit(x, pressure, 1)
     pwave = slope * x + intercept
     return pwave

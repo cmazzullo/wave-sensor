@@ -1,7 +1,9 @@
 import netCDF4
 from glob import glob
-folder = 'C:\\Users\\cmazzullo\\wave-sensor-test-data\\test-csvs\\'
-fname = 'C:\\Users\\cmazzullo\\wave-sensor-test-data\\test-csvs\\hobo.csv.nc'
+
+
+# folder = 'C:\\Users\\cmazzullo\\wave-sensor-test-data\\test-csvs\\'
+# fname = 'C:\\Users\\cmazzullo\\wave-sensor-test-data\\test-csvs\\hobo.csv.nc'
 
 def dump_all(fname):
     """Dump all attributes and variables in a netCDF to stdout"""
@@ -27,7 +29,8 @@ def dump_all(fname):
 
     f.close()
 
-for fname in glob(folder + '*.nc'):
-    with netCDF4.Dataset(fname) as f:
-        print(f.time_coverage_start)
+def dumptimes():
+    for fname in glob(folder + '*.nc'):
+        with netCDF4.Dataset(fname) as f:
+            print(f.time_coverage_start)
 # dump_all(fname)
