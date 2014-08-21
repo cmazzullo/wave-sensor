@@ -16,7 +16,7 @@ from datetime import timedelta
 import pandas as pd
 import numpy as np
 import pytz
-import SpectralAnalysis.nc as nc
+import NetCDF_Utils.nc as nc
 import netCDF4
 from NetCDF_Utils.edit_netcdf import NetCDFWriter
 
