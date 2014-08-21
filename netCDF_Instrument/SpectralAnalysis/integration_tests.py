@@ -9,7 +9,7 @@ netCDFs, converting it to water level, and writing the results to netCDF.
 """
 import numpy as np
 import matplotlib.pyplot as plt
-import SpectralAnalysis.nc as nc
+import NetCDF_Utils.nc as nc
 import DepthCalculation.pressure_to_depth as p2d
 
 
