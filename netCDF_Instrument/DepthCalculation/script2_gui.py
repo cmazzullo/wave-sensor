@@ -20,7 +20,7 @@ import Instruments.guicore as gc
 class Script2gui:
     def __init__(self, root):
         root.title('Pressure -> Water Height')
-        methods = [('Naive', 'naive'),
+        methods = [('Hydrostatic', 'naive'),
                    ('Linear Wave', 'fft'),
                    ('Delft Paper', 'method2')]
         self.methodvar = StringVar()
