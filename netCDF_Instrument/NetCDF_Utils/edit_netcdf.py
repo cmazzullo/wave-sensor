@@ -1,7 +1,4 @@
-try:
-    import netCDF4
-except:
-    raise Exception("netCDF4 is required")
+from netCDF4 import Dataset
 import numpy as np
 import pandas as pd
 import os
@@ -39,7 +36,7 @@ class NetCDFReader(object):
         milliseconds_bool -- get milliseconds as index (divide by 100 since panda series cannot take longs as indexes,
         otherwise convert to datetime"""
 
-        nc = netCDF4.Dataset(file_name)
+        nc = Dataset(file_name)
         times = nc.variables['time']
 
         temperature = None
@@ -120,47 +117,6 @@ class NetCDFReader(object):
             self.dataframe_vals[x] = self.read_file(x, False, True)
         self.temperature_frame = pd.DataFrame(self.dataframe_vals)
 
-class NetCDFEditor(object):
-
-    def __init__(self):
-        self.dataset = None
-        self.datetime_data = None
-        self.pressure_data = None
-        self.temperature_data = None
-        self.in_file_name = os.path.join("..\Instruments","benchmark","RBRtester2.nc")
-
-    def readedit_file(self, file_name):
-        print(file_name)
-        nc = netCDF4.Dataset(file_name,mode = 'r+',format = 'NETCDF4_CLASSIC')
-        self.dataset = nc
-        self.datetime_data = nc.variables['time']
-
-        self.pressure_data = nc.variables['sea_water_pressure']
-        #checks to see if there is temperature or not
-        if str(nc.variables.keys).find('temperature_at_transducer') != -1:
-                self.temperature_data = nc.variables['temperature_at_transducer']
-
-        #this method converts the milliseconds in to date times
-        #self.datetime_data = netCDF4.num2date(times[:],times.units)
-
-    def edit_pressure(self, pressure_change_dict = dict()):
-        if(len(pressure_change_dict) > 0):
-            for x in pressure_change_dict:
-                self.pressure_data[x] = pressure_change_dict[x]
-
-    def edit_temperature(self, temperature_change_dict = dict()):
-        if(len(temperature_change_dict) > 0):
-            for x in temperature_change_dict:
-                self.temperature_data[x] = temperature_change_dict[x]
-
-    def edit_times(self, time_change_dict = dict()):
-        if(len(time_change_dict) > 0):
-            for x in time_change_dict:
-                self.datetime_data[x] = time_change_dict[x]
-
-
-    def close_file(self):
-        self.dataset.close()
 
 class NetCDFWriter(object):
 
@@ -211,7 +167,7 @@ class NetCDFWriter(object):
         self.retrieval_time = None
 
     def write_netCDF(self,var_datastore,series_length):
-        ds = netCDF4.Dataset(os.path.join(self.out_filename),'w',format="NETCDF4_CLASSIC")
+        ds = Dataset(os.path.join(self.out_filename),'w',format="NETCDF4_CLASSIC")
         time_dimen = ds.createDimension("time",series_length)
         var_datastore.set_attributes(self.var_dict())
         var_datastore.send_data(ds)
@@ -224,13 +180,19 @@ class NetCDFWriter(object):
         var_dict['lat_var'] = lat_dict
         lon_dict = {'valid_min': self.longitude, 'valid_max': self.longitude}
         var_dict['lon_var'] = lon_dict
-        global_vars = {'creator_name': self.creator_name, 'creator_email': self.creator_email,
-                       'creator_eamil': self.creator_email, 'geospatial_lat_min': self.latitude,
-                       'geospatial_lat_max': self.latitude, 'geospatial_lon_min': self.longitude,
-                       'geospatial_lon_max': self.longitude, 'geospatial_vertical_min': self.z,
-                       'geospatial_vertical_max': self.z, 'sea_name': self.sea_name,
-                       'initial_water_depth': self.initial_water_depth, 'final_water_depth': self.final_water_depth,
-                       'deployment_time': self.deployment_time, 'retrieval_time': self.retrieval_time,
+        global_vars = {'creator_name': self.creator_name,
+                       'creator_email': self.creator_email,
+                       'geospatial_lat_min': self.latitude,
+                       'geospatial_lat_max': self.latitude,
+                       'geospatial_lon_min': self.longitude,
+                       'geospatial_lon_max': self.longitude,
+                       'geospatial_vertical_min': self.z,
+                       'geospatial_vertical_max': self.z,
+                       'sea_name': self.sea_name,
+                       'initial_water_depth': self.initial_water_depth,
+                       'final_water_depth': self.final_water_depth,
+                       'deployment_time': self.deployment_time,
+                       'retrieval_time': self.retrieval_time,
                        'device_depth': self.device_depth}
         var_dict['global_vars_dict'] = global_vars
 
@@ -242,7 +204,7 @@ if __name__ == "__main__":
     editor = NetCDFEditor()
     editor.readedit_file(editor.in_file_name)
     print('first run through...')
-    for x in range(0,4):
+    for x in range(0, 4):
         print (x, editor.datetime_data[x])
     print('changing values in file...')
     change_dict = {1: np.float64(1399977901500), 2: np.float64(1399977903000), 3:np.float64(1499977903000)}
