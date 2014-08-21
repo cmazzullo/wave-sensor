@@ -37,10 +37,9 @@ class Waveguage(NetCDFWriter):
         self.data_duration_time = timestamps[-1] - timestamps[0]
         self.frequency = self._get_frequency()
         self.utc_millisecond_data = self.get_ms_data(timestamps, chunks)
-        self.pressure_data = np.add(np.multiply(self.make_pressure_array(timestamps, chunks),10.0),10.1325)
-
-        #Test and utility methods
-        ms = self.utc_millisecond_data[::-1][0]
+        raw_pressure = self.make_pressure_array(timestamps, chunks)
+        self.pressure_data = raw_pressure * 10.0 + 10.1325
+        return self.pressure_data, self.utc_millisecond_data
 
 
     def make_pressure_array(self, t, chunks):

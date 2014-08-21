@@ -20,7 +20,7 @@ from Instruments.measuresys import MeasureSysLogger
 from Instruments.hobo import Hobo
 
 
-__instruments__ = {'LevelTroll': Leveltroll,
+INSTRUMENTS = {'LevelTroll': Leveltroll,
                    'RBRSolo': RBRSolo,
                    'Wave Guage': Waveguage,
                    'USGS Homebrew': House,
@@ -31,7 +31,7 @@ class Wavegui:
     """ GUI for csv-to-netCDF conversion. """
     def __init__(self, parent, air_pressure=False):
         self.root = parent
-        parent.title("USGS Wave Data")
+        parent.title("Sea Water Pressure -> NetCDF")
 
         if air_pressure:
             self.df_history = 'gui_df_history.txt'
@@ -132,7 +132,7 @@ class Wavegui:
         """Add a new file tab to the file frame."""
         new_fnames = set(fileprompt(multiple=True)) - self.filenames
         self.filenames |= new_fnames
-        new_datafiles = [Datafile(fname, __instruments__)
+        new_datafiles = [Datafile(fname, INSTRUMENTS)
                          for fname in new_fnames]
         self.datafiles += new_datafiles
         if self.filenames:
@@ -173,7 +173,7 @@ class Wavegui:
                               " please fill out all fields.",
                               title='Incomplete!', wait=True)
                 return False
-        device = __instruments__[datafile.instrument.get()]()
+        device = INSTRUMENTS[datafile.instrument.get()]()
         for var in fields:
             if (var.in_air_pressure and self.air_pressure) or \
                 (var.in_water_pressure and not self.air_pressure):
@@ -281,6 +281,44 @@ def add_label(frame, text, pos=None):
     return label
 
 
+class MessageDialog(tkinter.Toplevel):
+    """ A template for nice dialog boxes. """
+
+    def __init__(self, parent, message="", title="", buttons=1,
+                 wait=True):
+        tkinter.Toplevel.__init__(self, parent)
+        body = ttk.Frame(self)
+        self.title(title)
+        self.boolean = None
+        self.parent = parent
+        self.transient(parent)
+        ttk.Label(body, text=message).pack()
+        if buttons == 1:
+            b = ttk.Button(body, text="OK", command=self.destroy)
+            b.pack(pady=5)
+        elif buttons == 2:
+            buttonframe = make_frame(body)
+
+            def event(boolean):
+                self.boolean = boolean
+                self.destroy()
+
+            b1 = ttk.Button(buttonframe, text='YES',
+                            command=lambda: event(True))
+            b1.grid(row=0, column=0)
+            b2 = ttk.Button(buttonframe, text='NO',
+                            command=lambda: event(False))
+            b2.grid(row=0, column=1)
+            buttonframe.pack()
+
+        body.pack()
+        self.grab_set()
+        self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
+                                  parent.winfo_rooty()+50))
+        if wait:
+            self.wait_window(self)
+
+
 class Datafile:
     """
     A container for Variable objects.
@@ -373,43 +411,6 @@ class Datafile:
         self.in_filename.stringvar.set(filename)
         self.out_filename.stringvar.set(filename + '.nc')
 
-
-class MessageDialog(tkinter.Toplevel):
-    """ A template for nice dialog boxes. """
-
-    def __init__(self, parent, message="", title="", buttons=1,
-                 wait=True):
-        tkinter.Toplevel.__init__(self, parent)
-        body = ttk.Frame(self)
-        self.title(title)
-        self.boolean = None
-        self.parent = parent
-        self.transient(parent)
-        ttk.Label(body, text=message).pack()
-        if buttons == 1:
-            b = ttk.Button(body, text="OK", command=self.destroy)
-            b.pack(pady=5)
-        elif buttons == 2:
-            buttonframe = make_frame(body)
-
-            def event(boolean):
-                self.boolean = boolean
-                self.destroy()
-
-            b1 = ttk.Button(buttonframe, text='YES',
-                            command=lambda: event(True))
-            b1.grid(row=0, column=0)
-            b2 = ttk.Button(buttonframe, text='NO',
-                            command=lambda: event(False))
-            b2.grid(row=0, column=1)
-            buttonframe.pack()
-
-        body.pack()
-        self.grab_set()
-        self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
-                                  parent.winfo_rooty()+50))
-        if wait:
-            self.wait_window(self)
 
 
 class Variable:

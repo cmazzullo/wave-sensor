@@ -49,6 +49,7 @@ class Hobo(NetCDFWriter):
 
         print(len(self.pressure_data))
 
+
     def read_start(self, expression, delimeter):
         skip_index = 0;
         with open(self.in_filename,'r') as fileText:
@@ -59,6 +60,7 @@ class Hobo(NetCDFWriter):
                     break
                 skip_index += 1
         return skip_index + 1
+
 
     def write(self, sea_pressure = True):
         '''Write netCDF files

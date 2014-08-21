@@ -6,13 +6,10 @@ import numpy as np
 import DepthCalculation.pressure_to_depth as p2d
 import NetCDF_Utils.nc as nc
 
-
-fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
-         'test-ncs\\logger3.csv.nc')
-naive_fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
-               'test-ncs\\logger3_naive_depth.nc')
-fft_fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
-             'test-ncs\\logger3_fft_depth.nc')
+folder = 'C:\\Users\\cmazzullo\\wave-sensor-test-data\\test-ncs\\'
+fname = folder + 'logger3.csv.nc'
+naive_fname = folder + 'logger3_naive_depth.nc'
+fft_fname = folder + 'logger3_fft_depth.nc'
 
 p = nc.get_pressure(naive_fname) - nc.get_air_pressure(naive_fname)
 naive_depth = nc.get_depth(naive_fname)
