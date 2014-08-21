@@ -12,8 +12,8 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
 
-import SpectralAnalysis.nc as nc
-import script2
+import NetCDF_Utils.nc as nc
+import DepthCalculation.script2 as script2
 import Instruments.guicore as gc
 
 

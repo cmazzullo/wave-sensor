@@ -16,7 +16,7 @@ import numpy as np
 import shutil
 from numpy import arange
 import DepthCalculation.pressure_to_depth as p2d
-import SpectralAnalysis.nc as nc
+import NetCDF_Utils.nc as nc
 
 
 def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
