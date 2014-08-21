@@ -4,6 +4,7 @@ import pandas as pd
 import os
 import pytz
 from datetime import datetime
+import netCDF4
 
 try:
     from NetCDF_Utils.VarDatastore import DataStore
@@ -197,18 +198,3 @@ class NetCDFWriter(object):
         var_dict['global_vars_dict'] = global_vars
 
         return var_dict
-
-if __name__ == "__main__":
-
-    #--create an instance
-    editor = NetCDFEditor()
-    editor.readedit_file(editor.in_file_name)
-    print('first run through...')
-    for x in range(0, 4):
-        print (x, editor.datetime_data[x])
-    print('changing values in file...')
-    change_dict = {1: np.float64(1399977901500), 2: np.float64(1399977903000), 3:np.float64(1499977903000)}
-    editor.edit_times(change_dict)
-    print('second run through...')
-    for x in range(0,4):
-            print (x, editor.datetime_data[x])
