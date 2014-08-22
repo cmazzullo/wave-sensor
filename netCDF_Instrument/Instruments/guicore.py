@@ -31,7 +31,10 @@ class Wavegui:
     """ GUI for csv-to-netCDF conversion. """
     def __init__(self, parent, air_pressure=False):
         self.root = parent
-        parent.title("Sea Water Pressure -> NetCDF")
+        if air_pressure == False:
+            parent.title("Sea Water Pressure -> NetCDF")
+        else:
+            parent.title("Air Pressure -> NetCDF")
 
         if air_pressure:
             self.df_history = 'gui_df_history.txt'

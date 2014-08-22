@@ -26,9 +26,16 @@ class NetCDFReader(object):
         self.epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
         self.latitude = None
         self.longitude = None
-
-
-
+        self.pressure_data = None
+        self.pressure_qc = None
+        self.times = None
+        
+    def get_test_data(self, file_name):
+        nc = Dataset(file_name)
+        self.times = nc.variables['time']
+        self.pressure_data = nc.variables['sea_water_pressure']
+        self.pressure_qc = nc.variables['pressure_qc']
+        
     def read_file(self,file_name,pressure_bool = True, series_bool=True, milliseconds_bool=False):
         """Read a .nc file
 

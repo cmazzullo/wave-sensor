@@ -2,14 +2,14 @@ import matplotlib.pyplot as plt
 from matplotlib.dates import HourLocator, DayLocator, DateFormatter, MinuteLocator, AutoDateFormatter
 import datetime
 import numpy as np
-
+import os
 import DepthCalculation.pressure_to_depth as p2d
 import NetCDF_Utils.nc as nc
 
-folder = 'C:\\Users\\cmazzullo\\wave-sensor-test-data\\test-ncs\\'
+folder = '..\\Presentation\\DepthPlot\\'
 fname = folder + 'logger3.csv.nc'
-naive_fname = folder + 'logger3_naive_depth.nc'
-fft_fname = folder + 'logger3_fft_depth.nc'
+naive_fname = folder + 'naive.nc'
+fft_fname = folder + 'fft.nc'
 
 p = nc.get_pressure(naive_fname) - nc.get_air_pressure(naive_fname)
 naive_depth = nc.get_depth(naive_fname)

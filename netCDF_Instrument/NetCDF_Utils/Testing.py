@@ -8,7 +8,7 @@ class DataTests(object):
     def __init__(self):
         self.five_count_list = list()
         self.pressure_data = None
-        self.valid_pressure_range = [-10000,10000]
+        self.valid_pressure_range = [-1000,1000]
         self.pressure_max_rate_of_change = 10
         self.depth_data = None
         self.valid_depth_range = [-1000,1000]

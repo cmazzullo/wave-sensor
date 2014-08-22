@@ -163,6 +163,56 @@ class Grapher(NetCDFReader):
         #plt.xlim(time[0],time[::-1][0] + datetime.timedelta(minutes=5))
         plt.show()
         
+    def plot_test_data(self,file_name):
+        """Makes a plot of testing data"""
+        self.get_test_data(file_name)
+        fig = plt.figure(figsize=(12,4))
+        ax = fig.add_subplot(111)
+        ax.set_axis_bgcolor('#f7f7f7')
+        
+    
+        ax.set_ylabel('Pressure in dbars')
+        colors = ["yellow", "orange", "purple", "green","blue", "red"]
+        p1, = plt.plot(np.arange(len(self.pressure_data)),self.pressure_data, \
+                 alpha=0.70, linewidth="4.0", linestyle="-", color = colors.pop())
+        p2, = plt.plot(np.arange(len(self.pressure_data)),self.pressure_data, ".",\
+                 alpha=0.70, linewidth="4.0",  color = 'red', ms=15)
+        self.plot_data.append(p1)
+        self.names.append('Pressure Data')
+        
+        qc_array = [[],[],[]]
+        string_vals = [str(x) for x in self.pressure_qc]
+    
+        qc_values = [list(x) for x in string_vals]
+      
+        
+        for x in range(0,len(self.pressure_qc)):
+            if qc_values[x][3] == '0':
+                qc_array[0].append(x)
+            if qc_values[x][2] == '0':
+                qc_array[1].append(x)  
+            if qc_values[x][1] == '0':
+                qc_array[2].append(x)
+                
+       
+              
+        for x in range(0,3):
+            p2, = plt.plot(qc_array[x],np.repeat(0 - (x * 20), len(qc_array[x])), 'bx',\
+                  linewidth="3.0", color = colors.pop(), ms = 15)
+            self.plot_data.append(p2)
+            if x == 0:
+                self.names.append('Stuck Sensor Fail')
+            elif x == 1:
+                self.names.append('Valid Range Test Fail')
+            else:
+                self.names.append('Valid Rate of Change Fail')     
+           
+        plt.legend(self.plot_data, self.names,bbox_to_anchor=(.75, 1.10), loc=2, borderaxespad=0.0)
+        plt.title("Pressure Test Data")
+        plt.ylim(-75,75)
+        plt.grid(b=True,  color='grey', linestyle="-")
+        plt.show()
+        
     def plot_both_together(self, zero_mean = False, pressure_ylimits = None, temperature_ylimits = None):
         """Makes a subplot for both the pressure and temperature data"""
         self.re_initialize()
@@ -227,7 +277,7 @@ if __name__ == "__main__":
     
     #--create an instance    
     graph = Grapher()
-    graph.fill_value_correction_bool = True
+    
 #   graph.plot_multiple_series_graphs(True,True)
 #     graph.plot_both_together(True)
 #     graph.plot_both_together()
@@ -237,5 +287,5 @@ if __name__ == "__main__":
 #     graph.plot_multiple_series_graphs(True, True)
     
 
-    graph.plot_multiple_series_graphs(True, ylimits = [9.5,10.0])
+    graph.plot_test_data('RBR4.nc')
     #graph.plot_both_together(True)
