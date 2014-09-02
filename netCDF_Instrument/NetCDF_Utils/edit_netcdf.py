@@ -16,7 +16,7 @@ class NetCDFReader(object):
     """Reads netcdf4 file"""
 
     def __init__(self):
-        self.in_file_name = os.path.join("..\Instruments","benchmark","RBRtester2.nc")
+        self.in_file_name = os.path.join("..\\Instruments","benchmark","RBRtester2.nc")
         self.file_names = None
         self.pressure_frame = None
         self.temperature_frame = None
@@ -28,14 +28,37 @@ class NetCDFReader(object):
         self.longitude = None
         self.pressure_data = None
         self.pressure_qc = None
+        self.air_pressure_data = None
+        self.depth_data = None
         self.times = None
         
-    def get_test_data(self, file_name):
-        nc = Dataset(file_name)
-        self.times = nc.variables['time']
-        self.pressure_data = nc.variables['sea_water_pressure']
-        self.pressure_qc = nc.variables['pressure_qc']
+    def get_test_data(self, file_name, time_convert = False):
+        """Read .nc file and set all variables to object properties
         
+        Arguments
+        file_name -- location of input file
+        time_convert -- boolean whether to convert milliseconds to time
+        """
+        nc = Dataset(file_name)
+        if time_convert:
+            self.times = netCDF4.num2date(nc.variables['time'][:],nc.variables['time'].units)
+        else:
+            self.times = nc.variables['time'][:]
+        self.pressure_data = nc.variables['sea_water_pressure'][:]
+        self.pressure_qc = nc.variables['pressure_qc'][:]
+        self.latitude = nc.variables['latitude'][:]
+        self.longitude = nc.variables['longitude'][:]
+        
+        try:
+            self.air_pressure_data = nc.variables['air_pressure'][:]
+        except:
+            print('No air pressure')
+            
+        try:
+            self.depth_data = nc.variables['depth'][:]
+        except:
+            print('No Depth')
+       
     def read_file(self,file_name,pressure_bool = True, series_bool=True, milliseconds_bool=False):
         """Read a .nc file
 
@@ -132,7 +155,7 @@ class NetCDFWriter(object):
         self.pressure_comments = None
         self.temperature_comments = None
         self.depth_comments = None
-        self.out_filename = os.path.join("..\Instruments",'benchmark','DepthTest.nc')
+        self.out_filename = os.path.join("..\\Instruments",'benchmark','DepthTest.nc')
         self.in_filename = None
         self.is_baro = None
         self.pressure_units = None
@@ -205,3 +228,9 @@ class NetCDFWriter(object):
         var_dict['global_vars_dict'] = global_vars
 
         return var_dict
+    
+if __name__ == '__main__':
+    a = NetCDFReader()
+    a.get_test_data('C:\\Users\\Gregory\\Documents\\GitHub\\wave-sensor\\netCDF_Instrument\\TimeDomainAnalysis\\script3in.nc')
+    for x in a.pressure_qc:
+        print(x)
