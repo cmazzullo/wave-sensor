@@ -86,6 +86,8 @@ def moving_average(a, n=3):
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
 
+def remove_avg(a, n=3):
+    return a[n-1:] - moving_average(a, n)
 
 def get_sea_data(fname):
     data = dict()
@@ -106,7 +108,7 @@ def chunked_p2d(water_fname, air_fname, chunk_size=100, lo_cut=-1,
 
     # MOVING AVG
     if rolling_avg_len != -1:
-        sea_pressure = moving_average(sea_pressure, n=rolling_avg_len)
+        sea_pressure = remove_avg(sea_pressure, rolling_avg_len)
         sea_time = sea_time[rolling_avg_len - 1:]
 
     # SPLIT INTO CHUNKS
@@ -131,16 +133,16 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     water_fname = '/home/chris/test-data/ncs/logger3.csv.nc'
     depth = chunked_p2d(water_fname, '', chunk_size=1000,
-                        lo_cut=-1, hi_cut=1, noise_gate=0)
+                        lo_cut=-1, hi_cut=1, noise_gate=0, rolling_avg_len=(60*15))
 
     hydrostatic_depth = flatten(apply_method(p2d.hydrostatic_method,
                                              chunked_pressure))
 
     plt.plot(depth, 'b', label='Chunked spectral')
     plt.plot(hydrostatic_depth + .001, 'm', label='Hydrostatic')
-    error = np.absolute(depth - hydrostatic_depth)
-    rmsd = np.sqrt(np.average(error**2))
-    plt.plot(depth - hydrostatic_depth, 'r', label='difference')
+    #error = np.absolute(depth - hydrostatic_depth)
+    #rmsd = np.sqrt(np.average(error**2))
+    #plt.plot(depth - hydrostatic_depth, 'r', label='Difference')
     plt.legend()
     plt.grid(which='both')
     plt.show()
