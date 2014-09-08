@@ -21,17 +21,21 @@ def hydrostatic_method(pressure):
 
 
 def fft_method(t, p_dbar, z, H, timestep, gate=0, window=True,
-                      cutoff=-1):
+               lo_cut=-1, hi_cut=float('inf')):
     """
     Create wave height data from an array of pressure readings.
 
     t             the time array
-    p_dbar        an array of pressure readings such that len(t) == len(p)
+    p_dbar        an array of pressure readings
     z             the depth of the sensor
     H             the water depth (array)
     timestep      the time interval in between pressure readings
-    amp_cutoff    any fluctuations in the pressure that are less than
-                    this threshold won't be used in the height data.
+    gate          any fluctuations in the pressure that are less than
+                  this threshold won't be used in the height data.
+    window        whether or not to use a window function
+    lo_cut        minimum frequency data to include, exclusive
+    hi_cut        maximum frequency data to include, exclusive (1Hz
+                    seems sane)
     """
     # Put the pressure data into frequency space
     p = p_dbar * 1e4
@@ -51,13 +55,14 @@ def fft_method(t, p_dbar, z, H, timestep, gate=0, window=True,
     new_amps = np.zeros_like(amps)
 
     for i in range(len(amps)):
-        # Filter out the noise with amp_cutoff
+        # Filter out the noise with the gate
         if np.absolute(amps[i] / n) >= gate_array[i]:
-            if cutoff == -1 or freqs[i] < cutoff:
+            if lo_cut < freqs[i] < hi_cut:
                 k = omega_to_k(freqs[i] * 2 * np.pi, H[i])
                 # Scale, applying the diffusion relation
                 a = pressure_to_eta(amps[i], k, z, H[i])
                 new_amps[i] = a
+
     # Convert back to time space
     eta = np.fft.irfft(new_amps)
     if window:
@@ -163,7 +168,6 @@ def method2(p_dbar):
             Pmax = Pwave[i]
         if Pwave[i] < Pmin:
             Pmin = Pwave[i]
-
     return eta + depth
 
 
