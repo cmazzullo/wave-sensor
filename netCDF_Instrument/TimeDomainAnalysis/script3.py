@@ -57,11 +57,11 @@ class MovingAverage(NetCDFReader):
         fig = plt.figure(figsize=(18,6))
         ax = fig.add_subplot(111)
         ax.set_axis_bgcolor('#f7f7f7')
-        ax.set_xlabel('Time Range between %s : %s' % (self.times[0], self.times[::-1][0]))
-        ax.set_ylabel('Depth in Meters')
+        ax.set_xlabel('Time between %s : %s' % (self.times[0], self.times[::-1][0]))
+        ax.set_ylabel('Water Level in Meters')
         
         plt.grid(b=True, which='major', color='grey', linestyle="-")
-        plt.title("Moving Average Depth Data")
+        plt.title("Filtered Water Level Data")
         
         p1, = plt.plot(self.times,self.depth_data,alpha=0.70)   
         p2, = plt.plot(self.rolling_mean.index,self.rolling_mean.values, color="red",alpha=0.85)
@@ -72,7 +72,7 @@ class MovingAverage(NetCDFReader):
         
         
         plt.legend([extra,p1,p2],["Data Recorded at Lat %s Lon %s" % (self.latitude,self.longitude), \
-                                  "Original Depths","Moving Average with %d second window" % \
+                                  "Original Water Level","Moving Average with %d second window" % \
                                    (self.window_size / self.frequency)], \
                    bbox_to_anchor=(.70, 1.10), loc=2, borderaxespad=0.0)
         plt.savefig(filename= '%s.%s' % (out_file_name,file_format), format=file_format)
@@ -83,4 +83,4 @@ class MovingAverage(NetCDFReader):
 if __name__ == '__main__':
     a = MovingAverage()
     a.collect_data()
-    a.calc_moving_average(300)
+    a.calc_moving_average(30)
