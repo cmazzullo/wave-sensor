@@ -149,6 +149,19 @@ class NetCDFReader(object):
         self.temperature_frame = pd.DataFrame(self.dataframe_vals)
 
 
+class NetCDFToCSV(NetCDFReader):
+    
+    def __init__(self):
+        self.file_name = None
+        self.time_convert = True
+    
+    def convert_to_csv(self):
+        self.get_test_data(self.file_name, self.time_convert)
+        
+        test = pd.DataFrame([pd.Series(self.pressure_data,index=self.times)])
+        test.to_csv('C:\\Tappy\\test.csv',',')
+        
+        
 class NetCDFWriter(object):
 
     def __init__(self):
@@ -230,7 +243,6 @@ class NetCDFWriter(object):
         return var_dict
     
 if __name__ == '__main__':
-    a = NetCDFReader()
-    a.get_test_data('C:\\Users\\Gregory\\Documents\\GitHub\\wave-sensor\\netCDF_Instrument\\TimeDomainAnalysis\\script3in.nc')
-    for x in a.pressure_qc:
-        print(x)
+    a = NetCDFToCSV()
+    a.file_name = 'C:\\Users\\Gregory\\Documents\\GitHub\\wave-sensor\\netCDF_Instrument\\TimeDomainAnalysis\\script3in.nc'
+    a.convert_to_csv()
