@@ -22,33 +22,6 @@ from functools import partial
 # 3. Apply linear wave theory to get water level
 # 4. Plot the water level
 
-def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
-    device_d = -1 * nc.get_device_depth(water_fname)
-    water_d = nc.get_water_depth(water_fname)
-    timestep = 1 / nc.get_frequency(water_fname)
-    sea_p = nc.get_pressure(water_fname)
-    sea_t = nc.get_time(water_fname)
-    raw_air_p = nc.get_air_p(air_fname)
-    air_t = nc.get_time(air_fname)
-
-    air_p = np.interp(sea_t, air_t, raw_air_p,
-                             left=nc.FILL_VALUE, right=nc.FILL_VALUE)
-    corrected_pressure = sea_p - air_p
-
-    if method == 'fft':
-        depth = p2d.fft_method(sea_t, corrected_pressure,
-                               device_d, water_d, timestep)
-    elif method == 'method2':
-        depth = p2d.method2(corrected_pressure)
-    elif method == 'naive':
-        depth = p2d.hydrostatic_method(corrected_pressure)
-    else:
-        raise TypeError('Accepted values for "method" are: fft, '
-                        'method2 and naive.')
-    shutil.copy(water_fname, out_fname)
-    nc.append_air_p(out_fname, air_p)
-    nc.append_depth(out_fname, depth)
-
 
 def moving_average(a, n=3):
     """Perform a moving average on an array"""
@@ -59,20 +32,39 @@ def moving_average(a, n=3):
 def apply_method(method, *args):
     return np.array(list(map(method, *args)))
 
-# NOTE: RIGHT NOW THIS DOESNT HAVE THE CORRECTED PRESSURE
-def chunked_p2d(water_fname, air_fname, method, chunk_size=100,
-                lo_cut=-1, hi_cut=20, avg_len=-1, noise_gate=0):
-    device_d, water_d, ts, sea_p, sea_t = get_file_info(water_fname)
+
+def chunked_p2d(water_fname, air_fname=None, method='fft',
+                chunk_size=100, lo_cut=-1, hi_cut=20, avg_len=-1,
+                noise_gate=0):
+    device_d, water_d, ts, raw_sea_p, sea_t = getdata(water_fname)
+
+    # AIR PRESSURE CORRECTION
+    if air_fname is None:
+        sea_p = raw_sea_p
+    else:
+        raw_air_p = nc.get_air_pressure(air_fname)
+        air_t = nc.get_time(air_fname)
+        air_p = np.interp(sea_t, air_t, raw_air_p, left=nc.FILL_VALUE,
+                          right=nc.FILL_VALUE)
+        sea_p = raw_sea_p - air_p
+
+    # NO ODD-LENGTH ARRAYS (MESSES UP FFT)
+    n = len(sea_p) - len(sea_p) % 2
+    sea_p = sea_p[:n - 2]
+    sea_t = sea_t[:n - 2]
 
     # MOVING AVG
     if avg_len != -1:
-        sea_p = remove_avg(sea_p, avg_len)
+        sea_p = sea_p[avg_len - 1:] - moving_average(sea_p, avg_len)
         sea_t = sea_t[avg_len - 1:]
-
     # SPLIT INTO CHUNKS
-    chunked_pressure = split_into_chunks(sea_p, chunk_size)
-    chunked_time = split_into_chunks(sea_t, chunk_size)
-    chunked_pressure = remove_chunk_mean(chunked_pressure)
+    if chunk_size is -1:
+        chunked_pressure = np.array(remove_chunk_mean([sea_p]))
+        chunked_time = np.array([sea_t])
+    else:
+        chunked_pressure = split_into_chunks(sea_p, chunk_size)
+        chunked_time = split_into_chunks(sea_t, chunk_size)
+        chunked_pressure = remove_chunk_mean(chunked_pressure)
 
     def get_depth(time_chunk, pressure_chunk):
         if method == 'fft':
@@ -88,7 +80,7 @@ def chunked_p2d(water_fname, air_fname, method, chunk_size=100,
     return flatten(chunked_time), flatten(chunked_d)
 
 
-def get_file_info(fname):
+def getdata(water_fname):
     device_d = -1 * nc.get_device_depth(water_fname)
     water_d = nc.get_water_depth(water_fname)
     timestep = 1 / nc.get_frequency(water_fname)
@@ -128,25 +120,34 @@ def fft(array, timestep):
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    water_fname = '/home/chris/test-data/ncs/logger3.csv.nc'
 
-    time1, depth_fft = chunked_p2d(water_fname, '', 'fft', chunk_size=10000,
-                                   lo_cut=-1, hi_cut=10, noise_gate=0, avg_len=-1)
-    time2, depth_static = chunked_p2d(water_fname, '', 'hydrostatic', chunk_size=10000,
-                                      lo_cut=-1, hi_cut=10, noise_gate=0, avg_len=-1)
+    number = 1
+    water_fname = '/home/chris/test-data/ncs/logger' + str(number) + '.csv.nc'
+    air_fname = '/home/chris/test-data/ncs/air_logger'+str(number)+'.csv.nc'
 
-    plt.plot(time1 / 1e3, depth_fft + .001, 'b', label='Chunked spectral')
+
+    time1, depth_fft = chunked_p2d(water_fname, air_fname, 'fft',
+                                   chunk_size=100*3,
+                                   lo_cut=.005,
+                                   hi_cut=10,
+                                   noise_gate=0,
+                                   avg_len=10)
+    time2, depth_static = chunked_p2d(water_fname, air_fname, 'hydrostatic',
+                                      chunk_size=300,
+                                      avg_len=10)
+    print(len(depth_static), len(time2))
+    print(len(depth_fft), len(time1))
+
+    plt.plot(time1 / 1e3, depth_fft, 'b', label='Chunked spectral')
     plt.plot(time2 / 1e3, depth_static, 'm', label='Hydrostatic')
 
-    error = np.absolute(depth_fft - depth_static)
-    rmsd = np.sqrt(np.average(error**2))
+    # error = np.absolute(depth_fft - depth_static)
+    # rmsd = np.sqrt(np.average(error**2))
 
-    plt.plot(time1/1e3, depth_fft - depth_static, 'r', label='Difference')
+    # plt.plot(time1/1e3, depth_fft - depth_static, 'r', label='Difference')
 
-    plt.plot(sea_t / (1000 * 60* 60), sea_p, label='Pressure (dbar)')
     plt.legend()
-#    plt.ylabel('water height (m)')
-    plt.ylabel('pressure (dbar)')
-    plt.xlabel('time (hours)')
+    plt.ylabel('water height (m)')
+    plt.xlabel('time (seconds)')
     plt.grid(which='both')
     plt.show()
