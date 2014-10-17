@@ -154,12 +154,14 @@ class NetCDFToCSV(NetCDFReader):
     def __init__(self):
         self.file_name = None
         self.time_convert = True
+        self.out_file_name = 'C:\\Tappy\\test.csv'
     
     def convert_to_csv(self):
         self.get_test_data(self.file_name, self.time_convert)
         
-        test = pd.DataFrame([pd.Series(self.pressure_data,index=self.times)])
-        test.to_csv('C:\\Tappy\\test.csv',',')
+        test = pd.DataFrame(pd.Series(self.pressure_data,index=self.times))
+        return test;
+#         test.to_csv(self.out_file_name,',',chunksize = 1)
         
         
 class NetCDFWriter(object):
