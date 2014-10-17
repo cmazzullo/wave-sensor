@@ -15,9 +15,9 @@ FILL_VALUE = -1e10
 
 def parse_time(fname, time_name):
     """Convert a UTC offset in attribute "time_name" to a datetime."""
-    timezone_str = _get_global_attribute(fname, 'time_zone')
+    timezone_str = get_global_attribute(fname, 'time_zone')
     timezone = pytz.timezone(timezone_str)
-    time_str = _get_global_attribute(fname, time_name)
+    time_str = get_global_attribute(fname, time_name)
     fmt = '%Y%m%d %H%M'
     time = timezone.localize(datetime.strptime(time_str, fmt))
     epoch_start = datetime(year=1970, month=1, day=1, tzinfo=pytz.utc)
@@ -30,7 +30,7 @@ def append_air_pressure(fname, pressure):
     """Insert air pressure array into the netCDF file fname"""
     name = 'air_pressure'
     long_name = 'air pressure record'
-    _append_variable(fname, name, pressure, comment='',
+    append_variable(fname, name, pressure, comment='',
                      long_name=long_name)
 
 
@@ -39,7 +39,7 @@ def append_depth(fname, depth):
     comment = ('The depth, computed using the variable "corrected '
                'water pressure".')
     name = 'depth'
-    _append_variable(fname, name, depth, comment=comment,
+    append_variable(fname, name, depth, comment=comment,
                      long_name=name)
 
 # Get variable data
@@ -58,39 +58,39 @@ def get_water_depth(in_fname):
 
 def get_depth(fname):
     """Get the wave height array from the netCDF at fname"""
-    return _get_variable_data(fname, 'depth')
+    return get_variable_data(fname, 'depth')
 
 
 def get_time(fname):
     """Get the time array from the netCDF at fname"""
-    return _get_variable_data(fname, 'time')
+    return get_variable_data(fname, 'time')
 
 
 def get_air_pressure(fname):
     """Get the air pressure array from the netCDF at fname"""
-    return _get_variable_data(fname, 'air_pressure')
+    return get_variable_data(fname, 'air_pressure')
 
 
 def get_pressure(fname):
     """Get the water pressure array from the netCDF at fname"""
-    return _get_variable_data(fname, 'sea_water_pressure')
+    return get_variable_data(fname, 'sea_water_pressure')
 
 # Get global data
 
 def get_frequency(fname):
     """Get the frequency of the data in the netCDF at fname"""
-    freq_string = _get_global_attribute(fname, 'time_coverage_resolution')
+    freq_string = get_global_attribute(fname, 'time_coverage_resolution')
     return float(freq_string[1:-1])
 
 
 def get_initial_water_depth(fname):
     """Get the initial water depth from the netCDF at fname"""
-    return _get_global_attribute(fname, 'initial_water_depth')
+    return get_global_attribute(fname, 'initial_water_depth')
 
 
 def get_final_water_depth(fname):
     """Get the final water depth from the netCDF at fname"""
-    return _get_global_attribute(fname, 'final_water_depth')
+    return get_global_attribute(fname, 'final_water_depth')
 
 
 def get_deployment_time(fname):
@@ -105,26 +105,26 @@ def get_retrieval_time(fname):
 
 def get_device_depth(fname):
     """Get the retrieval time from the netCDF at fname"""
-    return _get_global_attribute(fname, 'device_depth')
+    return get_global_attribute(fname, 'device_depth')
 
 
-def _get_variable_data(fname, variable_name):
+def get_variable_data(fname, variable_name):
     """Get the values of a variable from a netCDF file."""
     with Dataset(fname) as nc_file:
         var = nc_file.variables[variable_name]
         var_data = var[:]
         return var_data
 
-# Private methods
+# Backend
 
-def _get_global_attribute(fname, name):
+def get_global_attribute(fname, name):
     """Get the value of a global attibute from a netCDF file."""
     with Dataset(fname) as nc_file:
         attr = getattr(nc_file, name)
         return attr
 
 
-def _append_variable(fname, standard_name, data, comment='',
+def append_variable(fname, standard_name, data, comment='',
                      long_name=''):
     """Append a new variable to an existing netCDF."""
     with Dataset(fname, 'a', format='NETCDF4_CLASSIC') as nc_file:
