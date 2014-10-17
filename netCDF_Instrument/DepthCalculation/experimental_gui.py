@@ -4,7 +4,8 @@
 Converts pressure to depth and plots the result. Complete with knobs
 and buttons!
 """
-
+import sys
+sys.path.append('.')
 from DepthCalculation.depth_methods import chunked_p2d
 import matplotlib.pyplot as plt
 from tkinter import *
@@ -31,7 +32,8 @@ class Script2gui:
         self.sea_var.set('File containing water pressure...')
         self.air_fname = None
         self.air_var = StringVar()
-        self.air_var.set('File containing air pressure...')
+        self.no_air = 'File containing air pressure...'
+        self.air_var.set(self.no_air)
         self.make_fileselect(root, 'Water file:',
                              self.sea_var, 'sea_fname')
         self.make_fileselect(root, 'Air file:',
@@ -43,10 +45,15 @@ class Script2gui:
         c3 = self.plot_depth
 
         self.chunk_size = self.make_field(root, 'Chunk Size (s)')
+        self.chunk_size.set('-1')
         self.lo_cut = self.make_field(root, 'Low Cut (Hz)')
+        self.lo_cut.set('-1')
         self.hi_cut = self.make_field(root, 'High Cut (Hz)')
+        self.hi_cut.set('inf')
         self.noise_gate = self.make_field(root, 'Noise Gate (dbar)')
+        self.noise_gate.set('-1')
         self.avg_len = self.make_field(root, 'Avg. Length (data points)')
+        self.avg_len.set('-1')
         self.b3 = self.make_button(root, "Go!", c3, state=DISABLED)
         self.b3.pack(anchor=W, fill=BOTH)
 
@@ -62,18 +69,22 @@ class Script2gui:
         return var
 
     def plot_depth(self):
+        if self.air_fname == self.no_air:
+            self.air_fname = None
         method = self.methodvar.get()
         print(method == 'naive')
         print(method)
         print(repr(method))
         frequency = nc.get_frequency(self.sea_fname)
-        print(frequency)
-        print(int(int(self.chunk_size.get()) * frequency))
+        if int(self.chunk_size.get()) == -1:
+            self.chunk_size.set(-1)
+        else:
+            self.chunk_size.set(int(int(self.chunk_size.get()) * frequency))
         # FFT
         if method != 'naive':
             print('plotting fft')
             time1, depth_fft = chunked_p2d(self.sea_fname, self.air_fname, 'fft',
-                                           chunk_size=evenify(int(int(self.chunk_size.get()) * frequency)),
+                                           chunk_size=int(self.chunk_size.get()),
                                            lo_cut=float(self.lo_cut.get()),
                                            hi_cut=float(self.hi_cut.get()),
                                            noise_gate=float(self.noise_gate.get()),
@@ -86,9 +97,14 @@ class Script2gui:
             time2, depth_static = chunked_p2d(self.sea_fname,
                                               self.air_fname,
                                               'hydrostatic',
-                                              chunk_size=evenify(int(int(self.chunk_size.get()) * frequency)),
+                                              chunk_size=int(self.chunk_size.get()),
                                               avg_len=int(self.avg_len.get()))
             plt.plot(time2/1e3, depth_static, 'm', label='Hydrostatic')
+
+        if method == 'both':
+            # error = np.absolute(depth_fft - depth_static)
+            plt.plot(time1/1e3, depth_fft - depth_static, 'r', label='Difference')
+
         plt.legend()
         plt.ylabel('water height (m)')
         plt.xlabel('time (seconds)')
@@ -100,7 +116,7 @@ class Script2gui:
         fname = filedialog.askopenfilename()
         stringvar.set(fname)
         setattr(self, varname, fname)
-        if self.sea_fname and self.air_fname:
+        if self.sea_fname:
             self.b3['state'] = 'ENABLED'
 
     def make_button(self, root, text, command, state=None):
@@ -121,7 +137,7 @@ class Script2gui:
         l = ttk.Label(frame, justify=LEFT, text=labeltext, width=10)
         l.grid(row=0, column=0, sticky=W)
         e = ttk.Label(frame, textvariable=stringvar, justify=RIGHT,
-                      width=60)
+                      width=40)
         e.grid(row=0, column=1, sticky=(W, E))
         b = self.make_button(frame, 'Browse', command)
         b.grid(row=0, column=2, sticky=W)

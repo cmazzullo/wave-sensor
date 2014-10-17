@@ -6,8 +6,6 @@
 This is a version of Script 2 for testing different pressure to depth
 conversion methods.
 """
-
-
 import numpy as np
 import timeit
 import shutil
@@ -58,7 +56,9 @@ def chunked_p2d(water_fname, air_fname=None, method='fft',
         sea_p = sea_p[avg_len - 1:] - moving_average(sea_p, avg_len)
         sea_t = sea_t[avg_len - 1:]
     # SPLIT INTO CHUNKS
-    if chunk_size is -1:
+    print('chunk size = ', chunk_size)
+    if chunk_size == -1:
+
         chunked_pressure = np.array(remove_chunk_mean([sea_p]))
         chunked_time = np.array([sea_t])
     else:
