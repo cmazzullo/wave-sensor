@@ -26,13 +26,13 @@ class Time_Domain_Analysis(Depth):
         self.periods = None
         self.dates = None
         self.tmean = None
-    
-    def run_time_domain_method(self, method2_bool = True):  
+
+    def run_time_domain_method(self, method2_bool = True):
         if method2_bool == True:
             self.method2()
         else:
-            self.method1()  
-    
+            self.method1()
+
     def initialize(self):
         self.acquire_data()
         self.new_data = [x for x in self.pwave_data]
@@ -52,9 +52,9 @@ class Time_Domain_Analysis(Depth):
                 self.Pmin = 0
             if pwave[x] > self.Pmax: self.Pmax = pwave[x]
             if pwave[x] < self.Pmin: self.Pmin = pwave[x]
-            
+
         self.tmean = (len(pwave) * .25) / self.counter
-        
+
         for x in range(0,len(pwave)):
             period = self.tmean
             L0 = (self.g / 2) / np.pi*np.power(period,2.0)
@@ -65,11 +65,11 @@ class Time_Domain_Analysis(Depth):
             eta.append( \
                         (((pwave[x] / self.rho) / self.g) \
                             * np.cosh(((2 * np.pi) / L) * depth[x])))
-            
+
         counter2 = 0
         etamax = 0
         etamin = 0
-        
+
         for x in range(0,len(pwave) - 1):
             if eta[x+1]*eta[x] < 0 and eta[x+1] < 0 :
                 counter2 += 1
@@ -79,13 +79,13 @@ class Time_Domain_Analysis(Depth):
                 etamin = 0
             if eta[x] > etamax: etamax = eta[x]
             if eta[x] < etamin: etamin = eta[x]
-            
+
         self.periods = np.repeat(self.tmean, len(pwave))
-            
+
     def method2(self, initialize=True):
         """Downward crossing method: if the function crosses the x axis in
         an interval and if its endpoint is below the x axis, we've found
-        a new wave."""  
+        a new wave."""
 
 
         if initialize:
@@ -93,7 +93,7 @@ class Time_Domain_Analysis(Depth):
         Pwave = [x for x in self.pwave_data]
         depth = [x for x in self.depth_data]
 
-        
+
         start = period = counter = Pmin = Pmax = 0
         periods = []  # periods of found waves
         eta = np.zeros(len(Pwave))
@@ -146,17 +146,15 @@ class Time_Domain_Analysis(Depth):
                 Pmin = Pwave[i]
 
         self.individual_waves = H
-      
+
         self.periods = np.sort(periods)
         self.tmean = np.mean(periods)
         return eta
-  
-    
+
+
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    td = Time_Domain_Analysis() 
-    in_fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
-         'logger1.csv.nc')
-    td.in_file_name = in_fname
+    td = Time_Domain_Analysis()
+    td.in_file_name = '/home/chris/test-data/ncs/logger1.csv.nc'
     eta = td.method2()
     plt.plot(eta)

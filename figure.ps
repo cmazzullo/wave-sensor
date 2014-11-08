@@ -1,0 +1,2268 @@
+%!PS-Adobe-3.0
+%%Creator: graphviz version 2.26.3 (20100126.1600)
+%%Title: dependencies
+%%Pages: (atend)
+%%BoundingBox: (atend)
+%%EndComments
+save
+%%BeginProlog
+/DotDict 200 dict def
+DotDict begin
+
+/setupLatin1 {
+mark
+/EncodingVector 256 array def
+ EncodingVector 0
+
+ISOLatin1Encoding 0 255 getinterval putinterval
+EncodingVector 45 /hyphen put
+
+% Set up ISO Latin 1 character encoding
+/starnetISO {
+        dup dup findfont dup length dict begin
+        { 1 index /FID ne { def }{ pop pop } ifelse
+        } forall
+        /Encoding EncodingVector def
+        currentdict end definefont
+} def
+/Times-Roman starnetISO def
+/Times-Italic starnetISO def
+/Times-Bold starnetISO def
+/Times-BoldItalic starnetISO def
+/Helvetica starnetISO def
+/Helvetica-Oblique starnetISO def
+/Helvetica-Bold starnetISO def
+/Helvetica-BoldOblique starnetISO def
+/Courier starnetISO def
+/Courier-Oblique starnetISO def
+/Courier-Bold starnetISO def
+/Courier-BoldOblique starnetISO def
+cleartomark
+} bind def
+
+%%BeginResource: procset graphviz 0 0
+/coord-font-family /Times-Roman def
+/default-font-family /Times-Roman def
+/coordfont coord-font-family findfont 8 scalefont def
+
+/InvScaleFactor 1.0 def
+/set_scale {
+       dup 1 exch div /InvScaleFactor exch def
+       scale
+} bind def
+
+% styles
+/solid { [] 0 setdash } bind def
+/dashed { [9 InvScaleFactor mul dup ] 0 setdash } bind def
+/dotted { [1 InvScaleFactor mul 6 InvScaleFactor mul] 0 setdash } bind def
+/invis {/fill {newpath} def /stroke {newpath} def /show {pop newpath} def} bind def
+/bold { 2 setlinewidth } bind def
+/filled { } bind def
+/unfilled { } bind def
+/rounded { } bind def
+/diagonals { } bind def
+
+% hooks for setting color 
+/nodecolor { sethsbcolor } bind def
+/edgecolor { sethsbcolor } bind def
+/graphcolor { sethsbcolor } bind def
+/nopcolor {pop pop pop} bind def
+
+/beginpage {	% i j npages
+	/npages exch def
+	/j exch def
+	/i exch def
+	/str 10 string def
+	npages 1 gt {
+		gsave
+			coordfont setfont
+			0 0 moveto
+			(\() show i str cvs show (,) show j str cvs show (\)) show
+		grestore
+	} if
+} bind def
+
+/set_font {
+	findfont exch
+	scalefont setfont
+} def
+
+% draw text fitted to its expected width
+/alignedtext {			% width text
+	/text exch def
+	/width exch def
+	gsave
+		width 0 gt {
+			[] 0 setdash
+			text stringwidth pop width exch sub text length div 0 text ashow
+		} if
+	grestore
+} def
+
+/boxprim {				% xcorner ycorner xsize ysize
+		4 2 roll
+		moveto
+		2 copy
+		exch 0 rlineto
+		0 exch rlineto
+		pop neg 0 rlineto
+		closepath
+} bind def
+
+/ellipse_path {
+	/ry exch def
+	/rx exch def
+	/y exch def
+	/x exch def
+	matrix currentmatrix
+	newpath
+	x y translate
+	rx ry scale
+	0 0 1 0 360 arc
+	setmatrix
+} bind def
+
+/endpage { showpage } bind def
+/showpage { } def
+
+/layercolorseq
+	[	% layer color sequence - darkest to lightest
+		[0 0 0]
+		[.2 .8 .8]
+		[.4 .8 .8]
+		[.6 .8 .8]
+		[.8 .8 .8]
+	]
+def
+
+/layerlen layercolorseq length def
+
+/setlayer {/maxlayer exch def /curlayer exch def
+	layercolorseq curlayer 1 sub layerlen mod get
+	aload pop sethsbcolor
+	/nodecolor {nopcolor} def
+	/edgecolor {nopcolor} def
+	/graphcolor {nopcolor} def
+} bind def
+
+/onlayer { curlayer ne {invis} if } def
+
+/onlayers {
+	/myupper exch def
+	/mylower exch def
+	curlayer mylower lt
+	curlayer myupper gt
+	or
+	{invis} if
+} def
+
+/curlayer 0 def
+
+%%EndResource
+%%EndProlog
+%%BeginSetup
+14 default-font-family set_font
+1 setmiterlimit
+% /arrowlength 10 def
+% /arrowwidth 5 def
+
+% make sure pdfmark is harmless for PS-interpreters other than Distiller
+/pdfmark where {pop} {userdict /pdfmark /cleartomark load put} ifelse
+% make '<<' and '>>' safe on PS Level 1 devices
+/languagelevel where {pop languagelevel}{1} ifelse
+2 lt {
+    userdict (<<) cvn ([) cvn load put
+    userdict (>>) cvn ([) cvn load put
+} if
+
+%%EndSetup
+setupLatin1
+%%Page: 1 1
+%%PageBoundingBox: 36 36 611 756
+%%PageOrientation: Portrait
+0 0 1 beginpage
+gsave
+36 36 575 720 boxprim clip newpath
+0.261903 0.261903 set_scale 0 rotate 141.455 142.455 translate
+% netCDF_Instrument
+gsave
+0 0 0.82745 nodecolor
+131 69.76 48.06 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 69.76 48.06 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+95.5 67.46 moveto 71 (netCDF_Instrument) alignedtext
+grestore
+% netCDF_Instrument.DepthCalculation
+gsave
+0 0 0.82745 nodecolor
+131 200.76 84.9 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 200.76 84.9 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+62.5 198.46 moveto 137 (netCDF_Instrument.DepthCalculation) alignedtext
+grestore
+% netCDF_Instrument.DepthCalculation.Write
+gsave
+0 0 0.82745 nodecolor
+1309 667.76 96.06 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+1309 667.76 96.06 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+1230.5 665.46 moveto 157 (netCDF_Instrument.DepthCalculation.Write) alignedtext
+grestore
+% netCDF_Instrument.NetCDF_Utils.edit_netcdf
+gsave
+0 0 0.82745 nodecolor
+1575 799.76 101.03 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+1575 799.76 101.03 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+1492.5 797.46 moveto 165 (netCDF_Instrument.NetCDF_Utils.edit_netcdf) alignedtext
+grestore
+% netCDF_Instrument.DepthCalculation.Write->netCDF_Instrument.NetCDF_Utils.edit_netcdf
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1342.96 684.61 moveto
+1391.05 708.48 1479.01 752.13 1531.72 778.29 curveto
+stroke
+0 0 0 edgecolor
+newpath 1530.31 781.49 moveto
+1540.82 782.8 lineto
+1533.42 775.22 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1530.31 781.49 moveto
+1540.82 782.8 lineto
+1533.42 775.22 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.NetCDF_Utils.Testing
+gsave
+0 0 0.82745 nodecolor
+1817 855.76 91.04 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+1817 855.76 91.04 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+1743 853.46 moveto 148 (netCDF_Instrument.NetCDF_Utils.Testing) alignedtext
+grestore
+% netCDF_Instrument.NetCDF_Utils.edit_netcdf->netCDF_Instrument.NetCDF_Utils.Testing
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1636.69 814.04 moveto
+1670.47 821.85 1712.43 831.57 1747.38 839.65 curveto
+stroke
+0 0 0 edgecolor
+newpath 1746.98 843.15 moveto
+1757.51 842 lineto
+1748.55 836.33 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1746.98 843.15 moveto
+1757.51 842 lineto
+1748.55 836.33 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.NetCDF_Utils.VarDatastore
+gsave
+0 0 0.82745 nodecolor
+1817 482.76 103.88 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+1817 482.76 103.88 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+1731.5 480.46 moveto 171 (netCDF_Instrument.NetCDF_Utils.VarDatastore) alignedtext
+grestore
+% netCDF_Instrument.NetCDF_Utils.edit_netcdf->netCDF_Instrument.NetCDF_Utils.VarDatastore
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1588.7 781.81 moveto
+1629.29 728.65 1749.01 571.82 1796.88 509.11 curveto
+stroke
+0 0 0 edgecolor
+newpath 1799.86 510.98 moveto
+1803.15 500.91 lineto
+1794.3 506.73 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1799.86 510.98 moveto
+1803.15 500.91 lineto
+1794.3 506.73 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.DepthCalculation.depth
+gsave
+0 0 0.82745 nodecolor
+694 463.76 98.24 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+694 463.76 98.24 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+614 461.46 moveto 160 (netCDF_Instrument.DepthCalculation.depth) alignedtext
+grestore
+% netCDF_Instrument.DepthCalculation.depth->netCDF_Instrument.NetCDF_Utils.edit_netcdf
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 770.36 452.39 moveto
+918.38 434.93 1246.58 419.16 1438 585.76 curveto
+1478.72 621.2 1445.75 655.76 1474 701.76 curveto
+1491.99 731.06 1520.72 757.76 1542.95 775.86 curveto
+stroke
+0 0 0 edgecolor
+newpath 1540.81 778.64 moveto
+1550.81 782.14 lineto
+1545.17 773.16 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1540.81 778.64 moveto
+1550.81 782.14 lineto
+1545.17 773.16 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.DepthCalculation.depth->netCDF_Instrument.NetCDF_Utils.Testing
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 714.47 445.94 moveto
+801.13 372.73 1146.73 103.13 1438 193.76 curveto
+1560.66 231.93 1603.47 251.74 1676 357.76 curveto
+1715.2 415.06 1693.91 442.74 1712 509.76 curveto
+1744.17 628.97 1788.89 769.25 1807.88 827.85 curveto
+stroke
+0 0 0 edgecolor
+newpath 1804.6 829.07 moveto
+1811.02 837.5 lineto
+1811.26 826.91 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1804.6 829.07 moveto
+1811.02 837.5 lineto
+1811.26 826.91 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.DepthCalculation.depth->netCDF_Instrument.NetCDF_Utils.VarDatastore
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 724.41 446.61 moveto
+753.12 428.66 794.85 397.68 816 358.76 curveto
+844.27 306.74 807.39 133.7 852 94.76 curveto
+1048.21 -76.51 1187.57 23.25 1438 94.76 curveto
+1557.77 128.97 1589.04 153.58 1676 242.76 curveto
+1739.63 308.01 1786.03 407.37 1806.05 455.17 curveto
+stroke
+0 0 0 edgecolor
+newpath 1802.88 456.65 moveto
+1809.92 464.56 lineto
+1809.35 453.98 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1802.88 456.65 moveto
+1809.92 464.56 lineto
+1809.35 453.98 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.NetCDF_Utils.slurp
+gsave
+0 0 0.82745 nodecolor
+998 1259.76 88.19 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+998 1259.76 88.19 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+927 1257.46 moveto 142 (netCDF_Instrument.NetCDF_Utils.slurp) alignedtext
+grestore
+% netCDF_Instrument.DepthCalculation.depth->netCDF_Instrument.NetCDF_Utils.slurp
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 696.39 481.92 moveto
+709.42 579.08 774.24 1037.63 852 1154.76 curveto
+876.86 1192.21 919.93 1220.75 952.87 1238.55 curveto
+stroke
+0 0 0 edgecolor
+newpath 951.39 1241.73 moveto
+961.87 1243.29 lineto
+954.65 1235.53 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 951.39 1241.73 moveto
+961.87 1243.29 lineto
+954.65 1235.53 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.NetCDF_Utils.DateTimeConvert
+gsave
+0 0 0.82745 nodecolor
+2072 845.76 112.81 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+2072 845.76 112.81 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+1978.5 843.46 moveto 187 (netCDF_Instrument.NetCDF_Utils.DateTimeConvert) alignedtext
+grestore
+% netCDF_Instrument.NetCDF_Utils.VarDatastore->netCDF_Instrument.NetCDF_Utils.DateTimeConvert
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1839.8 500.55 moveto
+1862.46 518.98 1897.3 549.43 1922 580.76 curveto
+1984.43 659.98 2037.12 768.3 2059.91 818.35 curveto
+stroke
+0 0 0 edgecolor
+newpath 2056.76 819.88 moveto
+2064.06 827.56 lineto
+2063.14 817 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 2056.76 819.88 moveto
+2064.06 827.56 lineto
+2063.14 817 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.NetCDF_Utils.slurp->netCDF_Instrument.NetCDF_Utils.edit_netcdf
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1036.91 1243.53 moveto
+1071.57 1226.8 1120.36 1197.17 1144 1154.76 curveto
+1199.76 1054.75 1096.25 718.85 1180 640.76 curveto
+1263.87 562.56 1338.42 583.9 1438 640.76 curveto
+1465.34 656.37 1454.53 677.02 1474 701.76 curveto
+1495.57 729.17 1524.49 756.49 1545.86 775.29 curveto
+stroke
+0 0 0 edgecolor
+newpath 1543.8 778.14 moveto
+1553.65 782.06 lineto
+1548.4 772.86 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1543.8 778.14 moveto
+1553.65 782.06 lineto
+1548.4 772.86 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.NetCDF_Utils.nc
+gsave
+0 0 0.82745 nodecolor
+1309 1850.76 83.17 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+1309 1850.76 83.17 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+1242.5 1848.46 moveto 133 (netCDF_Instrument.NetCDF_Utils.nc) alignedtext
+grestore
+% netCDF_Instrument.NetCDF_Utils.slurp->netCDF_Instrument.NetCDF_Utils.nc
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1019.07 1277.39 moveto
+1052.09 1306.39 1115.22 1367.67 1144 1434.76 curveto
+1198.86 1562.64 1113.12 1623.75 1180 1745.76 curveto
+1199.94 1782.13 1238.11 1810.75 1267.79 1828.86 curveto
+stroke
+0 0 0 edgecolor
+newpath 1266.3 1832.05 moveto
+1276.69 1834.14 lineto
+1269.87 1826.03 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1266.3 1832.05 moveto
+1276.69 1834.14 lineto
+1269.87 1826.03 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.DepthCalculation.depth_methods
+gsave
+0 0 0.82745 nodecolor
+998 2178.76 117.83 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+998 2178.76 117.83 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+900 2176.46 moveto 196 (netCDF_Instrument.DepthCalculation.depth_methods) alignedtext
+grestore
+% netCDF_Instrument.DepthCalculation.pressure_to_depth
+gsave
+0 0 0.82745 nodecolor
+1309 2047.76 123.97 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+1309 2047.76 123.97 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+1205.5 2045.46 moveto 207 (netCDF_Instrument.DepthCalculation.pressure_to_depth) alignedtext
+grestore
+% netCDF_Instrument.DepthCalculation.depth_methods->netCDF_Instrument.DepthCalculation.pressure_to_depth
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1038.34 2161.77 moveto
+1094.81 2137.98 1197.39 2094.77 1258.76 2068.93 curveto
+stroke
+0 0 0 edgecolor
+newpath 1260.38 2072.04 moveto
+1268.24 2064.93 lineto
+1257.66 2065.59 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1260.38 2072.04 moveto
+1268.24 2064.93 lineto
+1257.66 2065.59 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.DepthCalculation.depth_methods->netCDF_Instrument.NetCDF_Utils.nc
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1028.99 2161.29 moveto
+1060.37 2142.6 1109.12 2110.73 1144 2074.76 curveto
+1164.08 2054.05 1163.27 2044.26 1180 2020.76 curveto
+1216.88 1968.95 1262.3 1910.18 1288.23 1877.09 curveto
+stroke
+0 0 0 edgecolor
+newpath 1291.27 1878.88 moveto
+1294.69 1868.85 lineto
+1285.77 1874.56 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1291.27 1878.88 moveto
+1294.69 1868.85 lineto
+1285.77 1874.56 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.DepthCalculation.experimental_gui
+gsave
+0 0 0.82745 nodecolor
+694 1860.76 121.18 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+694 1860.76 121.18 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+593 1858.46 moveto 202 (netCDF_Instrument.DepthCalculation.experimental_gui) alignedtext
+grestore
+% netCDF_Instrument.DepthCalculation.experimental_gui->netCDF_Instrument.DepthCalculation.depth_methods
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 704.61 1878.87 moveto
+727.94 1917.7 786.79 2010.66 852 2074.76 curveto
+884.72 2106.93 928.18 2136.54 959.16 2155.87 curveto
+stroke
+0 0 0 edgecolor
+newpath 957.59 2159.02 moveto
+967.94 2161.29 lineto
+961.27 2153.06 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 957.59 2159.02 moveto
+967.94 2161.29 lineto
+961.27 2153.06 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.DepthCalculation.experimental_gui->netCDF_Instrument.NetCDF_Utils.nc
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 713.03 1842.94 moveto
+740.95 1818.16 795.82 1774.46 852 1757.76 curveto
+976.4 1720.79 1018.47 1724.82 1144 1757.76 curveto
+1195.02 1771.15 1246.89 1804.28 1278.51 1827.15 curveto
+stroke
+0 0 0 edgecolor
+newpath 1276.74 1830.2 moveto
+1286.87 1833.3 lineto
+1280.89 1824.56 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1276.74 1830.2 moveto
+1286.87 1833.3 lineto
+1280.89 1824.56 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.DepthCalculation.script2
+gsave
+0 0 0.82745 nodecolor
+998 2047.76 101.03 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+998 2047.76 101.03 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+915.5 2045.46 moveto 165 (netCDF_Instrument.DepthCalculation.script2) alignedtext
+grestore
+% netCDF_Instrument.DepthCalculation.experimental_gui->netCDF_Instrument.DepthCalculation.script2
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 722.6 1878.35 moveto
+777.96 1912.41 899.72 1987.31 961.1 2025.06 curveto
+stroke
+0 0 0 edgecolor
+newpath 959.35 2028.09 moveto
+969.7 2030.35 lineto
+963.01 2022.13 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 959.35 2028.09 moveto
+969.7 2030.35 lineto
+963.01 2022.13 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.guicore
+gsave
+0 0 0.82745 nodecolor
+998 1127.76 90.98 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+998 1127.76 90.98 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+924.5 1125.46 moveto 147 (netCDF_Instrument.Instruments.guicore) alignedtext
+grestore
+% netCDF_Instrument.DepthCalculation.experimental_gui->netCDF_Instrument.Instruments.guicore
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 700.9 1842.62 moveto
+721.42 1787.98 782.71 1619.91 816 1475.76 curveto
+840.57 1369.38 795.19 1326 852 1232.76 curveto
+875.16 1194.74 917.82 1166.5 951.07 1148.94 curveto
+stroke
+0 0 0 edgecolor
+newpath 952.87 1151.95 moveto
+960.17 1144.27 lineto
+949.68 1145.72 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 952.87 1151.95 moveto
+960.17 1144.27 lineto
+949.68 1145.72 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.DepthCalculation.script2->netCDF_Instrument.DepthCalculation.pressure_to_depth
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1099.4 2047.76 moveto
+1123.24 2047.76 1149.01 2047.76 1174.06 2047.76 curveto
+stroke
+0 0 0 edgecolor
+newpath 1174.37 2051.26 moveto
+1184.37 2047.76 lineto
+1174.37 2044.26 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1174.37 2051.26 moveto
+1184.37 2047.76 lineto
+1174.37 2044.26 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.DepthCalculation.script2->netCDF_Instrument.NetCDF_Utils.nc
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1025.6 2030.28 moveto
+1081.99 1994.56 1210.39 1913.22 1273.14 1873.48 curveto
+stroke
+0 0 0 edgecolor
+newpath 1275.33 1876.23 moveto
+1281.91 1867.92 lineto
+1271.59 1870.32 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1275.33 1876.23 moveto
+1281.91 1867.92 lineto
+1271.59 1870.32 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.hobo
+gsave
+0 0 0.82745 nodecolor
+1309 220.76 84.9 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+1309 220.76 84.9 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+1240.5 218.46 moveto 137 (netCDF_Instrument.Instruments.hobo) alignedtext
+grestore
+% netCDF_Instrument.Instruments.guicore->netCDF_Instrument.Instruments.hobo
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1000.46 1109.61 moveto
+1015.09 1003.61 1092.83 464.55 1180 324.76 curveto
+1201.87 289.7 1239.81 261.24 1268.9 243.02 curveto
+stroke
+0 0 0 edgecolor
+newpath 1270.91 245.89 moveto
+1277.62 237.69 lineto
+1267.26 239.92 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1270.91 245.89 moveto
+1277.62 237.69 lineto
+1267.26 239.92 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.house
+gsave
+0 0 0.82745 nodecolor
+1309 1324.76 87.13 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+1309 1324.76 87.13 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+1238.5 1322.46 moveto 141 (netCDF_Instrument.Instruments.house) alignedtext
+grestore
+% netCDF_Instrument.Instruments.guicore->netCDF_Instrument.Instruments.house
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1025.33 1145.07 moveto
+1081.55 1180.69 1210.18 1262.17 1273.06 1302 curveto
+stroke
+0 0 0 edgecolor
+newpath 1271.53 1305.17 moveto
+1281.85 1307.56 lineto
+1275.27 1299.25 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1271.53 1305.17 moveto
+1281.85 1307.56 lineto
+1275.27 1299.25 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.leveltroll
+gsave
+0 0 0.82745 nodecolor
+1309 1587.76 93.21 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+1309 1587.76 93.21 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+1233.5 1585.46 moveto 151 (netCDF_Instrument.Instruments.leveltroll) alignedtext
+grestore
+% netCDF_Instrument.Instruments.guicore->netCDF_Instrument.Instruments.leveltroll
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1035.87 1144.24 moveto
+1070.06 1161.23 1118.75 1191.11 1144 1232.76 curveto
+1202.41 1329.14 1124.26 1385.81 1180 1483.76 curveto
+1200.24 1519.34 1237.83 1547.49 1267.23 1565.49 curveto
+stroke
+0 0 0 edgecolor
+newpath 1265.68 1568.64 moveto
+1276.07 1570.74 lineto
+1269.26 1562.62 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1265.68 1568.64 moveto
+1276.07 1570.74 lineto
+1269.26 1562.62 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.measuresys
+gsave
+0 0 0.82745 nodecolor
+1309 1193.76 98.85 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+1309 1193.76 98.85 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+1228 1191.46 moveto 162 (netCDF_Instrument.Instruments.measuresys) alignedtext
+grestore
+% netCDF_Instrument.Instruments.guicore->netCDF_Instrument.Instruments.measuresys
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1060.19 1140.96 moveto
+1110.31 1151.6 1180.97 1166.59 1234.18 1177.88 curveto
+stroke
+0 0 0 edgecolor
+newpath 1233.73 1181.37 moveto
+1244.24 1180.02 lineto
+1235.19 1174.52 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1233.73 1181.37 moveto
+1244.24 1180.02 lineto
+1235.19 1174.52 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.rbrsolo
+gsave
+0 0 0.82745 nodecolor
+1309 351.76 89.86 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+1309 351.76 89.86 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+1236.5 349.46 moveto 145 (netCDF_Instrument.Instruments.rbrsolo) alignedtext
+grestore
+% netCDF_Instrument.Instruments.guicore->netCDF_Instrument.Instruments.rbrsolo
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1001.6 1109.54 moveto
+1016.57 1035.84 1077.97 753.64 1180 541.76 curveto
+1210.43 478.58 1259.94 412.52 1287.95 377.37 curveto
+stroke
+0 0 0 edgecolor
+newpath 1290.72 379.51 moveto
+1294.25 369.53 lineto
+1285.26 375.13 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1290.72 379.51 moveto
+1294.25 369.53 lineto
+1285.26 375.13 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.waveguage
+gsave
+0 0 0.82745 nodecolor
+1309 1061.76 98.24 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+1309 1061.76 98.24 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+1229 1059.46 moveto 160 (netCDF_Instrument.Instruments.waveguage) alignedtext
+grestore
+% netCDF_Instrument.Instruments.guicore->netCDF_Instrument.Instruments.waveguage
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1060.19 1114.56 moveto
+1110.48 1103.89 1181.44 1088.83 1234.71 1077.53 curveto
+stroke
+0 0 0 edgecolor
+newpath 1235.73 1080.89 moveto
+1244.78 1075.39 lineto
+1234.27 1074.04 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1235.73 1080.89 moveto
+1244.78 1075.39 lineto
+1234.27 1074.04 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.DepthCalculation.plot_coefficient
+gsave
+0 0 0.82745 nodecolor
+131 463.76 117.83 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 463.76 117.83 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+33 461.46 moveto 196 (netCDF_Instrument.DepthCalculation.plot_coefficient) alignedtext
+grestore
+% netCDF_Instrument.DepthCalculation.plot_p2d_tests
+gsave
+0 0 0.82745 nodecolor
+998 2441.76 116.15 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+998 2441.76 116.15 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+901.5 2439.46 moveto 193 (netCDF_Instrument.DepthCalculation.plot_p2d_tests) alignedtext
+grestore
+% netCDF_Instrument.DepthCalculation.plot_p2d_tests->netCDF_Instrument.DepthCalculation.pressure_to_depth
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1030.12 2424.45 moveto
+1061.94 2406.1 1110.63 2374.71 1144 2337.76 curveto
+1219.66 2253.99 1275.74 2129.72 1298.21 2075.14 curveto
+stroke
+0 0 0 edgecolor
+newpath 1301.49 2076.37 moveto
+1302.01 2065.79 lineto
+1295 2073.73 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1301.49 2076.37 moveto
+1302.01 2065.79 lineto
+1295 2073.73 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.DepthCalculation.scaling_coefficient_problems
+gsave
+0 0 0.82745 nodecolor
+998 2310.76 146.24 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+998 2310.76 146.24 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+875 2308.46 moveto 246 (netCDF_Instrument.DepthCalculation.scaling_coefficient_problems) alignedtext
+grestore
+% netCDF_Instrument.DepthCalculation.scaling_coefficient_problems->netCDF_Instrument.DepthCalculation.pressure_to_depth
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1024.94 2293.06 moveto
+1054.89 2273 1104.27 2238.8 1144 2205.76 curveto
+1196.8 2161.87 1253.64 2105.08 1284.92 2072.92 curveto
+stroke
+0 0 0 edgecolor
+newpath 1287.49 2075.29 moveto
+1291.93 2065.68 lineto
+1282.46 2070.42 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1287.49 2075.29 moveto
+1291.93 2065.68 lineto
+1282.46 2070.42 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.DepthCalculation.script2_gui
+gsave
+0 0 0.82745 nodecolor
+694 1448.76 108.9 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+694 1448.76 108.9 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+604 1446.46 moveto 180 (netCDF_Instrument.DepthCalculation.script2_gui) alignedtext
+grestore
+% netCDF_Instrument.DepthCalculation.script2_gui->netCDF_Instrument.NetCDF_Utils.nc
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 783.34 1438.23 moveto
+885.38 1431.6 1050.29 1438.3 1144 1533.76 curveto
+1210.95 1601.96 1131.86 1663.2 1180 1745.76 curveto
+1200.96 1781.71 1239.19 1810.45 1268.62 1828.72 curveto
+stroke
+0 0 0 edgecolor
+newpath 1267.07 1831.87 moveto
+1277.44 1834.04 lineto
+1270.69 1825.88 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1267.07 1831.87 moveto
+1277.44 1834.04 lineto
+1270.69 1825.88 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.DepthCalculation.script2_gui->netCDF_Instrument.DepthCalculation.script2
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 699.75 1467.02 moveto
+727.72 1555.71 848.26 1937.61 852 1942.76 curveto
+878.42 1979.12 921.3 2007.79 953.77 2025.93 curveto
+stroke
+0 0 0 edgecolor
+newpath 952.17 2029.04 moveto
+962.63 2030.76 lineto
+955.53 2022.9 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 952.17 2029.04 moveto
+962.63 2030.76 lineto
+955.53 2022.9 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.DepthCalculation.script2_gui->netCDF_Instrument.Instruments.guicore
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 704.42 1430.8 moveto
+727.59 1391.8 786.52 1297.71 852 1232.76 curveto
+884.99 1200.04 928.96 1169.88 959.99 1150.36 curveto
+stroke
+0 0 0 edgecolor
+newpath 962.14 1153.15 moveto
+968.79 1144.9 lineto
+958.44 1147.21 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 962.14 1153.15 moveto
+968.79 1144.9 lineto
+958.44 1147.21 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.DepthCalculation.testing
+gsave
+0 0 0.82745 nodecolor
+998 1560.76 101.03 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+998 1560.76 101.03 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+915.5 1558.46 moveto 165 (netCDF_Instrument.DepthCalculation.testing) alignedtext
+grestore
+% netCDF_Instrument.DepthCalculation.testing->netCDF_Instrument.DepthCalculation.pressure_to_depth
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1014.65 1578.61 moveto
+1044.56 1611.58 1107.66 1685.26 1144 1757.76 curveto
+1168.95 1807.54 1154.77 1828.13 1180 1877.76 curveto
+1208.63 1934.09 1256.37 1990.82 1285.05 2022.41 curveto
+stroke
+0 0 0 edgecolor
+newpath 1282.56 2024.88 moveto
+1291.9 2029.89 lineto
+1287.72 2020.15 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1282.56 2024.88 moveto
+1291.9 2029.89 lineto
+1287.72 2020.15 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.DepthCalculation.testing->netCDF_Instrument.NetCDF_Utils.nc
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1034.56 1577.55 moveto
+1067.13 1594.13 1114.12 1622.27 1144 1658.76 curveto
+1170.51 1691.14 1155.01 1712.2 1180 1745.76 curveto
+1205.24 1779.66 1243.78 1809.12 1272.17 1828.13 curveto
+stroke
+0 0 0 edgecolor
+newpath 1270.35 1831.13 moveto
+1280.63 1833.69 lineto
+1274.19 1825.28 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1270.35 1831.13 moveto
+1280.63 1833.69 lineto
+1274.19 1825.28 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.NetCDF_Utils.make_default
+gsave
+0 0 0.82745 nodecolor
+1309 1718.76 104.93 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+1309 1718.76 104.93 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+1223 1716.46 moveto 172 (netCDF_Instrument.NetCDF_Utils.make_default) alignedtext
+grestore
+% netCDF_Instrument.DepthCalculation.testing->netCDF_Instrument.NetCDF_Utils.make_default
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1031.58 1577.82 moveto
+1088.35 1606.66 1203.22 1665.02 1265.87 1696.85 curveto
+stroke
+0 0 0 edgecolor
+newpath 1264.59 1700.13 moveto
+1275.09 1701.53 lineto
+1267.76 1693.88 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1264.59 1700.13 moveto
+1275.09 1701.53 lineto
+1267.76 1693.88 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Images
+gsave
+0 0 0.82745 nodecolor
+131 594.76 64.24 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 594.76 64.24 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+81 592.46 moveto 100 (netCDF_Instrument.Images) alignedtext
+grestore
+% netCDF_Instrument.Instruments
+gsave
+0 0 0.82745 nodecolor
+131 726.76 74.23 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 726.76 74.23 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+72.5 724.46 moveto 117 (netCDF_Instrument.Instruments) alignedtext
+grestore
+% netCDF_Instrument.Instruments.InstrumentTests
+gsave
+0 0 0.82745 nodecolor
+131 857.76 107.17 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 857.76 107.17 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+43 855.46 moveto 176 (netCDF_Instrument.Instruments.InstrumentTests) alignedtext
+grestore
+% netCDF_Instrument.Instruments.generate_test_nc_datasets
+gsave
+0 0 0.82745 nodecolor
+131 988.76 130.11 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 988.76 130.11 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+22 986.46 moveto 218 (netCDF_Instrument.Instruments.generate_test_nc_datasets) alignedtext
+grestore
+% netCDF_Instrument.Instruments.gui_air
+gsave
+0 0 0.82745 nodecolor
+694 200.76 88.81 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+694 200.76 88.81 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+622 198.46 moveto 144 (netCDF_Instrument.Instruments.gui_air) alignedtext
+grestore
+% netCDF_Instrument.Instruments.gui_air->netCDF_Instrument.Instruments.guicore
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 723.45 217.91 moveto
+751.66 235.9 793.2 266.83 816 304.76 curveto
+900.52 445.36 976.6 971 994.19 1099.35 curveto
+stroke
+0 0 0 edgecolor
+newpath 990.76 1100.11 moveto
+995.58 1109.55 lineto
+997.7 1099.16 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 990.76 1100.11 moveto
+995.58 1109.55 lineto
+997.7 1099.16 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.gui_sea
+gsave
+0 0 0.82745 nodecolor
+694 1127.76 90.98 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+694 1127.76 90.98 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+620.5 1125.46 moveto 147 (netCDF_Instrument.Instruments.gui_sea) alignedtext
+grestore
+% netCDF_Instrument.Instruments.gui_sea->netCDF_Instrument.Instruments.guicore
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 785.21 1127.76 moveto
+820.38 1127.76 860.75 1127.76 896.81 1127.76 curveto
+stroke
+0 0 0 edgecolor
+newpath 896.85 1131.26 moveto
+906.85 1127.76 lineto
+896.85 1124.26 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 896.85 1131.26 moveto
+906.85 1127.76 lineto
+896.85 1124.26 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.hobo->netCDF_Instrument.NetCDF_Utils.edit_netcdf
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1339.35 237.66 moveto
+1368.78 255.58 1412.6 286.55 1438 324.76 curveto
+1463.7 363.43 1543.84 676.1 1568.02 771.94 curveto
+stroke
+0 0 0 edgecolor
+newpath 1564.66 772.94 moveto
+1570.5 781.78 lineto
+1571.45 771.23 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1564.66 772.94 moveto
+1570.5 781.78 lineto
+1571.45 771.23 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.hobo->netCDF_Instrument.NetCDF_Utils.Testing
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1333.42 238.29 moveto
+1360.24 258.01 1404 291.64 1438 324.76 curveto
+1554.98 438.74 1582.68 470.72 1676 604.76 curveto
+1729.72 681.93 1780.63 781.22 1803.85 828.45 curveto
+stroke
+0 0 0 edgecolor
+newpath 1800.84 830.27 moveto
+1808.37 837.72 lineto
+1807.13 827.19 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1800.84 830.27 moveto
+1808.37 837.72 lineto
+1807.13 827.19 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.hobo->netCDF_Instrument.NetCDF_Utils.DateTimeConvert
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1384.15 229.47 moveto
+1511.74 248.13 1771.49 303.45 1922 455.76 curveto
+2026.06 561.07 2059.54 746.33 2068.83 817.14 curveto
+stroke
+0 0 0 edgecolor
+newpath 2065.41 818 moveto
+2070.13 827.49 lineto
+2072.36 817.14 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 2065.41 818 moveto
+2070.13 827.49 lineto
+2072.36 817.14 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.house->netCDF_Instrument.NetCDF_Utils.edit_netcdf
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1339.07 1307.67 moveto
+1368.29 1289.62 1411.96 1258.54 1438 1220.76 curveto
+1527.41 1091.04 1561.47 899.14 1571.5 827.81 curveto
+stroke
+0 0 0 edgecolor
+newpath 1574.98 828.18 moveto
+1572.86 817.8 lineto
+1568.04 827.24 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1574.98 828.18 moveto
+1572.86 817.8 lineto
+1568.04 827.24 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.house->netCDF_Instrument.NetCDF_Utils.Testing
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1335.22 1307.51 moveto
+1397.98 1265.52 1560.24 1152.94 1676 1036.76 curveto
+1725.9 986.69 1774.37 919.06 1799.42 882.28 curveto
+stroke
+0 0 0 edgecolor
+newpath 1802.57 883.87 moveto
+1805.27 873.62 lineto
+1796.77 879.95 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1802.57 883.87 moveto
+1805.27 873.62 lineto
+1796.77 879.95 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.house->netCDF_Instrument.NetCDF_Utils.DateTimeConvert
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1346.41 1308.48 moveto
+1445.64 1264.39 1721.59 1135.68 1922 983.76 curveto
+1969.11 948.05 2018.62 900.17 2047.33 871.22 curveto
+stroke
+0 0 0 edgecolor
+newpath 2049.98 873.52 moveto
+2054.51 863.94 lineto
+2045 868.6 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 2049.98 873.52 moveto
+2054.51 863.94 lineto
+2045 868.6 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.leveltroll->netCDF_Instrument.NetCDF_Utils.edit_netcdf
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1340.88 1570.8 moveto
+1370.82 1553.14 1414.44 1522.63 1438 1483.76 curveto
+1473 1426.02 1550.99 949.77 1570.51 828.02 curveto
+stroke
+0 0 0 edgecolor
+newpath 1573.99 828.41 moveto
+1572.11 817.99 lineto
+1567.08 827.31 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1573.99 828.41 moveto
+1572.11 817.99 lineto
+1567.08 827.31 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.leveltroll->netCDF_Instrument.NetCDF_Utils.Testing
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1334.85 1570.37 moveto
+1362.31 1551.15 1406.07 1518.3 1438 1483.76 curveto
+1624.18 1282.32 1765.37 975.26 1805.48 882.94 curveto
+stroke
+0 0 0 edgecolor
+newpath 1808.71 884.28 moveto
+1809.45 873.72 lineto
+1802.28 881.51 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1808.71 884.28 moveto
+1809.45 873.72 lineto
+1802.28 881.51 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.leveltroll->netCDF_Instrument.NetCDF_Utils.DateTimeConvert
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1344.92 1571.05 moveto
+1447.57 1521.73 1746.1 1367.13 1922 1159.76 curveto
+1999.05 1068.92 2046.39 931.76 2064.08 873.5 curveto
+stroke
+0 0 0 edgecolor
+newpath 2067.44 874.47 moveto
+2066.95 863.89 lineto
+2060.74 872.47 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 2067.44 874.47 moveto
+2066.95 863.89 lineto
+2060.74 872.47 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.measuresys->netCDF_Instrument.NetCDF_Utils.edit_netcdf
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1338.52 1176.42 moveto
+1367.53 1158.02 1411.22 1126.41 1438 1088.76 curveto
+1465.13 1050.61 1454.97 1032.54 1474 989.76 curveto
+1500.63 929.92 1538.16 862.92 1559.17 826.64 curveto
+stroke
+0 0 0 edgecolor
+newpath 1562.38 828.08 moveto
+1564.38 817.68 lineto
+1556.33 824.56 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1562.38 828.08 moveto
+1564.38 817.68 lineto
+1556.33 824.56 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.measuresys->netCDF_Instrument.NetCDF_Utils.Testing
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1333.51 1176.32 moveto
+1365.42 1153.79 1423.13 1113.7 1474 1081.76 curveto
+1561.87 1026.59 1589.88 1022.62 1676 964.76 curveto
+1716.44 937.59 1760.47 902.61 1788.38 879.7 curveto
+stroke
+0 0 0 edgecolor
+newpath 1790.67 882.36 moveto
+1796.16 873.29 lineto
+1786.22 876.96 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1790.67 882.36 moveto
+1796.16 873.29 lineto
+1786.22 876.96 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.measuresys->netCDF_Instrument.NetCDF_Utils.DateTimeConvert
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1349.17 1177.27 moveto
+1416.96 1149.3 1558.19 1090.34 1676 1036.76 curveto
+1805.17 978.02 1955.56 903.87 2028.24 867.67 curveto
+stroke
+0 0 0 edgecolor
+newpath 2030.16 870.62 moveto
+2037.55 863.03 lineto
+2027.04 864.36 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 2030.16 870.62 moveto
+2037.55 863.03 lineto
+2027.04 864.36 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.rbrsolo->netCDF_Instrument.NetCDF_Utils.edit_netcdf
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1343.96 368.41 moveto
+1374.1 384.73 1416.12 412.55 1438 449.76 curveto
+1495.34 547.29 1422.64 600.95 1474 701.76 curveto
+1489.41 732.01 1517.84 758.29 1540.62 776 curveto
+stroke
+0 0 0 edgecolor
+newpath 1538.64 778.89 moveto
+1548.73 782.13 lineto
+1542.86 773.31 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1538.64 778.89 moveto
+1548.73 782.13 lineto
+1542.86 773.31 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.rbrsolo->netCDF_Instrument.NetCDF_Utils.Testing
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1342.66 368.53 moveto
+1372.36 385.09 1414.48 413.22 1438 449.76 curveto
+1477.21 510.69 1434.01 548.34 1474 608.76 curveto
+1514.22 669.52 1698.46 784.66 1779.06 833.24 curveto
+stroke
+0 0 0 edgecolor
+newpath 1777.53 836.4 moveto
+1787.91 838.55 lineto
+1781.14 830.4 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1777.53 836.4 moveto
+1787.91 838.55 lineto
+1781.14 830.4 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.rbrsolo->netCDF_Instrument.NetCDF_Utils.DateTimeConvert
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1335.71 369.05 moveto
+1450.83 443.59 1904.76 737.48 2036.17 822.57 curveto
+stroke
+0 0 0 edgecolor
+newpath 2034.42 825.6 moveto
+2044.71 828.1 lineto
+2038.22 819.72 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 2034.42 825.6 moveto
+2044.71 828.1 lineto
+2038.22 819.72 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.waveguage->netCDF_Instrument.NetCDF_Utils.edit_netcdf
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1335.77 1044.39 moveto
+1363.6 1025.42 1407.3 993.02 1438 957.76 curveto
+1458.42 934.31 1454.68 922.13 1474 897.76 curveto
+1495.67 870.43 1524.58 843.11 1545.92 824.28 curveto
+stroke
+0 0 0 edgecolor
+newpath 1548.46 826.71 moveto
+1553.69 817.5 lineto
+1543.86 821.43 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1548.46 826.71 moveto
+1553.69 817.5 lineto
+1543.86 821.43 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.waveguage->netCDF_Instrument.NetCDF_Utils.Testing
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1346.18 1045.05 moveto
+1379.5 1030.18 1429.81 1008.03 1474 989.76 curveto
+1576.49 947.4 1697.58 900.92 1764.99 875.35 curveto
+stroke
+0 0 0 edgecolor
+newpath 1766.43 878.55 moveto
+1774.54 871.74 lineto
+1763.95 872.01 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1766.43 878.55 moveto
+1774.54 871.74 lineto
+1763.95 872.01 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.Instruments.ncdumpesque
+gsave
+0 0 0.82745 nodecolor
+2072 52.76 103.82 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+2072 52.76 103.82 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+1987 50.46 moveto 170 (netCDF_Instrument.Instruments.ncdumpesque) alignedtext
+grestore
+% netCDF_Instrument.NetCDF_Utils
+gsave
+0 0 0.82745 nodecolor
+131 1120.76 75.97 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 1120.76 75.97 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+70.5 1118.46 moveto 121 (netCDF_Instrument.NetCDF_Utils) alignedtext
+grestore
+% netCDF_Instrument.NetCDF_Utils.ExportCombinationGraph
+gsave
+0 0 0.82745 nodecolor
+1309 1456.76 128.93 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+1309 1456.76 128.93 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+1201.5 1454.46 moveto 215 (netCDF_Instrument.NetCDF_Utils.ExportCombinationGraph) alignedtext
+grestore
+% netCDF_Instrument.NetCDF_Utils.ExportCombinationGraph->netCDF_Instrument.NetCDF_Utils.edit_netcdf
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1340.77 1439.15 moveto
+1370.42 1421.06 1413.63 1390.16 1438 1351.76 curveto
+1549.87 1175.47 1570.4 913.79 1574.16 828.07 curveto
+stroke
+0 0 0 edgecolor
+newpath 1577.66 828.19 moveto
+1574.56 818.06 lineto
+1570.66 827.91 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1577.66 828.19 moveto
+1574.56 818.06 lineto
+1570.66 827.91 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.NetCDF_Utils.ExportCombinationGraph->netCDF_Instrument.NetCDF_Utils.DateTimeConvert
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1346.79 1439.44 moveto
+1448.71 1391.39 1734.2 1247.89 1922 1065.76 curveto
+1983.68 1005.95 2034.86 917.02 2058.28 872.78 curveto
+stroke
+0 0 0 edgecolor
+newpath 2061.45 874.28 moveto
+2062.98 863.8 lineto
+2055.24 871.04 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 2061.45 874.28 moveto
+2062.98 863.8 lineto
+2055.24 871.04 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.NetCDF_Utils.FrozenBinaryScript1_Air
+gsave
+0 0 0.82745 nodecolor
+131 1251.76 126.76 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 1251.76 126.76 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+25 1249.46 moveto 212 (netCDF_Instrument.NetCDF_Utils.FrozenBinaryScript1_Air) alignedtext
+grestore
+% netCDF_Instrument.NetCDF_Utils.FrozenBinaryScript1_Sea
+gsave
+0 0 0.82745 nodecolor
+131 1383.76 130.05 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 1383.76 130.05 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+22.5 1381.46 moveto 217 (netCDF_Instrument.NetCDF_Utils.FrozenBinaryScript1_Sea) alignedtext
+grestore
+% netCDF_Instrument.NetCDF_Utils.FrozenBinaryScript2
+gsave
+0 0 0.82745 nodecolor
+131 1514.76 120 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 1514.76 120 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+31.5 1512.46 moveto 199 (netCDF_Instrument.NetCDF_Utils.FrozenBinaryScript2) alignedtext
+grestore
+% netCDF_Instrument.NetCDF_Utils.grapher
+gsave
+0 0 0.82745 nodecolor
+1309 799.76 93.77 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+1309 799.76 93.77 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+1233 797.46 moveto 152 (netCDF_Instrument.NetCDF_Utils.grapher) alignedtext
+grestore
+% netCDF_Instrument.NetCDF_Utils.grapher->netCDF_Instrument.NetCDF_Utils.edit_netcdf
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1403.16 799.76 moveto
+1422.72 799.76 1443.51 799.76 1463.62 799.76 curveto
+stroke
+0 0 0 edgecolor
+newpath 1463.75 803.26 moveto
+1473.75 799.76 lineto
+1463.75 796.26 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1463.75 803.26 moveto
+1473.75 799.76 lineto
+1463.75 796.26 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.NetCDF_Utils.new_writer
+gsave
+0 0 0.82745 nodecolor
+1817 52.76 99.91 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+1817 52.76 99.91 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+1735.5 50.46 moveto 163 (netCDF_Instrument.NetCDF_Utils.new_writer) alignedtext
+grestore
+% netCDF_Instrument.NetCDF_Utils.new_writer->netCDF_Instrument.NetCDF_Utils.DateTimeConvert
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1843.76 70.45 moveto
+1868.01 87.94 1902.8 116.93 1922 150.76 curveto
+1989.44 269.58 2052.4 702.56 2068.21 817.56 curveto
+stroke
+0 0 0 edgecolor
+newpath 2064.77 818.24 moveto
+2069.59 827.67 lineto
+2071.7 817.29 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 2064.77 818.24 moveto
+2069.59 827.67 lineto
+2071.7 817.29 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.NetCDF_Utils.new_writer->netCDF_Instrument.Instruments.ncdumpesque
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1917.05 52.76 moveto
+1930.28 52.76 1943.93 52.76 1957.38 52.76 curveto
+stroke
+0 0 0 edgecolor
+newpath 1957.62 56.26 moveto
+1967.62 52.76 lineto
+1957.62 49.26 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1957.62 56.26 moveto
+1967.62 52.76 lineto
+1957.62 49.26 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.NetCDF_Utils.setup
+gsave
+0 0 0.82745 nodecolor
+131 1645.76 88.81 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 1645.76 88.81 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+59 1643.46 moveto 144 (netCDF_Instrument.NetCDF_Utils.setup) alignedtext
+grestore
+% netCDF_Instrument.Presentation
+gsave
+0 0 0.82745 nodecolor
+131 1777.76 75.91 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 1777.76 75.91 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+71 1775.46 moveto 120 (netCDF_Instrument.Presentation) alignedtext
+grestore
+% netCDF_Instrument.SpectralAnalysis
+gsave
+0 0 0.82745 nodecolor
+131 1908.76 83.22 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 1908.76 83.22 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+64 1906.46 moveto 134 (netCDF_Instrument.SpectralAnalysis) alignedtext
+grestore
+% netCDF_Instrument.SpectralAnalysis.dateplot
+gsave
+0 0 0.82745 nodecolor
+998 1915.76 102.14 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+998 1915.76 102.14 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+914.5 1913.46 moveto 167 (netCDF_Instrument.SpectralAnalysis.dateplot) alignedtext
+grestore
+% netCDF_Instrument.SpectralAnalysis.dateplot->netCDF_Instrument.DepthCalculation.pressure_to_depth
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1037.39 1932.48 moveto
+1093.71 1956.38 1197.24 2000.33 1258.93 2026.51 curveto
+stroke
+0 0 0 edgecolor
+newpath 1257.88 2029.87 moveto
+1268.45 2030.55 lineto
+1260.62 2023.42 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1257.88 2029.87 moveto
+1268.45 2030.55 lineto
+1260.62 2023.42 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.SpectralAnalysis.dateplot->netCDF_Instrument.NetCDF_Utils.nc
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1063.96 1901.98 moveto
+1115.46 1891.21 1186.86 1876.29 1239.3 1865.33 curveto
+stroke
+0 0 0 edgecolor
+newpath 1240.12 1868.73 moveto
+1249.19 1863.26 lineto
+1238.69 1861.88 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1240.12 1868.73 moveto
+1249.19 1863.26 lineto
+1238.69 1861.88 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.SpectralAnalysis.fourier
+gsave
+0 0 0.82745 nodecolor
+131 2040.76 98.24 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 2040.76 98.24 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+51 2038.46 moveto 160 (netCDF_Instrument.SpectralAnalysis.fourier) alignedtext
+grestore
+% netCDF_Instrument.SpectralAnalysis.frequency_domain
+gsave
+0 0 0.82745 nodecolor
+131 2171.76 122.24 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 2171.76 122.24 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+29.5 2169.46 moveto 203 (netCDF_Instrument.SpectralAnalysis.frequency_domain) alignedtext
+grestore
+% netCDF_Instrument.SpectralAnalysis.plotting
+gsave
+0 0 0.82745 nodecolor
+998 1784.76 101.03 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+998 1784.76 101.03 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+915.5 1782.46 moveto 165 (netCDF_Instrument.SpectralAnalysis.plotting) alignedtext
+grestore
+% netCDF_Instrument.SpectralAnalysis.plotting->netCDF_Instrument.DepthCalculation.pressure_to_depth
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1024.98 1802.23 moveto
+1054.96 1822.03 1104.37 1855.86 1144 1888.76 curveto
+1196.99 1932.76 1253.77 1989.96 1284.98 2022.39 curveto
+stroke
+0 0 0 edgecolor
+newpath 1282.53 2024.89 moveto
+1291.98 2029.69 lineto
+1287.58 2020.05 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1282.53 2024.89 moveto
+1291.98 2029.69 lineto
+1287.58 2020.05 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.SpectralAnalysis.plotting->netCDF_Instrument.NetCDF_Utils.nc
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1063.2 1798.6 moveto
+1114.9 1809.57 1186.99 1824.87 1239.73 1836.06 curveto
+stroke
+0 0 0 edgecolor
+newpath 1239.17 1839.52 moveto
+1249.68 1838.17 lineto
+1240.62 1832.67 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1239.17 1839.52 moveto
+1249.68 1838.17 lineto
+1240.62 1832.67 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.SpectralAnalysis.stuff
+gsave
+0 0 0.82745 nodecolor
+131 2302.76 93.77 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 2302.76 93.77 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+55 2300.46 moveto 152 (netCDF_Instrument.SpectralAnalysis.stuff) alignedtext
+grestore
+% netCDF_Instrument.SpectralAnalysis.symbol_frequency
+gsave
+0 0 0.82745 nodecolor
+131 2434.76 121.18 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 2434.76 121.18 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+30 2432.46 moveto 202 (netCDF_Instrument.SpectralAnalysis.symbol_frequency) alignedtext
+grestore
+% netCDF_Instrument.TimeDomainAnalysis
+gsave
+0 0 0.82745 nodecolor
+131 2565.76 91.04 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 2565.76 91.04 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+57 2563.46 moveto 148 (netCDF_Instrument.TimeDomainAnalysis) alignedtext
+grestore
+% netCDF_Instrument.TimeDomainAnalysis.BG
+gsave
+0 0 0.82745 nodecolor
+694 331.76 98.24 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+694 331.76 98.24 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+614 329.46 moveto 160 (netCDF_Instrument.TimeDomainAnalysis.BG) alignedtext
+grestore
+% netCDF_Instrument.TimeDomainAnalysis.probabilities
+gsave
+0 0 0.82745 nodecolor
+131 331.76 117.83 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 331.76 117.83 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+33 329.46 moveto 196 (netCDF_Instrument.TimeDomainAnalysis.probabilities) alignedtext
+grestore
+% netCDF_Instrument.TimeDomainAnalysis.probabilities->netCDF_Instrument.TimeDomainAnalysis.BG
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 203.44 317.45 moveto
+232.68 312.36 266.82 307.27 298 304.76 curveto
+403.44 296.29 430.6 295.82 536 304.76 curveto
+563.42 307.09 593.22 311.64 619.48 316.36 curveto
+stroke
+0 0 0 edgecolor
+newpath 618.89 319.81 moveto
+629.36 318.17 lineto
+620.16 312.93 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 618.89 319.81 moveto
+629.36 318.17 lineto
+620.16 312.93 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.TimeDomainAnalysis.rayleigh
+gsave
+0 0 0.82745 nodecolor
+417 331.76 108.84 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+417 331.76 108.84 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+327.5 329.46 moveto 179 (netCDF_Instrument.TimeDomainAnalysis.rayleigh) alignedtext
+grestore
+% netCDF_Instrument.TimeDomainAnalysis.probabilities->netCDF_Instrument.TimeDomainAnalysis.rayleigh
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 249.81 331.76 moveto
+265.54 331.76 281.68 331.76 297.43 331.76 curveto
+stroke
+0 0 0 edgecolor
+newpath 297.72 335.26 moveto
+307.72 331.76 lineto
+297.72 328.26 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 297.72 335.26 moveto
+307.72 331.76 lineto
+297.72 328.26 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.TimeDomainAnalysis.time_domain
+gsave
+0 0 0.82745 nodecolor
+417 463.76 118.89 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+417 463.76 118.89 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+318.5 461.46 moveto 197 (netCDF_Instrument.TimeDomainAnalysis.time_domain) alignedtext
+grestore
+% netCDF_Instrument.TimeDomainAnalysis.probabilities->netCDF_Instrument.TimeDomainAnalysis.time_domain
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 168.1 348.88 moveto
+219.82 372.75 313.59 416.03 370.1 442.11 curveto
+stroke
+0 0 0 edgecolor
+newpath 368.97 445.45 moveto
+379.52 446.46 lineto
+371.9 439.09 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 368.97 445.45 moveto
+379.52 446.46 lineto
+371.9 439.09 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.TimeDomainAnalysis.rayleigh->netCDF_Instrument.TimeDomainAnalysis.BG
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 526.08 331.76 moveto
+545.68 331.76 566.1 331.76 585.67 331.76 curveto
+stroke
+0 0 0 edgecolor
+newpath 585.82 335.26 moveto
+595.82 331.76 lineto
+585.82 328.26 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 585.82 335.26 moveto
+595.82 331.76 lineto
+585.82 328.26 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.TimeDomainAnalysis.time_domain->netCDF_Instrument.DepthCalculation.depth
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 536.08 463.76 moveto
+552.6 463.76 569.49 463.76 585.79 463.76 curveto
+stroke
+0 0 0 edgecolor
+newpath 585.85 467.26 moveto
+595.85 463.76 lineto
+585.85 460.26 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 585.85 467.26 moveto
+595.85 463.76 lineto
+585.85 460.26 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.TimeDomainAnalysis.script3
+gsave
+0 0 0.82745 nodecolor
+1309 930.76 106.11 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+1309 930.76 106.11 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+1221.5 928.46 moveto 175 (netCDF_Instrument.TimeDomainAnalysis.script3) alignedtext
+grestore
+% netCDF_Instrument.TimeDomainAnalysis.script3->netCDF_Instrument.NetCDF_Utils.edit_netcdf
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 1343.77 913.64 moveto
+1391.87 889.95 1478.67 847.2 1531.15 821.36 curveto
+stroke
+0 0 0 edgecolor
+newpath 1532.79 824.45 moveto
+1540.22 816.89 lineto
+1529.7 818.17 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 1532.79 824.45 moveto
+1540.22 816.89 lineto
+1529.7 818.17 lineto
+closepath stroke
+grestore
+% netCDF_Instrument.__pycache__
+gsave
+0 0 0.82745 nodecolor
+131 2697.76 74.85 18 ellipse_path fill
+1 setlinewidth
+filled
+0 0 0 nodecolor
+131 2697.76 74.85 18 ellipse_path stroke
+0 0 0 nodecolor
+7 /Times-Roman set_font
+71.5 2695.46 moveto 119 (netCDF_Instrument.__pycache__) alignedtext
+grestore
+endpage
+showpage
+grestore
+%%PageTrailer
+%%EndPage: 1
+%%Trailer
+%%Pages: 1
+%%BoundingBox: 36 36 611 756
+end
+restore
+%%EOF

@@ -1,10 +1,7 @@
 # import numpy as np
 from numpy import fft, pi, arange, array, sin
 import numpy as np
-import scipy.fftpack as fftpack
 import matplotlib.pyplot as plt
-import NetCDF_Utils.make_default as md
-import NetCDF_Utils.nc as nc
 from scipy.optimize import newton
 from DepthCalculation.pressure_to_depth import fft_method
 
@@ -12,6 +9,8 @@ from DepthCalculation.pressure_to_depth import fft_method
 # deeper = have to lower the cutoff
 g = 9.8
 rho = 1027
+h = 50
+z = -h/2
 
 def make_waves(length, sample_frequency, waves):
     """Create wave pressure given frequencies, amplitudes and phases"""
@@ -31,10 +30,8 @@ def make_waves(length, sample_frequency, waves):
 
 
 if __name__ == '__main__':
-    z = -h/2
     hi_cut = .2
     # optimal cut amount seems to also depend on chunk size
-    h = 50
 
 
     length = 6000 # length of the time series in seconds

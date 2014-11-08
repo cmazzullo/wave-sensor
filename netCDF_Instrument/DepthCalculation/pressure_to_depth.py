@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 """
 Created on Mon Aug  4 08:48:12 2014
 
@@ -61,6 +61,34 @@ def fft_method(t, p_dbar, z, H, timestep, gate=0, window=True,
                 k = omega_to_k(freqs[i] * 2 * np.pi, H[i])
                 # Scale, applying the diffusion relation
                 a = pressure_to_eta(amps[i], k, z, H[i])
+                # a = amps[i]
+                new_amps[i] = a
+        else:
+            new_amps[i] = 0
+
+    # Convert back to time space
+    eta = np.fft.irfft(new_amps)
+    if window:
+        eta = eta / window_func
+    return eta
+
+def fft_method2(t, p_dbar, z, H, timestep, gate=0, lo_cut=-1, hi_cut=float('inf')):
+    n = len(p_dbar) - len(p_dbar) % 2
+    p = p_dbar[:n] * 1e4
+    gate_array = np.ones_like(p) * gate
+
+    amps = np.fft.rfft(p_dbar)
+    freqs = np.fft.rfftfreq(n, d=timestep)
+    new_amps = np.zeros_like(amps)
+
+    for i in range(len(amps)):
+        # Filter out the noise with the gate
+        if ((np.absolute(amps[i] / n) >= gate_array[i])
+            and (lo_cut < freqs[i] < hi_cut)):
+                k = omega_to_k(freqs[i] * 2 * np.pi, H[i])
+                # Scale, applying the diffusion relation
+                a = pressure_to_eta(amps[i], k, z, H[i])
+                # a = amps[i]
                 new_amps[i] = a
         else:
             new_amps[i] = 0
