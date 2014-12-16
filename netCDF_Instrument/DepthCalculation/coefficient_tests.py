@@ -19,9 +19,6 @@ length = 6000 # length of the time series in seconds
 sample_frequency = 4 # time steps per second (Hz)
 z = 1-h
 hi_cut = .89 / sqrt(h)
-#hi_cut = .2
-
-# MAKE WAVES
 
 waves = [[.101,   .09,  0],
           [.201,   .2,   1],
@@ -36,8 +33,7 @@ waves = array([[max_f, max_a, max_phase]]*n)*random.rand(n, 3)
 t, y, p = make_waves(length, sample_frequency, waves, h, 1-h)
 
 y2 = fft_method(t, p/10000, z, ones_like(t)*h, \
-                1/sample_frequency, hi_cut=hi_cut, \
-                window=False, gate=0)
+                1/sample_frequency, auto_cutoff=True)
 static = p/rho/g
 
 ## Plotting
@@ -156,7 +152,7 @@ for i in range(1000):
     fft_freq_rmse.append(rmse(actual_amps,fft_amps))
     static_freq_rmse.append(rmse(actual_amps,static_amps))
 
-## Plot time space
+## Plot RMSE
 cla()
 title('RMSE comparison (H = %sm)' % h)
 hist([fft_time_rmse, static_time_rmse], histtype='step', \

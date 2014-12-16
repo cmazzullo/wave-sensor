@@ -21,7 +21,7 @@ def hydrostatic_method(pressure):
 
 
 def fft_method(t, p_dbar, z, H, timestep, gate=0, window=True,
-               lo_cut=-1, hi_cut=float('inf')):
+               lo_cut=-1, hi_cut=float('inf'), auto_cutoff=False):
     """
     Create wave height data from an array of pressure readings.
 
@@ -49,6 +49,9 @@ def fft_method(t, p_dbar, z, H, timestep, gate=0, window=True,
     else:
         scaled_p = p
         gate_array = raw_gate_array
+
+    if auto_cutoff:
+        hi_cut = .89 / np.sqrt(np.average(H))
 
     amps = np.fft.rfft(scaled_p)
     freqs = np.fft.rfftfreq(n, d=timestep)
