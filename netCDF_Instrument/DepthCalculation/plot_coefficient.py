@@ -14,9 +14,12 @@ rho = 1027
 
 hs = arange(0, 50, .1)
 f = .5 # example frequency
-
+h = 20
 k = newton(lambda k:g*k*np.tanh(k*h) - (2*pi*0.25)**2, 0)
+print('k = ', k)
 acceptable = cosh(k*20)/cosh(k*(10)) * ones_like(hs)
+print('acceptable = ', acceptable[0])
+
 for f in arange(.1, .5, .05):
     cs = []
     for i, h in enumerate(hs):

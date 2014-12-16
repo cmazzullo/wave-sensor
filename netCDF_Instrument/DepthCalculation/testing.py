@@ -13,7 +13,7 @@ from DepthCalculation.pressure_to_depth import fft_method
 g = 9.8
 rho = 1027
 
-def make_waves(length, sample_frequency, waves):
+def make_waves(length, sample_frequency, waves, h, z):
     """Create wave pressure given frequencies, amplitudes and phases"""
     t = np.arange(length, step=1/sample_frequency)
     total_height = np.zeros_like(t)
@@ -31,12 +31,11 @@ def make_waves(length, sample_frequency, waves):
 
 
 if __name__ == '__main__':
-    z = -h/2
+    h = 50
+    z = 1-h
     hi_cut = .2
     # optimal cut amount seems to also depend on chunk size
     h = 50
-
-
     length = 6000 # length of the time series in seconds
     sample_frequency = 4 # time steps per second (Hz)
 
@@ -50,10 +49,10 @@ if __name__ == '__main__':
              [.0101, .3, 2],
              [1.01, .05, 2]]
 
-    t, y, p = make_waves(length, sample_frequency, waves)
+    t, y, p = make_waves(length, sample_frequency, waves, h, z)
 
     H = np.ones_like(t) * h
-    y2 = fft_method(t, p/10000, z, H, 1/sample_frequency, window=False, gate=.02, hi_cut=hi_cut)
+    y2 = fft_method(t, p/10000, z, H, 1/sample_frequency, window=False, gate=0, hi_cut=hi_cut)
 
     plt.ion()
     plt.clf()

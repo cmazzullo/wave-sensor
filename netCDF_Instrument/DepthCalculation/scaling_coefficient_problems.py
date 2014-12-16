@@ -1,7 +1,7 @@
 from numpy import *
 from matplotlib.pyplot import *
 from scipy.optimize import newton
-from pressure_to_depth import g, rho
+from DepthCalculation.pressure_to_depth import g, rho
 
 # eta to pressure
 # p α ηρgcosh(k(z+H))/cosh(kH)
