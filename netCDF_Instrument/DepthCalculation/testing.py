@@ -1,17 +1,30 @@
-# import numpy as np
-from numpy import fft, pi, arange, array, sin
-import numpy as np
-import scipy.fftpack as fftpack
-import matplotlib.pyplot as plt
-import NetCDF_Utils.make_default as md
-import NetCDF_Utils.nc as nc
+# Now with cells!
+
+## Initialize
+from numpy import *
+from matplotlib.pyplot import *
+ion()
+
 from scipy.optimize import newton
 from DepthCalculation.pressure_to_depth import fft_method
+from DepthCalculation.pressure_to_depth import combo_method
 
-
-# deeper = have to lower the cutoff
 g = 9.8
 rho = 1027
+
+def rmse(a, b):
+    return sqrt(average(absolute(a-b)**2))
+
+def print_rmse(y, static_y, fft_y):
+    fft_rmse = rmse(fft_y, y)
+    static_rmse = rmse(static_y, y)
+
+    print('FFT RMSE = %.4f meters' % fft_rmse)
+    print('Static RMSE = %.4f meters' % static_rmse)
+
+    if static_rmse < fft_rmse:
+        print("""STATIC IS DOING BETTER
+    SOMETHING IS HORRIBLY WRONG""")
 
 def make_waves(length, sample_frequency, waves, h, z):
     """Create wave pressure given frequencies, amplitudes and phases"""
@@ -27,55 +40,166 @@ def make_waves(length, sample_frequency, waves, h, z):
         k = newton(lambda k: g*k*np.tanh(k*h) - (2*pi*f)**2, 0)
         pressure = eta*rho*g*np.cosh(k*(z + h))/np.cosh(k*h)
         total_pressure += pressure
+    c = random.rand()*z/2
+    total_height += c*arange(len(total_height)) / len(total_height)
+    total_pressure += rho*g*c * arange(len(total_height)) / len(total_height)
     return t, total_height, total_pressure
 
+def random_waves(length, sample_frequency, h, z, max_f, max_a, n):
+    waves = array([[max_f, max_a, 2*pi]]*n)*random.rand(n, 3)
+    return make_waves(length, sample_frequency, waves, h, z)
+
+def easy_waves(length, h, z, n):
+    return random_waves(length, 4, h, z, .2, z/4, n)
 
 if __name__ == '__main__':
-    h = 50
+    # CHANGEABLES
+
+    h = 20
+    length = 6000 # length of the time series in seconds
+    sample_frequency = 4 # time steps per second (Hz)
     z = 1-h
-    hi_cut = .2
-    # optimal cut amount seems to also depend on chunk size
+    hi_cut = .89 / sqrt(h)
+
+    max_f = .2
+    max_a = 10
+    max_phase = 10
+    n = 5 # number of waves
+    waves = array([[max_f, max_a, max_phase]]*n)*random.rand(n, 3)
+    t, y, p = make_waves(length, sample_frequency, waves, h, 1-h)
+
+    z_increase = 100
+
+    y += z_increase * arange(len(y)) / len(y) # Linear trend
+    p += rho*g*z_increase * arange(len(y)) / len(y) # Linear trend
+    y2 = combo_method(t, p/10000, z, ones_like(t)*h, 1/sample_frequency)
+    static = p/rho/g
+
+    ## Plotting
+    clf()
+    subplot(211)
+    plot(t, y, label='Original η')
+    xlabel('time (s)')
+    ylabel('η (meters)')
+    plot(t, static, 'g', label='Hydrostatic η')
+    plot(t, y2, 'r', label='FFT reconstructed η')
+    legend()
+
+    def get_transform(seq):
+        return fft.rfft(seq) / len(seq), fft.rfftfreq(len(seq), 1/sample_frequency)
+
+    fft_amps, fft_freqs = get_transform(y2)
+    actual_amps, actual_freqs = get_transform(y)
+    static_amps, static_freqs = get_transform(static)
+
+    subplot(212)
+    grid()
+    plot(actual_freqs, 2*absolute(actual_amps), color='black')
+
+    plot(static_freqs, 2*absolute(static_amps), 'x', color='blue')
+    plot(fft_freqs, 2*absolute(fft_amps), 'x', color='red')
+    xlim(0, .5)
+
+    xlabel('frequency (Hz)')
+    ylabel('η (meters)')
+
+    def rmse(a, b):
+        return sqrt(average(absolute(a-b)**2))
+
+    fft_rmse = rmse(y2, y)
+    static_rmse = rmse(static, y)
+
+    fft_rmse = rmse(actual_amps,fft_amps)
+    static_rmse = rmse(actual_amps,static_amps)
+
+    print('FFT RMSE = %.4f meters' % fft_rmse)
+    print('Static RMSE = %.4f meters' % static_rmse)
+
+    if static_rmse < fft_rmse:
+        print("""STATIC IS DOING BETTER
+    SOMETHING IS HORRIBLY WRONG""")
+
+    # dispersion relation
+    # ω² = gk⋅tanh(kH)
+
+    # p α ηρg cosh(k(z+H))/cosh(kH) So we want our coefficient to be C =
+    # 12.32, where C = cosh(kH)/cosh(kZ). What should k be?
+    # max frequency is 1/4 so max k is .252
+    # arccos(12) gives best cutoff frequency, so max_cutoff = 3.18
+
+    ## Monte Carlo
     h = 50
     length = 6000 # length of the time series in seconds
     sample_frequency = 4 # time steps per second (Hz)
+    z = 1-h
+    hi_cut = .89 / sqrt(h)
 
+    static_time_rmse = []
+    fft_time_rmse = []
+    fft_freq_rmse = []
+    static_freq_rmse = []
+    for i in range(1000):
+        # MAKE WAVES
+        waves = [[.101,   .09,  0],
+                  [.201,   .2,   1],
+                  [.0101,  .3,   2],
+                  [1.01,   .05,  2]]
 
-    # 1. MAKE WAVES
-    # input format: waves are represented as [frequency, amplitude,
-    # phase] where frequency is in Hz, amplitude is in dBar and phase
-    # is in radians
-    waves = [[.101, .09, 0],
-             [.201, .2, 1],
-             [.0101, .3, 2],
-             [1.01, .05, 2]]
+        max_f = .2
+        max_a = 10
+        max_phase = 10
+        n = 10 # number of waves
+        waves = array([[max_f, max_a, max_phase]]*n)*random.rand(n, 3)
+        t, y, p = make_waves(length, sample_frequency, waves, h, 1-h)
 
-    t, y, p = make_waves(length, sample_frequency, waves, h, z)
+        y += 10 * arange(len(y)) / len(y) #Linear trend
 
-    H = np.ones_like(t) * h
-    y2 = fft_method(t, p/10000, z, H, 1/sample_frequency, window=False, gate=0, hi_cut=hi_cut)
+        y2 = fft_method(t, p/10000, z, ones_like(t)*h, \
+                        1/sample_frequency, hi_cut=hi_cut, \
+                        window=False, gate=.8)
+        static = p/rho/g
 
-    plt.ion()
-    plt.clf()
-    plt.cla()
-    plt.subplot(211)
-    plt.plot(t, y, label='Original η')
-    plt.xlabel('time (s)')
-    plt.ylabel('η (meters)')
-    plt.plot(t[:], y2, 'r', label='Reconstructed η')
-    plt.plot(t, p/rho/g, 'g', label='Hydrostatic η')
-    plt.legend()
+        def get_transform(seq):
+            return fft.rfft(seq) / len(seq), fft.rfftfreq(len(seq), 1/sample_frequency)
 
-    amps = fft.rfft(y2) / len(y2)
-    freqs = fft.rfftfreq(len(y2), 1/sample_frequency)
-    amps2 = fft.rfft(y) / len(y)
-    freqs2 = fft.rfftfreq(len(y), 1/sample_frequency)
+        fft_amps, fft_freqs = get_transform(y2)
+        actual_amps, actual_freqs = get_transform(y)
+        static_amps, static_freqs = get_transform(static)
 
-    plt.subplot(212)
-    plt.grid()
-    plt.plot(freqs, 2*np.absolute(amps), '.', color='red')
-    plt.plot(freqs2, 2*np.absolute(amps2), color='blue')
-    plt.xlabel('frequency (Hz)')
-    plt.ylabel('η (meters)')
+        def rmse(a, b):
+            return sqrt(average(absolute(a-b)**2))
 
-    rmse = np.sqrt(np.average((y - y2)**2))
-    print('RMSE = %.4f meters' % rmse)
+        fft_time_rmse.append(rmse(y2, y))
+        static_time_rmse.append(rmse(static, y))
+        fft_freq_rmse.append(rmse(actual_amps,fft_amps))
+        static_freq_rmse.append(rmse(actual_amps,static_amps))
+
+    ## Plot RMSE
+    cla()
+    title('RMSE comparison (H = %sm)' % h)
+    hist([fft_time_rmse, static_time_rmse], histtype='step', \
+         color=['red','blue'], label=['FFT method RMSE', 'Hydrostatic RMSE'], bins=50)
+    xlabel('RMSE (m)')
+    ylabel('Count')
+    legend()
+
+    ## Remove linear trend
+    # get linear trend
+    clf()
+    coeff = polyfit(t, p, 1)
+    plot(t, p, 'b')
+    plot(t, coeff[1] + coeff[0]*t, 'r')
+    show()
+
+    ## math stuff
+    h = 10
+    z = -9
+    k = lambda z, h: .1
+
+    z = arange(-10, 10, .01)
+    h = arange(-10, 10, .01)
+    f = lambda z, h: cosh(k(z, h)*(z+h))/cosh(k(z, h)*h)
+    clf()
+    fig = figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(z, h, f(z, h))

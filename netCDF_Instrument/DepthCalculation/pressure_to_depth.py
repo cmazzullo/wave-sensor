@@ -13,15 +13,42 @@ from scipy.optimize import newton
 # Constants
 g = 9.8  # gravity (m / s**2)
 rho = 1030  # density of seawater (kg / m**3)
+min_coeff = 1/15
 
+
+def moving_average(a, n=3):
+    ret = np.cumsum(a, dtype=float)
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n-1:]/n
+
+
+def combo_method(t, p_dbar, z, H, timestep, max_coeff=12):
+    coeff = np.polyfit(t, p_dbar, 1)
+    static_p = coeff[1] + coeff[0]*t
+    static_y = 10000*static_p/rho/g
+    wave_p = p_dbar - static_p
+    wave_y = fft_method(t, wave_p, z, H, 1/sample_frequency, max_coeff=max_coeff,
+                        auto_cutoff=True)
+    return static_y + wave_y
+
+
+# def cutoff_freq(min_coeff, h, z): # this is wrong i think
+#     k = sqrt(2*(min_coeff-1)/(z*(z + 2*h)))
+#     return sqrt(g*k*tanh(k*h))/2/pi
+
+def cutoff_freq(min_coeff, h, z): # the cutoffs seem too low...
+    a = min_coeff
+    k = np.sqrt(2 * (a - 1) / (h**2 * (1 - a) + z**2 + 2*h*z))
+    return np.sqrt(g*k*np.tanh(k*h))/2/np.pi # convert wavenumber to frequency
 
 def hydrostatic_method(pressure):
     """Return the depth corresponding to a hydrostatic pressure."""
     return (pressure *  1e4) / (rho * g)
 
 
-def fft_method(t, p_dbar, z, H, timestep, gate=0, window=True,
-               lo_cut=-1, hi_cut=float('inf'), auto_cutoff=False):
+def fft_method(t, p_dbar, z, H, timestep, gate=0, window=False,
+               lo_cut=-1, hi_cut=float('inf'), auto_cutoff=True,
+               max_coeff=float('inf')):
     """
     Create wave height data from an array of pressure readings.
 
@@ -51,7 +78,9 @@ def fft_method(t, p_dbar, z, H, timestep, gate=0, window=True,
         gate_array = raw_gate_array
 
     if auto_cutoff:
-        hi_cut = .89 / np.sqrt(np.average(H))
+        #hi_cut = cutoff_freq(min_coeff, np.average(H), z)
+        hi_cut=.9/sqrt(np.average(H))
+        print('hi_cut = ', hi_cut)
 
     amps = np.fft.rfft(scaled_p)
     freqs = np.fft.rfftfreq(n, d=timestep)
@@ -64,34 +93,14 @@ def fft_method(t, p_dbar, z, H, timestep, gate=0, window=True,
                 k = omega_to_k(freqs[i] * 2 * np.pi, H[i])
                 # Scale, applying the diffusion relation
                 a = pressure_to_eta(amps[i], k, z, H[i])
-                # a = amps[i]
-                new_amps[i] = a
-        else:
-            new_amps[i] = 0
 
-    # Convert back to time space
-    eta = np.fft.irfft(new_amps)
-    if window:
-        eta = eta / window_func
-    return eta
-
-def fft_method2(t, p_dbar, z, H, timestep, gate=0, lo_cut=-1, hi_cut=float('inf')):
-    n = len(p_dbar) - len(p_dbar) % 2
-    p = p_dbar[:n] * 1e4
-    gate_array = np.ones_like(p) * gate
-
-    amps = np.fft.rfft(p_dbar)
-    freqs = np.fft.rfftfreq(n, d=timestep)
-    new_amps = np.zeros_like(amps)
-
-    for i in range(len(amps)):
-        # Filter out the noise with the gate
-        if ((np.absolute(amps[i] / n) >= gate_array[i])
-            and (lo_cut < freqs[i] < hi_cut)):
-                k = omega_to_k(freqs[i] * 2 * np.pi, H[i])
-                # Scale, applying the diffusion relation
-                a = pressure_to_eta(amps[i], k, z, H[i])
-                # a = amps[i]
+                # experimental
+                c = 1/_coefficient(k, z, H[i])
+                if c <= max_coeff:
+                    a = amps[i] * (1 / _coefficient(k, z, H[i]))
+                else:
+                    a = 0
+                    break
                 new_amps[i] = a
         else:
             new_amps[i] = 0
@@ -145,68 +154,36 @@ def _coefficient(k, z, H):
     """Return a conversion factor for pressure and wave height."""
     return rho * g * np.cosh(k * (H + z)) / np.cosh(k * H)
 
-def method2(p_dbar):
-    """
-    Convert pressure to wave height using downward crossings.
-
-    Downward crossing method: if the function crosses the x axis in an
-    interval and if its endpoint is below the x axis, we've found a
-    new wave.
-    """
-    p = p_dbar * 1e4            # convert to Pascals
-    Pstatic = make_pstatic(p)
-    Pwave = p - Pstatic
-    depth = Pstatic / (rho * g)
-    start = period = counter = Pmin = Pmax = 0
-    periods = []  # periods of found waves
-    eta = np.zeros(len(Pwave))
-    interval = 1 / 4
-    steepness = 0.03
-    Hminimum = 0.10
-    H = []
-
-    for i in range(len(Pwave) - 1):
-        if Pwave[i] > 0 and Pwave[i+1] < 0:
-            periods.append(period)
-            # w**2 = g * k, the dispersion relation for deep water
-            wavelength = g * period**2 / (2 * np.pi)
-            # if the water is too shallow
-            if depth[i] / wavelength < 0.36:
-                wavelength = ((g * depth[i])**(1/2) *
-                              (1 - depth[i] / wavelength) *
-                              period)
-                height = (((Pmax - Pmin) / (rho * g)) *
-                          np.cosh(2 * np.pi * depth[i] /
-                                  wavelength))
-            H.append(height)
-            Hunreduced = Hreduced = height
-            if height / wavelength > steepness:
-                Hreduced = steepness * wavelength
-                H.append(Hreduced)
-            if height < Hminimum:
-                H.pop()
-                Hreduced = Hminimum
-                counter -= 1
-            if str(wavelength) == 'nan':
-                H.pop()
-            reduction = Hreduced / Hunreduced
-            for j in range(start, i):
-                eta[j] = ((Pwave[j] * reduction) / (rho * g)) * \
-                         np.cosh(2 * np.pi * depth[j] / wavelength)
-            start = i + 1
-            period = Pmax = Pmin = 0
-            counter += 1
-        period = period + interval
-        if Pwave[i] > Pmax:
-            Pmax = Pwave[i]
-        if Pwave[i] < Pmin:
-            Pmin = Pwave[i]
-    return eta + depth
-
-
 def make_pstatic(pressure):
     """Extract hydrostatic pressure from a pressure array."""
     x = np.arange(len(pressure))
     slope, intercept = np.polyfit(x, pressure, 1)
     pwave = slope * x + intercept
     return pwave
+
+if __name__ == '__main__':
+    from DepthCalculation.testing import easy_waves, print_rmse
+    from numpy import *
+    from matplotlib.pyplot import *
+    ion()
+
+    max_f = .2
+    max_a = 10
+    max_phase = 10
+    length = 6000 # length of the time series in seconds
+    h = 30
+    z = -.1
+    t, actual_y, p = easy_waves(length, h, z, 10)
+    sample_frequency = 4
+    computed_y = fft_method(t, p/10000, z, np.ones_like(t)*h, \
+                            1/sample_frequency)
+    static_y = p/rho/g
+    clf()
+
+    combo_y = combo_method(t, p/10000, z, np.ones_like(t)*h, 1/sample_frequency,
+                           max_coeff=12)
+
+    plot(t, actual_y, 'b')
+    plot(t, computed_y, 'g')
+    plot(t, combo_y, 'r')
+    print_rmse(actual_y, static_y, computed_y)
