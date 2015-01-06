@@ -4,8 +4,11 @@
 *.csv
 .csv
 
-# Eclipse metadata
+# Eclipse things
 .metadata/
+.settings/
+.project
+.pydevproject
 
 # Some kind of project data
 RemoteSystemsTempFiles/
