@@ -22,8 +22,7 @@ from NetCDF_Utils.edit_netcdf import NetCDFWriter
 
 
 class House(NetCDFWriter):
-    '''derived class for house csv files
-    '''
+    '''Processes files coming out of the USGS-made sensors'''
     def __init__(self):
         self.timezone_marker = "time zone"
         self.temperature_data = None
@@ -36,28 +35,26 @@ class House(NetCDFWriter):
 
 
     def read(self):
-        '''load the data from in_filename
-        only parse the initial datetime = much faster
-        '''
+        '''Load the data from in_filename'''
 
         skip_index = self.read_start('^[0-9]{4},[0-9]{4}$',' ')
-        df = pandas.read_table(self.in_filename,skiprows=skip_index, header=None, engine='c', sep=',', names=('a','b'))
+        df = pandas.read_table(self.in_filename,skiprows=skip_index, header=None,
+                               engine='c', sep=',', names=('a','b'))
 
         self.pressure_data = [self.pressure_convert(np.float64(x)) for x in df[df.b.isnull() == False].a]
         self.temperature_data = [self.temperature_convert(np.float64(x)) for x in df[df.b.isnull() == False].b]
 
         with open(self.in_filename, 'r') as wavelog:
             for x in wavelog:
-                if re.match('^[0-9]{4}.[0-9]{2}.[0-9]{2}', x):
+                if re.match('^[0-9]{4}.[0-9]{2}.[0-9]{2}', x): # second arg has extra space that is unnecessary
                     self.utc_millisecond_data = dateconvert.convert_to_milliseconds(len(self.pressure_data), x, \
-                                                                        self.date_format_string, self.frequency) #second arg has extra space that is unnecessary
+                                                                        self.date_format_string, self.frequency)
                     break
 
         print(len(self.pressure_data))
 
     def pressure_convert(self, x):
-        # gets volt to psig
-        # gets psig to pascals
+        '''Convert volts to pascals'''
         return ((x * (30 / 8184) - 6) + 14.7) / 1.45037738
 
     def temperature_convert(self, x):

@@ -8,7 +8,7 @@ import os
 sys.path.append('..')
 
 import numpy as np
-from DepthCalculation.depth import Depth
+from TimeDomainAnalysis.depth import Depth
 
 class Time_Domain_Analysis(Depth):
     """This calculates the number,length, and height of waves in a time series with depth, and pressure data"""

@@ -27,7 +27,7 @@ def combo_method(t, p_dbar, z, H, timestep, max_coeff=12):
     static_p = coeff[1] + coeff[0]*t
     static_y = 10000*static_p/rho/g
     wave_p = p_dbar - static_p
-    wave_y = fft_method(t, wave_p, z, H, 1/sample_frequency, max_coeff=max_coeff,
+    wave_y = fft_method(t, wave_p, z, H, timestep, max_coeff=max_coeff,
                         auto_cutoff=True)
     return static_y + wave_y
 
@@ -79,7 +79,7 @@ def fft_method(t, p_dbar, z, H, timestep, gate=0, window=False,
 
     if auto_cutoff:
         #hi_cut = cutoff_freq(min_coeff, np.average(H), z)
-        hi_cut=.9/sqrt(np.average(H))
+        hi_cut=.9/np.sqrt(np.average(H))
         print('hi_cut = ', hi_cut)
 
     amps = np.fft.rfft(scaled_p)
