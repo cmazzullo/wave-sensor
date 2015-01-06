@@ -1,5 +1,5 @@
 '''
-This provides utilities to convert datetime to milliseconds and vice versa as needed
+Converts datetime to milliseconds and vice versa
 '''
 import numpy as np
 import pytz
@@ -16,7 +16,6 @@ def convert_to_milliseconds(series_length, datestring, date_format_string, frequ
                 + date_seconds
 
 
-
 def convert_date_to_milliseconds(datestring, date_format_string, date_time = None):
         if date_time == None:
             first_date = pytz.utc.localize(datetime.strptime(datestring, date_format_string))
@@ -25,14 +24,15 @@ def convert_date_to_milliseconds(datestring, date_format_string, date_time = Non
             #pandas index will not take a long so I cannot multiply by 1000
             first_date = date_time
             return (first_date - epoch_start).total_seconds()
-        
+
+
 def convert_milliseconds_to_datetime(milliseconds, tzinfo):
         date = datetime.fromtimestamp(milliseconds / 1000, tzinfo)
         final_date = date.strftime('%Y-%m-%dT%H:%M:%SZ')
         return final_date
-    
-def get_time_duration(seconds_difference):
 
+
+def get_time_duration(seconds_difference):
         days = int((((seconds_difference / 1000) / 60) / 60) / 24)
         hours =  int((((seconds_difference / 1000) / 60) / 60) % 24)
         minutes =  int(((seconds_difference / 1000) / 60)  % 60)

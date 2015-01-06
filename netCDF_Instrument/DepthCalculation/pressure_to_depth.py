@@ -15,31 +15,14 @@ g = 9.8  # gravity (m / s**2)
 rho = 1030  # density of seawater (kg / m**3)
 min_coeff = 1/15
 
-
-def moving_average(a, n=3):
-    ret = np.cumsum(a, dtype=float)
-    ret[n:] = ret[n:] - ret[:-n]
-    return ret[n-1:]/n
-
-
-def combo_method(t, p_dbar, z, H, timestep, max_coeff=12):
+def combo_method(t, p_dbar, z, H, timestep):
     coeff = np.polyfit(t, p_dbar, 1)
     static_p = coeff[1] + coeff[0]*t
-    static_y = 10000*static_p/rho/g
+    static_y = hydrostatic_method(static_p)
     wave_p = p_dbar - static_p
-    wave_y = fft_method(t, wave_p, z, H, timestep, max_coeff=max_coeff,
-                        auto_cutoff=True)
+    wave_y = fft_method(t, wave_p, z, H, timestep, auto_cutoff=True)
     return static_y + wave_y
 
-
-# def cutoff_freq(min_coeff, h, z): # this is wrong i think
-#     k = sqrt(2*(min_coeff-1)/(z*(z + 2*h)))
-#     return sqrt(g*k*tanh(k*h))/2/pi
-
-def cutoff_freq(min_coeff, h, z): # the cutoffs seem too low...
-    a = min_coeff
-    k = np.sqrt(2 * (a - 1) / (h**2 * (1 - a) + z**2 + 2*h*z))
-    return np.sqrt(g*k*np.tanh(k*h))/2/np.pi # convert wavenumber to frequency
 
 def hydrostatic_method(pressure):
     """Return the depth corresponding to a hydrostatic pressure."""
@@ -47,22 +30,9 @@ def hydrostatic_method(pressure):
 
 
 def fft_method(t, p_dbar, z, H, timestep, gate=0, window=False,
-               lo_cut=-1, hi_cut=float('inf'), auto_cutoff=True,
-               max_coeff=float('inf')):
+               lo_cut=-1, hi_cut=float('inf'), auto_cutoff=True):
     """
     Create wave height data from an array of pressure readings.
-
-    t             the time array
-    p_dbar        an array of pressure readings
-    z             the depth of the sensor
-    H             the water depth (array)
-    timestep      the time interval in between pressure readings
-    gate          any fluctuations in the pressure that are less than
-                  this threshold won't be used in the height data.
-    window        whether or not to use a window function
-    lo_cut        minimum frequency data to include, exclusive
-    hi_cut        maximum frequency data to include, exclusive (1Hz
-                    seems sane)
     """
     # Put the pressure data into frequency space
     n = len(p_dbar) - len(p_dbar) % 2
@@ -78,9 +48,7 @@ def fft_method(t, p_dbar, z, H, timestep, gate=0, window=False,
         gate_array = raw_gate_array
 
     if auto_cutoff:
-        #hi_cut = cutoff_freq(min_coeff, np.average(H), z)
         hi_cut=.9/np.sqrt(np.average(H))
-        print('hi_cut = ', hi_cut)
 
     amps = np.fft.rfft(scaled_p)
     freqs = np.fft.rfftfreq(n, d=timestep)
@@ -93,20 +61,11 @@ def fft_method(t, p_dbar, z, H, timestep, gate=0, window=False,
                 k = omega_to_k(freqs[i] * 2 * np.pi, H[i])
                 # Scale, applying the diffusion relation
                 a = pressure_to_eta(amps[i], k, z, H[i])
-
-                # experimental
-                c = 1/_coefficient(k, z, H[i])
-                if c <= max_coeff:
-                    a = amps[i] * (1 / _coefficient(k, z, H[i]))
-                else:
-                    a = 0
-                    break
                 new_amps[i] = a
         else:
             new_amps[i] = 0
 
-    # Convert back to time space
-    eta = np.fft.irfft(new_amps)
+    eta = np.fft.irfft(new_amps) # reverse FFT
     if window:
         eta = eta / window_func
     return eta

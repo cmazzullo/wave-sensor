@@ -3,28 +3,16 @@ import pytz
 import pandas
 import re
 
-
-import sys
-sys.path.append('..')
-
-#--python 3 compatibility
-pyver = sys.version_info
-if pyver[0] == 3:
-    raw_input = input
-
 #--some import error trapping
 try:
     import numpy as np
 except:
     raise Exception("numpy is required")
 
-
-
 import NetCDF_Utils.DateTimeConvert as dateconvert
 from NetCDF_Utils.Testing import DataTests
 from NetCDF_Utils.edit_netcdf import NetCDFWriter
 from datetime import datetime
-
 
 class MeasureSysLogger(NetCDFWriter):
     '''derived class for Measurement Systems cvs files

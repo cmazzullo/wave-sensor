@@ -13,8 +13,8 @@ from tkinter import filedialog
 from tkinter import ttk
 
 import NetCDF_Utils.nc as nc
-import DepthCalculation.script2 as script2
-import Instruments.guicore as gc
+import scripts.script2 as script2
+import gui.guicore as gc
 
 
 class Script2gui:
