@@ -1,0 +1,11 @@
+Wave Guage
+12
+12
+12
+10
+11
+9
+20140101 0000
+20140102 0000
+US/Eastern
+Chesapeake Bay
