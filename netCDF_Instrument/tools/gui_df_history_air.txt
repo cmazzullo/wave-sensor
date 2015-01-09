@@ -1,11 +1,11 @@
-Wave Guage
-12
-12
-12
-10
-11
-9
-20140101 0000
-20140102 0000
+Measurement Specialties
+1
+1
+1
+1
+1
+1
+111111111 1111
+111111111 1112
 US/Eastern
-Chesapeake Bay
+Gulf of Maine

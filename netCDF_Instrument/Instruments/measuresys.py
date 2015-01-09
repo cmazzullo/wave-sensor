@@ -35,9 +35,17 @@ class MeasureSysLogger(NetCDFWriter):
 
         first_date = df[3][0][1:]
         self.data_start = dateconvert.convert_date_to_milliseconds(first_date, self.date_format_string)
-        self.utc_millisecond_data = [(x * 1000) + self.data_start for x in df[4]]
+        
+        #Since the instrument is not reliably recording data at 4hz we have decided to 
+        #interpolate the data to avoid any potential complications in future data analysis
+        original_dates = [(x * 1000) + self.data_start for x in df[4]]
+        instrument_pressure = [x / 1.45037738 for x in df[5]]
+        
+        self.utc_millisecond_data = dateconvert.convert_to_milliseconds(df.shape[0] - 1, \
+                                                            ('%s' % (df[3][0][1:])), \
+                                                            self.date_format_string, self.frequency)
 
-        self.pressure_data = [x / 1.45037738 for x in df[5]]
+        self.pressure_data = np.interp(self.utc_millisecond_data, original_dates, instrument_pressure)
 
         if re.match('^[0-9]{1,3}.[0-9]+$', str(df[6][0])):
             self.temperature_data = [x for x in df[6]]
@@ -83,8 +91,8 @@ if __name__ == "__main__":
     lt.creator_name = "Jurgen Klinnsmen"
     lt.creator_url = "www.test.com"
     #--for testing
-    lt.in_filename = os.path.join("benchmark","logger1.csv")
-    lt.out_filename = os.path.join("benchmark","infosys2.nc")
+    lt.in_filename = "measure_special.csv"
+    lt.out_filename = "measure_special2.csv.nc"
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)
     lt.is_baro = True

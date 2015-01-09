@@ -287,5 +287,5 @@ if __name__ == "__main__":
 #     graph.plot_multiple_series_graphs(True, True)
     
 
-    graph.plot_test_data('RBR4.nc')
+    graph.plot_test_data('TruBlue1.csv.nc')
     #graph.plot_both_together(True)

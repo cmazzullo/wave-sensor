@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from functools import partial
 import matplotlib
+import tkinter
 matplotlib.use('TkAgg')
 from collections import OrderedDict
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -28,11 +29,15 @@ import pandas
 
 
 
+
 class Wavegui:
     """ GUI for csv-to-netCDF conversion. """
     def __init__(self, parent, air_pressure=False):
         self.root = parent
-        parent.title("USGS Wave Data")
+        if air_pressure == False:
+            parent.title("Sea Water Pressure -> NetCDF")
+        else:
+            parent.title("Air Pressure -> NetCDF")
 
         if air_pressure:
             self.df_history = 'gui_df_history.txt'
@@ -133,7 +138,7 @@ class Wavegui:
         """Add a new file tab to the file frame."""
         new_fnames = set(fileprompt(multiple=True)) - self.filenames
         self.filenames |= new_fnames
-        new_datafiles = [Datafile(fname, __instruments__)
+        new_datafiles = [Datafile(fname, INSTRUMENTS)
                          for fname in new_fnames]
         self.datafiles += new_datafiles
         if self.filenames:
@@ -174,7 +179,7 @@ class Wavegui:
                               " please fill out all fields.",
                               title='Incomplete!', wait=True)
                 return False
-        device = __instruments__[datafile.instrument.get()]()
+        device = INSTRUMENTS[datafile.instrument.get()]()
         for var in fields:
             if (var.in_air_pressure and self.air_pressure) or \
                 (var.in_water_pressure and not self.air_pressure):
@@ -238,7 +243,7 @@ class Wavegui:
             fname = os.path.basename(var.stringvar.get())
             add_label(frame, text=fname, pos=(row, 2))
         elif var.options:
-            OptionMenu(frame, var.stringvar, *var.options)\
+            tkinter.OptionMenu(frame, var.stringvar, *var.options)\
                 .grid(column=2, row=row, sticky=('w', 'e'))
         else:
             ttk.Entry(frame, width=20, textvariable=var.stringvar)\
@@ -280,6 +285,44 @@ def add_label(frame, text, pos=None):
     else:
         label.pack(fill='both', expand=1)
     return label
+
+
+class MessageDialog(tkinter.Toplevel):
+    """ A template for nice dialog boxes. """
+
+    def __init__(self, parent, message="", title="", buttons=1,
+                 wait=True):
+        tkinter.Toplevel.__init__(self, parent)
+        body = ttk.Frame(self)
+        self.title(title)
+        self.boolean = None
+        self.parent = parent
+        self.transient(parent)
+        ttk.Label(body, text=message).pack()
+        if buttons == 1:
+            b = ttk.Button(body, text="OK", command=self.destroy)
+            b.pack(pady=5)
+        elif buttons == 2:
+            buttonframe = make_frame(body)
+
+            def event(boolean):
+                self.boolean = boolean
+                self.destroy()
+
+            b1 = ttk.Button(buttonframe, text='YES',
+                            command=lambda: event(True))
+            b1.grid(row=0, column=0)
+            b2 = ttk.Button(buttonframe, text='NO',
+                            command=lambda: event(False))
+            b2.grid(row=0, column=1)
+            buttonframe.pack()
+
+        body.pack()
+        self.grab_set()
+        self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
+                                  parent.winfo_rooty()+50))
+        if wait:
+            self.wait_window(self)
 
 
 class Datafile:
@@ -375,43 +418,6 @@ class Datafile:
         self.out_filename.stringvar.set(filename + '.nc')
 
 
-class MessageDialog(Toplevel):
-    """ A template for nice dialog boxes. """
-
-    def __init__(self, parent, message="", title="", buttons=1,
-                 wait=True):
-        Toplevel.__init__(self, parent)
-        body = ttk.Frame(self)
-        self.title(title)
-        self.boolean = None
-        self.parent = parent
-        self.transient(parent)
-        ttk.Label(body, text=message).pack()
-        if buttons == 1:
-            b = ttk.Button(body, text="OK", command=self.destroy)
-            b.pack(pady=5)
-        elif buttons == 2:
-            buttonframe = make_frame(body)
-
-            def event(boolean):
-                self.boolean = boolean
-                self.destroy()
-
-            b1 = ttk.Button(buttonframe, text='YES',
-                            command=lambda: event(True))
-            b1.grid(row=0, column=0)
-            b2 = ttk.Button(buttonframe, text='NO',
-                            command=lambda: event(False))
-            b2.grid(row=0, column=1)
-            buttonframe.pack()
-
-        body.pack()
-        self.grab_set()
-        self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
-                                  parent.winfo_rooty()+50))
-        if wait:
-            self.wait_window(self)
-
 
 class Variable:
     """
@@ -429,7 +435,7 @@ class Variable:
         self.label = label
         self.doc = doc
         self.options = options
-        self.stringvar = StringVar()
+        self.stringvar = tkinter.StringVar()
         self.stringvar.set('')
         self.required = required
         self.filename = filename
@@ -442,7 +448,6 @@ class Variable:
         """Cast the data in the StringVar to the right type."""
         val = self.stringvar.get()
         return self.valtype(val)
-
 
 class EmbeddedPlot:
 
@@ -1277,9 +1282,17 @@ class MeasureSysLogger(NetCDFWriter):
 
         first_date = df[3][0][1:]
         self.data_start = convert_date_to_milliseconds(first_date, self.date_format_string)
-        self.utc_millisecond_data = [(x * 1000) + self.data_start for x in df[4]]
+        
+        #Since the instrument is not reliably recording data at 4hz we have decided to 
+        #interpolate the data to avoid any potential complications in future data analysis
+        original_dates = [(x * 1000) + self.data_start for x in df[4]]
+        instrument_pressure = [x / 1.45037738 for x in df[5]]
+        
+        self.utc_millisecond_data = convert_to_milliseconds(df.shape[0] - 1, \
+                                                            ('%s' % (df[3][0][1:])), \
+                                                            self.date_format_string, self.frequency)
 
-        self.pressure_data = [x / 1.45037738 for x in df[5]]
+        self.pressure_data = np.interp(self.utc_millisecond_data, original_dates, instrument_pressure)
 
         if re.match('^[0-9]{1,3}.[0-9]+$', str(df[6][0])):
             self.temperature_data = [x for x in df[6]]
@@ -1545,9 +1558,9 @@ class Waveguage(NetCDFWriter):
         
         self.write_netCDF(self.vstore, len(self.pressure_data)) 
         
-__instruments__ = {'LevelTroll': Leveltroll,
+INSTRUMENTS = {'LevelTroll': Leveltroll,
                    'RBRSolo': RBRSolo,
-                   'Wave Guage': Waveguage,
+                   'Wave Guage': Waveguage, 
                    'USGS Homebrew': House,
                    'Measurement Specialties': MeasureSysLogger,
                    'HOBO': Hobo}
