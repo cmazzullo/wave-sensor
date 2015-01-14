@@ -155,7 +155,7 @@ class Waveguage(NetCDFWriter):
 
         self.vstore.pressure_data = self.pressure_data
         self.vstore.utc_millisecond_data = self.utc_millisecond_data
-        self.vstore.latitutde = self.latitude
+        self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
 
         #Tests#

@@ -35,12 +35,12 @@ class MeasureSysLogger(NetCDFWriter):
 
         first_date = df[3][0][1:]
         self.data_start = dateconvert.convert_date_to_milliseconds(first_date, self.date_format_string)
-        
-        #Since the instrument is not reliably recording data at 4hz we have decided to 
+
+        #Since the instrument is not reliably recording data at 4hz we have decided to
         #interpolate the data to avoid any potential complications in future data analysis
         original_dates = [(x * 1000) + self.data_start for x in df[4]]
         instrument_pressure = [x / 1.45037738 for x in df[5]]
-        
+
         self.utc_millisecond_data = dateconvert.convert_to_milliseconds(df.shape[0] - 1, \
                                                             ('%s' % (df[3][0][1:])), \
                                                             self.date_format_string, self.frequency)
@@ -74,7 +74,7 @@ class MeasureSysLogger(NetCDFWriter):
 
         self.vstore.pressure_data = self.pressure_data
         self.vstore.utc_millisecond_data = self.utc_millisecond_data
-        self.vstore.latitutde = self.latitude
+        self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
 
         #Tests#
