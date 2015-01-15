@@ -20,12 +20,13 @@ from Instruments.measuresys import MeasureSysLogger
 from Instruments.hobo import Hobo
 
 
-INSTRUMENTS = {'LevelTroll': Leveltroll,
-                   'RBRSolo': RBRSolo,
-                   'Wave Guage': Waveguage,
-                   'USGS Homebrew': House,
-                   'Measurement Specialties': MeasureSysLogger,
-                   'HOBO': Hobo}
+INSTRUMENTS = {
+    'LevelTroll': Leveltroll,
+    'RBRSolo': RBRSolo,
+    'Wave Guage': Waveguage,
+    'USGS Homebrew': House,
+    'Measurement Specialties': MeasureSysLogger,
+    'HOBO': Hobo }
 
 class Wavegui:
     """ GUI for csv-to-netCDF conversion. """

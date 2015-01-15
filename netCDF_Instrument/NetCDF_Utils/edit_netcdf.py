@@ -178,7 +178,7 @@ class NetCDFWriter(object):
         self.latitude = 0
         self.longitude = 0
         self.z = 0
-        self.salinity_ppm = -1.0e+10
+        self.salinity = -1.0e+10
         self.utc_millisecond_data = None
         self.pressure_data = None
         self.presure_data_flags = None
@@ -240,7 +240,8 @@ class NetCDFWriter(object):
                        'final_water_depth': self.final_water_depth,
                        'deployment_time': self.deployment_time,
                        'retrieval_time': self.retrieval_time,
-                       'device_depth': self.device_depth}
+                       'device_depth': self.device_depth,
+                       'salinity' : self.salinity}
         var_dict['global_vars_dict'] = global_vars
 
         return var_dict

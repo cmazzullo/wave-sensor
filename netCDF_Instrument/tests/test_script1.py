@@ -44,10 +44,12 @@ class KnownValues(unittest.TestCase):
         ('sea_name', 'Great Lakes'),
         ('creator_name', 'Chris Mazzullo'),
         ('creator_email', 'stuff@gmail.com'),
+        ('creator_url', 'zombo.com'),
         ('initial_water_depth', '11.5'),
         ('final_water_depth', '10.0'),
         ('device_depth', '9.5'),
-        ('creator_url', 'zombo.com'))
+        ('salinity', '100.0'))
+
 
     def test_netcdf_known_netcdf_attributes(self):
         with Dataset(test_nc_fname, 'r', format='NETCDF4_CLASSIC') as ds:
@@ -107,9 +109,8 @@ class KnownValues(unittest.TestCase):
             result_pressure_series = ds.variables['sea_water_pressure'][:]
             for known_p, result_p in zip(self.known_pressure_series,
                                          result_pressure_series):
-                known_p = 0.689475729 * known_p
+                known_p = 0.6894757 * known_p
                 self.assertEqual(round(known_p, 4), round(result_p, 4))
-
 
 
 if __name__ == '__main__':
