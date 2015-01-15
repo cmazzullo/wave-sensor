@@ -17,12 +17,12 @@ class Grapher(NetCDFReader):
         super().__init__()
         self.pressure_data = None
         self.file_names = [ \
-                            os.path.join("benchmark","NEAG1_716.nc"),
-                            os.path.join("benchmark","NEAG2_716.nc"),
-                            os.path.join("benchmark","RBRsolo1_716.csv.nc"),
-                            os.path.join("benchmark","RBRsolo2_716.csv.nc"),
-                            os.path.join("benchmark","RBRvirtuoso_716.csv.nc"),
-                        os.path.join("benchmark","newstuff.nc")
+                            os.path.join("../../data_files","Big5_240dayNewNoise.nc"),
+                            os.path.join("../../data_files","outts_filtered_boxcar.nc"),
+                            os.path.join("../../data_files","outts_filtered_usgs.nc"),
+#                             os.path.join("benchmark","RBRsolo2_716.csv.nc"),
+#                             os.path.join("benchmark","RBRvirtuoso_716.csv.nc"),
+#                         os.path.join("benchmark","newstuff.nc")
                             ]
         self.last_color = dict()
         self.fill_value_correction_bool = False
@@ -278,7 +278,7 @@ if __name__ == "__main__":
     #--create an instance    
     graph = Grapher()
     
-#   graph.plot_multiple_series_graphs(True,True)
+    graph.plot_multiple_series_graphs(True,True)
 #     graph.plot_both_together(True)
 #     graph.plot_both_together()
    
@@ -287,5 +287,5 @@ if __name__ == "__main__":
 #     graph.plot_multiple_series_graphs(True, True)
     
 
-    graph.plot_test_data('TruBlue1.csv.nc')
+ #  graph.plot_test_data('../../data_files/Big5_240dayNewNoise.nc')
     #graph.plot_both_together(True)
