@@ -11,8 +11,10 @@ Pressure data in the netCDF
 import unittest
 from netCDF4 import Dataset
 
-csv_fname = './test_data/leveltroll_test.csv'
-test_nc_fname = './test_data/leveltroll_test.nc'
+#the test data directory did not get saved on the repository
+#ill go ahead and make a directory for it
+csv_fname = '../test_data/leveltroll_test.csv'
+test_nc_fname = '../test_data/leveltroll_test.nc'
 
 instrument_name = 'LevelTroll'
 in_filename = csv_fname,
@@ -33,6 +35,15 @@ out_filename = test_nc_fname
 # creator_email = 'stuff@gmail.com'
 # creator_url = 'zombo.com'
 
+###############################################Greg Comments
+# As we discussed earlier, separating GUI and script1 function will help make this more testable
+# Make sure to have modular functions for each action so that they can be tested for their specific purpose
+# Such as for Script1.py such as accurate conversions, final data accuracy, and other methods removed from the GUI
+# Similarly, make sure all the GUI actions are tested, (majority of buttons, not necessarily actions carried out by script1 as a result)
+# Whatever method tkinter uses to listen for specific events I would test through your GUI script
+
+# Your methods for checking final data accuracy are good, make sure to give more specific names for each test
+#even though their purposes are apparent now, e.g. test_netcdf_known_sea_pressure for the last test
 
 class KnownValues(unittest.TestCase):
 
@@ -104,7 +115,7 @@ class KnownValues(unittest.TestCase):
                               14.732, 14.730, 14.731, 14.729, 14.730,
                               14.731, 14.729]
 
-    def test_netcdf_known_variables(self):
+    def test_netcdf_known_variables2(self):
         with Dataset(test_nc_fname, 'r', format='NETCDF4_CLASSIC') as ds:
             result_pressure_series = ds.variables['sea_water_pressure'][:]
             for known_p, result_p in zip(self.known_pressure_series,
