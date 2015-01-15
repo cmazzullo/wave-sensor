@@ -31,10 +31,10 @@ class NetCDFReader(object):
         self.air_pressure_data = None
         self.depth_data = None
         self.times = None
-        
+
     def get_test_data(self, file_name, time_convert = False):
         """Read .nc file and set all variables to object properties
-        
+
         Arguments
         file_name -- location of input file
         time_convert -- boolean whether to convert milliseconds to time
@@ -48,17 +48,17 @@ class NetCDFReader(object):
         self.pressure_qc = nc.variables['pressure_qc'][:]
         self.latitude = nc.variables['latitude'][:]
         self.longitude = nc.variables['longitude'][:]
-        
+
         try:
             self.air_pressure_data = nc.variables['air_pressure'][:]
         except:
             print('No air pressure')
-            
+
         try:
             self.depth_data = nc.variables['depth'][:]
         except:
             print('No Depth')
-       
+
     def read_file(self,file_name,pressure_bool = True, series_bool=True, milliseconds_bool=False):
         """Read a .nc file
 
@@ -150,20 +150,20 @@ class NetCDFReader(object):
 
 
 class NetCDFToCSV(NetCDFReader):
-    
+
     def __init__(self):
         self.file_name = None
         self.time_convert = True
         self.out_file_name = 'C:\\Tappy\\test.csv'
-    
+
     def convert_to_csv(self):
         self.get_test_data(self.file_name, self.time_convert)
-        
+
         test = pd.DataFrame(pd.Series(self.pressure_data,index=self.times))
         return test;
 #         test.to_csv(self.out_file_name,',',chunksize = 1)
-        
-        
+
+
 class NetCDFWriter(object):
 
     def __init__(self):
@@ -228,6 +228,7 @@ class NetCDFWriter(object):
         var_dict['lon_var'] = lon_dict
         global_vars = {'creator_name': self.creator_name,
                        'creator_email': self.creator_email,
+                       'creator_url': self.creator_url,
                        'geospatial_lat_min': self.latitude,
                        'geospatial_lat_max': self.latitude,
                        'geospatial_lon_min': self.longitude,
@@ -243,7 +244,7 @@ class NetCDFWriter(object):
         var_dict['global_vars_dict'] = global_vars
 
         return var_dict
-    
+
 if __name__ == '__main__':
     a = NetCDFToCSV()
     a.file_name = 'C:\\Users\\Gregory\\Documents\\GitHub\\wave-sensor\\netCDF_Instrument\\TimeDomainAnalysis\\script3in.nc'
