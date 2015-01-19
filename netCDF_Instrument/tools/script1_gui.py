@@ -4,6 +4,7 @@ modules. Also contains some convenience methods for other guis and a
 general class, MessageDialog, for creating custom dialog boxes.
 """
 
+
 from functools import partial
 import tkinter
 from tkinter import ttk
@@ -11,7 +12,8 @@ from tkinter.filedialog import askopenfilename as fileprompt
 from pytz import timezone
 import os
 import numpy as np
-
+from collections import OrderedDict
+from tools.script1 import INSTRUMENTS, convert_to_netcdf
 from Instruments.rbrsolo import RBRSolo
 from Instruments.leveltroll import Leveltroll
 from Instruments.waveguage import Waveguage
@@ -19,13 +21,6 @@ from Instruments.house import House
 from Instruments.measuresys import MeasureSysLogger
 from Instruments.hobo import Hobo
 
-
-INSTRUMENTS = {'LevelTroll': Leveltroll,
-                   'RBRSolo': RBRSolo,
-                   'Wave Guage': Waveguage,
-                   'USGS Homebrew': House,
-                   'Measurement Specialties': MeasureSysLogger,
-                   'HOBO': Hobo}
 
 class Wavegui:
     """ GUI for csv-to-netCDF conversion. """
@@ -35,27 +30,20 @@ class Wavegui:
             parent.title("Sea Water Pressure -> NetCDF")
         else:
             parent.title("Air Pressure -> NetCDF")
-
         if air_pressure:
             self.df_history = 'gui_df_history.txt'
         else:
             self.df_history = 'gui_df_history_air.txt'
-
         self.global_history = 'gui_global_history.txt'
-
         self.air_pressure = air_pressure
-        self.global_fields = [
-            Variable(label='Your full name:', autosave=True,
-                     name_in_device='creator_name'),
-            Variable(label='Your email address:', autosave=True,
-                     name_in_device='creator_email'),
-            Variable(label='Your personal url:', autosave=True,
-                     name_in_device='creator_url'),
-            Variable(label='Project name:', autosave=True,)]
+        d = OrderedDict()
+        d['creator_name'] = Variable(label='Your full name:', autosave=True)
+        d['creator_email'] = Variable(label='Your email address:', autosave=True)
+        d['creator_url'] = Variable(label='Your personal url:', autosave=True)
+        self.global_fields = d
         self.datafiles = list()
         self.filenames = set()
         self.initialize()
-
 
     def initialize(self):
         """
@@ -75,8 +63,8 @@ class Wavegui:
         self.global_frame = make_frame(self.root)
         add_label(self.global_frame, 'Global Settings:')
         entries = make_frame(self.global_frame)
-        for row, var in enumerate(self.global_fields):
-            self.make_widget(entries, var, row)
+        for row, key in enumerate(self.global_fields):
+            self.make_widget(entries, self.global_fields[key], row)
         entries.pack(fill='both', expand=1)
         save_globals = partial(self.save_history, self.global_history,
                                self.global_fields)
@@ -96,21 +84,20 @@ class Wavegui:
             for datafile in self.datafiles:
                 tab = make_frame(tabs)
                 widgets = make_frame(tab)
-                for row, var in enumerate(datafile.fields):
-                    self.make_widget(widgets, var, row)
+                for row, key in enumerate(datafile):
+                    self.make_widget(widgets, datafile[key], row)
                 widgets.pack(fill='both', expand=1)
                 save = partial(self.save_history, self.df_history,
-                               datafile.fields)
-
+                               datafile)
                 rm = partial(self.remove_file, datafile)
                 load = partial(self.load_history, self.df_history,
-                               datafile.fields)
+                               datafile)
                 buttonlist = [
                     ('Save Entries', save, 0, 1),
                     ('Remove File', rm, 0, 2),
                     ('Load Default', load, 0, 3)]
                 make_buttonbox(tab, buttonlist)
-                fname = os.path.basename(datafile.in_filename.stringvar.get())
+                fname = os.path.basename(datafile['in_filename'].stringvar.get())
                 maxlen = 7
                 if len(fname) > maxlen:
                     fname = fname[:maxlen] + '...'
@@ -125,9 +112,8 @@ class Wavegui:
         self.global_frame.grid(row=1, column=0, sticky=('n', 'w', 'e', 's'))
         self.root.update()
 
-
     def remove_file(self, datafile):
-        self.filenames.remove(datafile.in_filename.get())
+        self.filenames.remove(datafile.in_filename.stringvar.get())
         self.datafiles.remove(datafile)
         self.initialize()
 
@@ -135,12 +121,76 @@ class Wavegui:
         """Add a new file tab to the file frame."""
         new_fnames = set(fileprompt(multiple=True)) - self.filenames
         self.filenames |= new_fnames
-        new_datafiles = [Datafile(fname, INSTRUMENTS)
-                         for fname in new_fnames]
+        new_datafiles = [self.make_file_dict(fname) for fname in new_fnames]
         self.datafiles += new_datafiles
         if self.filenames:
             self.initialize()
 
+    def make_file_dict(self, fname):
+        d = OrderedDict()
+        d['in_filename'] = Variable(name_in_device='in_filename',
+                                    label='Input filename:',
+                                    filename='in')
+        d['in_filename'].stringvar.set(fname)
+        d['out_filename'] = Variable(name_in_device='out_filename',
+                                     label='Output filename:',
+                                     filename='out')
+        d['out_filename'].stringvar.set(fname + '.nc')
+
+        d['instrument_name'] = Variable(options=INSTRUMENTS.keys(),
+                                   label='Instrument:',
+                                   autosave=True)
+        d['latitude'] = Variable(label='Latitude (decimal degrees):',
+                                 autosave=True,
+                                 doc='Decimal degrees east of the Prime Meridian.')
+        d['longitude'] = Variable(autosave=True,
+                                  label='Longitude (decimal degrees):',
+                                  doc='Decimal degrees north of the equator.')
+        d['salinity'] = Variable(autosave=True,
+                                 label='Salinity (ppm):',
+                                 in_air_pressure=False)
+        d['initial_water_depth'] = Variable(autosave=True,
+                                            label='Initial water depth (meters):',
+                                            in_air_pressure=False)
+        d['final_water_depth'] = Variable(autosave=True,
+                                          label='Final water depth (meters):',
+                                          in_air_pressure=False)
+        d['device_depth'] = Variable(autosave=True,
+                                     label='Depth of device below surface (meters):',
+                                     in_air_pressure=False)
+        d['deployment_time'] = Variable(autosave=True,
+                                        label='Deployment time (YYYYMMDD HHMM):',
+                                        in_air_pressure=False)
+        d['retrieval_time'] = Variable(autosave=True,
+                                       label='Retrieval time (YYYYMMDD HHMM):',
+                                       in_air_pressure=False)
+        d['tzinfo'] = Variable(autosave=True,
+                               label='Timezone:',
+                               options=("US/Central", "US/Eastern"))
+        d['sea_name'] = Variable(label='Sea Name:',
+                                 in_air_pressure=False,
+                                 autosave=True,
+                                 options=('Chesapeake Bay',
+                                          'Great Lakes',
+                                          'Gulf of Alaska',
+                                          'Gulf of California',
+                                          'Gulf of Maine',
+                                          'Gulf of Mexico',
+                                          'Hudson Bay',
+                                          'Massachusetts Bay',
+                                          'NE Atlantic (limit-40 W)',
+                                          'NE Pacific (limit-180)',
+                                          'North American Coastline-North',
+                                          'North American Coastline-South',
+                                          'North Atlantic Ocean',
+                                          'North Pacific Ocean',
+                                          'NW Atlantic (limit-40 W)',
+                                          'NW Pacific (limit-180)',
+                                          'SE Atlantic (limit-20 W)',
+                                          'SE Pacific (limit-140 W)',
+                                          'SW Atlantic (limit-20 W)',
+                                          'SW Pacific (limit-147 E to 140 W)'))
+        return d
 
     def process_files(self):
         """Run the csv to netCDF conversion on the selected files."""
@@ -149,53 +199,18 @@ class Wavegui:
                           title='Processing...', buttons=0,
                           wait=False)
         self.root.update()
-        devices = [self.read_file(datafile, d) for datafile in
-                   self.datafiles]
-        if not all(devices):
-            return
-        start_points = [0] * len(devices)
-        for device, s in zip(devices, start_points):
-            self.write_file(device, s)
+        for datafile in self.datafiles:
+            union = dict(datafile.items() | self.global_fields.items())
+            inputs = {key : union[key].stringvar.get() for key in union}
+            inputs['sea_pressure'] = not self.air_pressure
+            print(inputs)
+            convert_to_netcdf(inputs)
         d.destroy()
         MessageDialog(self.root, message="Success! Files saved.",
                       title='Success!')
         self.datafiles = list()
         self.filenames = set()
         self.initialize()
-
-
-    def read_file(self, datafile, dialog):
-        """Read data from the csv file into a 'device'"""
-        fields = self.global_fields + datafile.fields
-        for var in fields:
-            if ((var.in_air_pressure and self.air_pressure) or \
-                (var.in_water_pressure and (not self.air_pressure))) \
-                and var.required and not var.stringvar.get():
-                dialog.destroy()
-                MessageDialog(self.root, message="Incomplete entries,"
-                              " please fill out all fields.",
-                              title='Incomplete!', wait=True)
-                return False
-        device = INSTRUMENTS[datafile.instrument.get()]()
-        for var in fields:
-            if (var.in_air_pressure and self.air_pressure) or \
-                (var.in_water_pressure and not self.air_pressure):
-                if var.name_in_device:
-                    print(var.name_in_device)
-                    setattr(device, var.name_in_device, var.get())
-        device.read()
-        return device
-
-
-    def write_file(self, device, start_point):
-        """Write data from the 'device' to a netCDF file"""
-        device.user_data_start_flag = start_point
-        out_file = device.out_filename
-        if os.path.isfile(out_file):
-            os.remove(out_file)
-        sea_pressure = not self.air_pressure
-        device.write(sea_pressure=sea_pressure)
-
 
     def save_history(self, filename, varlist):
         """Save per-file entries to a history file for later use"""
@@ -204,18 +219,17 @@ class Wavegui:
                 if var.autosave:
                     f.write(var.stringvar.get() + '\n')
 
-
     def load_per_file(self):
         for dfile in self.datafiles:
-            self.load_history(self.df_history, dfile.fields)
+            self.load_history(self.df_history, dfile)
 
-    def load_history(self, filename, fields):
+    def load_history(self, filename, datafile):
         """Load saved per-file entries into a file's tab"""
         any_fields_filled = (
-            any(v.stringvar.get()
+            any(self.global_fields[v].stringvar.get()
                 for v in self.global_fields
-                if not v.filename))
-        l = [v for v in fields if v.autosave]
+                if not self.global_fields[v].filename))
+        l = [v for v in datafile if datafile[v].autosave]
         message = 'This will overwrite your entries. Are you sure?'
         def proceed():
             d = MessageDialog(self.root, message=message,
@@ -225,8 +239,7 @@ class Wavegui:
             if os.path.isfile(filename):
                 with open(filename, 'r') as f:
                     for line, var in zip(f, l):
-                        var.stringvar.set(line.rstrip())
-
+                        datafile[var].stringvar.set(line.rstrip())
 
     def make_widget(self, frame, var, row):
         """Make a widget based on the properties of a Variable."""
@@ -249,7 +262,6 @@ class Wavegui:
             c = lambda: MessageDialog(self.root, message=var.doc,
                                       title='Help')
             add_button(frame, 'Help', c, row, 3)
-
 
 def make_frame(frame, header=None):
     """Make a frame with uniform padding."""
@@ -322,100 +334,6 @@ class MessageDialog(tkinter.Toplevel):
             self.wait_window(self)
 
 
-class Datafile:
-    """
-    A container for Variable objects.
-
-    This class represents the data from a single pressure file. The
-    data is read in from a csv and from fields in the GUI, stored in
-    Variable objects, and can be written to a netCDF file.
-    """
-    def __init__(self, filename, instruments):
-        self.in_filename = Variable(name_in_device='in_filename',
-                                    label='Input filename:',
-                                    filename='in')
-        self.out_filename = Variable(name_in_device='out_filename',
-                                     label='Output filename:',
-                                     filename='out')
-        self.instrument = Variable(options=instruments.keys(),
-                                   label='Instrument:',
-                                   autosave=True)
-        self.fields = [
-            self.in_filename,
-            self.out_filename,
-            self.instrument,
-            Variable(name_in_device='latitude',
-                     label='Latitude (decimal degrees):',
-                     valtype=np.float32,
-                     autosave=True,
-                     doc='Decimal degrees east of the Prime Meridian.'),
-            Variable(name_in_device='longitude',
-                     autosave=True,
-                     label='Longitude (decimal degrees):',
-                     valtype=np.float32,
-                     doc='Decimal degrees north of the equator.'),
-            Variable(name_in_device='salinity',
-                     autosave=True,
-                     label='Salinity (ppm):',
-                     valtype=np.float32,
-                     in_air_pressure=False),
-            Variable(name_in_device='initial_water_depth',
-                     autosave=True,
-                     label='Initial water depth (meters):',
-                     valtype=np.float32,
-                     in_air_pressure=False),
-            Variable(name_in_device='final_water_depth',
-                     autosave=True,
-                     label='Final water depth (meters):',
-                     valtype=np.float32,
-                     in_air_pressure=False),
-            Variable(name_in_device='device_depth',
-                     autosave=True,
-                     label='Depth of device below surface (meters):',
-                     valtype=np.float32,
-                     in_air_pressure=False),
-            Variable(name_in_device='deployment_time',
-                     autosave=True,
-                     label='Deployment time (YYYYMMDD HHMM):',
-                     in_air_pressure=False),
-            Variable(name_in_device='retrieval_time',
-                     autosave=True,
-                     label='Retrieval time (YYYYMMDD HHMM):',
-                     in_air_pressure=False),
-            Variable(name_in_device='tzinfo',
-                     autosave=True,
-                     label='Timezone:',
-                     options=("US/Central", "US/Eastern"),
-                     valtype=timezone),
-            Variable(name_in_device='sea_name',
-                     label='Sea Name:',
-                     in_air_pressure=False,
-                     autosave=True,
-                     options=('Chesapeake Bay',
-                              'Great Lakes',
-                              'Gulf of Alaska',
-                              'Gulf of California',
-                              'Gulf of Maine',
-                              'Gulf of Mexico',
-                              'Hudson Bay',
-                              'Massachusetts Bay',
-                              'NE Atlantic (limit-40 W)',
-                              'NE Pacific (limit-180)',
-                              'North American Coastline-North',
-                              'North American Coastline-South',
-                              'North Atlantic Ocean',
-                              'North Pacific Ocean',
-                              'NW Atlantic (limit-40 W)',
-                              'NW Pacific (limit-180)',
-                              'SE Atlantic (limit-20 W)',
-                              'SE Pacific (limit-140 W)',
-                              'SW Atlantic (limit-20 W)',
-                              'SW Pacific (limit-147 E to 140 W)'))]
-        self.in_filename.stringvar.set(filename)
-        self.out_filename.stringvar.set(filename + '.nc')
-
-
-
 class Variable:
     """
     Stores data about each attribute to be added to the netCDF file.
@@ -424,9 +342,8 @@ class Variable:
     the Variable and use the data inside it in the csv-to-netCDF
     converters.
     """
-    def __init__(self, name_in_device=None, label=None,
-                 doc=None, options=None, required=True,
-                 filename=False, valtype=str, autosave=False,
+    def __init__(self, name_in_device=None, label=None, doc=None,
+                 options=None, filename=False, autosave=False,
                  in_air_pressure=True, in_water_pressure=True):
         self.name_in_device = name_in_device
         self.label = label
@@ -434,18 +351,10 @@ class Variable:
         self.options = options
         self.stringvar = tkinter.StringVar()
         self.stringvar.set('')
-        self.required = required
         self.filename = filename
-        self.valtype = valtype
         self.autosave = autosave
         self.in_air_pressure = in_air_pressure
         self.in_water_pressure = in_water_pressure
-
-    def get(self):
-        """Cast the data in the StringVar to the right type."""
-        val = self.stringvar.get()
-        return self.valtype(val)
-
 
 if __name__ == '__main__':
     root = tkinter.Tk()

@@ -54,11 +54,9 @@ class KnownValues(unittest.TestCase):
     def setUp(self):
         script1.convert_to_netcdf(INPUTS)
 
-
     def tearDown(self):
         if os.path.exists(OUT_FILENAME):
             os.remove(OUT_FILENAME)
-
 
     known_numerical_netcdf_attributes = [
         'initial_water_depth',
@@ -66,14 +64,12 @@ class KnownValues(unittest.TestCase):
         'device_depth',
         'salinity' ]
 
-
     def test_known_numerical_netcdf_attributes(self):
         with Dataset(OUT_FILENAME, 'r', format='NETCDF4_CLASSIC') as ds:
             for key in self.known_numerical_netcdf_attributes:
                 known_value = INPUTS[key]
                 result = getattr(ds, key)
                 self.assertEqual(float(known_value), float(result))
-
 
     known_string_netcdf_attributes = [
         'deployment_time',
@@ -83,7 +79,6 @@ class KnownValues(unittest.TestCase):
         'creator_email',
         'creator_url' ]
 
-
     def test_known_string_netcdf_attributes(self):
         with Dataset(OUT_FILENAME, 'r', format='NETCDF4_CLASSIC') as ds:
             for key in self.known_string_netcdf_attributes:
@@ -91,11 +86,9 @@ class KnownValues(unittest.TestCase):
                 result = getattr(ds, key)
                 self.assertEqual(str(known_value), str(result))
 
-
     known_numerical_netcdf_variables = [
         'longitude',
         'latitude' ]
-
 
     def test_known_numerical_netcdf_variables(self):
         with Dataset(OUT_FILENAME, 'r', format='NETCDF4_CLASSIC') as ds:
@@ -103,7 +96,6 @@ class KnownValues(unittest.TestCase):
                 known_value = INPUTS[key]
                 result = ds.variables[key].getValue()
                 self.assertEqual(str(known_value), str(result))
-
 
     # this is pulled directly from the CSV
     known_pressure_series = [ 14.735, 14.735, 14.732, 14.731, 14.729,
@@ -141,7 +133,6 @@ class KnownValues(unittest.TestCase):
                               14.728, 14.728, 14.729, 14.729, 14.730,
                               14.732, 14.730, 14.731, 14.729, 14.730,
                               14.731, 14.729 ]
-
 
     def test_netcdf_known_variables(self):
         with Dataset(OUT_FILENAME, 'r', format='NETCDF4_CLASSIC') as ds:
