@@ -4,14 +4,11 @@ modules. Also contains some convenience methods for other guis and a
 general class, MessageDialog, for creating custom dialog boxes.
 """
 
-
 from functools import partial
 import tkinter
 from tkinter import ttk
 from tkinter.filedialog import askopenfilename as fileprompt
-from pytz import timezone
 import os
-import numpy as np
 from collections import OrderedDict
 from tools.script1 import INSTRUMENTS, convert_to_netcdf
 from Instruments.rbrsolo import RBRSolo
@@ -203,7 +200,6 @@ class Wavegui:
             union = dict(datafile.items() | self.global_fields.items())
             inputs = {key : union[key].stringvar.get() for key in union}
             inputs['sea_pressure'] = not self.air_pressure
-            print(inputs)
             convert_to_netcdf(inputs)
         d.destroy()
         MessageDialog(self.root, message="Success! Files saved.",
@@ -262,6 +258,7 @@ class Wavegui:
             c = lambda: MessageDialog(self.root, message=var.doc,
                                       title='Help')
             add_button(frame, 'Help', c, row, 3)
+
 
 def make_frame(frame, header=None):
     """Make a frame with uniform padding."""
