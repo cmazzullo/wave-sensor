@@ -145,6 +145,7 @@ class Wavegui:
                                   doc='Decimal degrees north of the equator.')
         d['salinity'] = Variable(autosave=True,
                                  label='Salinity (ppm):',
+                                 options=("Salt Water", "Fresh Water", "Brackish"),
                                  in_air_pressure=False)
         d['initial_water_depth'] = Variable(autosave=True,
                                             label='Initial water depth (meters):',

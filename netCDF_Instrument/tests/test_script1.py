@@ -29,7 +29,7 @@ INPUTS = {
     'out_filename' : OUT_FILENAME,
     'latitude' : '20.0',
     'longitude' : '30.0',
-    'salinity' : '100.0',
+    'salinity' : 'Brackish',
     'initial_water_depth' : '11.5',
     'final_water_depth' : '10.0',
     'device_depth' : '9.5',
@@ -57,8 +57,7 @@ class KnownValues(unittest.TestCase):
     known_numerical_netcdf_attributes = [
         'initial_water_depth',
         'final_water_depth',
-        'device_depth',
-        'salinity' ]
+        'device_depth']
 
     known_string_netcdf_attributes = [
         'deployment_time',
@@ -66,7 +65,8 @@ class KnownValues(unittest.TestCase):
         'sea_name',
         'creator_name',
         'creator_email',
-        'creator_url' ]
+        'creator_url',
+        'salinity' ]
 
     known_numerical_netcdf_variables = [
         'longitude',

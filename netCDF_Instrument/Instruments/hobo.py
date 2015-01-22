@@ -43,7 +43,7 @@ class Hobo(NetCDFWriter):
         df = pandas.read_table(self.in_filename,skiprows=skip_index, header=None, engine='c', sep=',')
 
         self.utc_millisecond_data = dateconvert.convert_to_milliseconds(df.shape[0], df[1][0], \
-                                                            self.date_format_string, self.frequency)
+                                                                        self.date_format_string, self.frequency)
 
         self.pressure_data = [x for x in np.divide(df[2], 1.45037738)]
 

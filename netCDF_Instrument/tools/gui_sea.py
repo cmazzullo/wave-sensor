@@ -4,7 +4,7 @@ Created on Mon Aug 11 15:20:35 2014
 
 @author: cmazzullo
 """
-import tools.guicore as core
+import tools.script1_gui as core
 from tkinter import *
 
 if __name__ == '__main__':

@@ -6,8 +6,8 @@ from matplotlib.pyplot import *
 ion()
 
 from scipy.optimize import newton
-from DepthCalculation.pressure_to_depth import fft_method
-from DepthCalculation.pressure_to_depth import combo_method
+from pressure_to_depth import fft_method
+from pressure_to_depth import combo_method
 
 g = 9.8
 rho = 1027

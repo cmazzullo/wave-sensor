@@ -4,7 +4,7 @@ from matplotlib.dates import HourLocator, DayLocator, DateFormatter, MinuteLocat
 import datetime
 import numpy as np
 import os
-import DepthCalculation.pressure_to_depth as p2d
+import pressure_to_depth as p2d
 import NetCDF_Utils.nc as nc
 
 folder = '..\\Presentation\\DepthPlot\\'

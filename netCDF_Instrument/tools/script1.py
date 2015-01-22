@@ -30,7 +30,6 @@ def convert_to_netcdf(inputs):
 DATATYPES = {
     'latitude': np.float32,
     'longitude': np.float32,
-    'salinity': np.float32,
     'initial_water_depth': np.float32,
     'final_water_depth': np.float32,
     'device_depth': np.float32,

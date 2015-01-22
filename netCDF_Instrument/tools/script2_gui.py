@@ -14,7 +14,7 @@ from tkinter import ttk
 
 import NetCDF_Utils.nc as nc
 import tools.script2 as script2
-import tools.guicore as gc
+import tools.script1_gui as gc
 
 
 class Script2gui:
