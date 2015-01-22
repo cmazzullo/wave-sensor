@@ -194,8 +194,9 @@ class Wavegui:
         """Run the csv to netCDF conversion on the selected files."""
         # First, check that all fields are filled.
         for datafile in self.datafiles:
-            for key in datafile:
-                if datafile[key].stringvar.get() == '':
+            union = dict(datafile.items() | self.global_fields.items())
+            for key in union:
+                if union[key].stringvar.get() == '':
                     MessageDialog(self.root, message="Incomplete entries,"
                                   " please fill out all fields.",
                                   title='Incomplete!', wait=True)
@@ -217,12 +218,12 @@ class Wavegui:
         self.filenames = set()
         self.initialize()
 
-    def save_history(self, filename, varlist):
+    def save_history(self, filename, vardict):
         """Save per-file entries to a history file for later use"""
         with open(filename, 'w') as f:
-            for var in varlist:
-                if var.autosave:
-                    f.write(var.stringvar.get() + '\n')
+            for key in vardict:
+                if vardict[key].autosave:
+                    f.write(vardict[key].stringvar.get() + '\n')
 
     def load_per_file(self):
         for dfile in self.datafiles:
@@ -230,21 +231,24 @@ class Wavegui:
 
     def load_history(self, filename, datafile):
         """Load saved per-file entries into a file's tab"""
+        # if any fields are filled, ask first
         any_fields_filled = (
             any(self.global_fields[v].stringvar.get()
                 for v in self.global_fields
                 if not self.global_fields[v].filename))
-        l = [v for v in datafile if datafile[v].autosave]
         message = 'This will overwrite your entries. Are you sure?'
         def proceed():
             d = MessageDialog(self.root, message=message,
                               title='Confirm', buttons=2, wait=True)
             return d.boolean
+
         if not any_fields_filled or proceed():
             if os.path.isfile(filename):
                 with open(filename, 'r') as f:
-                    for line, var in zip(f, l):
-                        datafile[var].stringvar.set(line.rstrip())
+                    l = [v for v in datafile if datafile[v].autosave]
+                    for line, key in zip(f, l):
+                        print('line:', line, 'key:', key)
+                        datafile[key].stringvar.set(line.rstrip())
 
     def make_widget(self, frame, var, row):
         """Make a widget based on the properties of a Variable."""
