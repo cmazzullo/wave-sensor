@@ -192,6 +192,14 @@ class Wavegui:
 
     def process_files(self):
         """Run the csv to netCDF conversion on the selected files."""
+        # First, check that all fields are filled.
+        for datafile in self.datafiles:
+            for key in datafile:
+                if datafile[key].stringvar.get() == '':
+                    MessageDialog(self.root, message="Incomplete entries,"
+                                  " please fill out all fields.",
+                                  title='Incomplete!', wait=True)
+                    return False
         message = ('Processing files, this may take a few minutes.')
         d = MessageDialog(self.root, message=message,
                           title='Processing...', buttons=0,
