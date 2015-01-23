@@ -13,14 +13,16 @@ from scipy.optimize import newton
 # Constants
 g = 9.8  # gravity (m / s**2)
 rho = 1030  # density of seawater (kg / m**3)
-min_coeff = 1/15
 
-def combo_method(t, p_dbar, z, H, timestep):
+
+def combo_method(t, p_dbar, z, H, timestep, window_func=np.hamming):
     coeff = np.polyfit(t, p_dbar, 1)
     static_p = coeff[1] + coeff[0]*t
     static_y = hydrostatic_method(static_p)
     wave_p = p_dbar - static_p
-    wave_y = fft_method(t, wave_p, z, H, timestep, auto_cutoff=True)
+    cutoff = auto_cutoff(np.average(H))
+    wave_y = fft_method(t, wave_p, z, H, timestep, hi_cut=cutoff,
+                        window_func=window_func)
     return static_y + wave_y
 
 
@@ -29,45 +31,35 @@ def hydrostatic_method(pressure):
     return (pressure *  1e4) / (rho * g)
 
 
-def fft_method(t, p_dbar, z, H, timestep, gate=0, window=False,
-               lo_cut=-1, hi_cut=float('inf'), auto_cutoff=True):
+def auto_cutoff(h):
+    return .9/np.sqrt(h)
+
+
+def fft_method(t, p_dbar, z, H, timestep, gate=0, window_func=np.ones,
+               lo_cut=-1, hi_cut=float('inf')):
     """
     Create wave height data from an array of pressure readings.
     """
+    print(hi_cut)
     # Put the pressure data into frequency space
     n = len(p_dbar) - len(p_dbar) % 2
-    p = p_dbar[:n] * 1e4
-    raw_gate_array = np.ones_like(p) * gate
-
-    if window:
-        window_func = np.hamming(n)
-        scaled_p = p * window_func  # scale by a hamming window
-        gate_array = raw_gate_array * window_func
-    else:
-        scaled_p = p
-        gate_array = raw_gate_array
-
-    if auto_cutoff:
-        hi_cut=.9/np.sqrt(np.average(H))
-
+    window = window_func(n)
+    scaled_p = p_dbar[:n] * 1e4 * window  # scale by the window
     amps = np.fft.rfft(scaled_p)
     freqs = np.fft.rfftfreq(n, d=timestep)
-    new_amps = np.zeros_like(amps)
-
     for i in range(len(amps)):
         # Filter out the noise with the gate
-        if ((np.absolute(amps[i] / n) >= gate_array[i])
+        if ((np.absolute(amps[i] / n) >= gate * window[i])
             and (lo_cut < freqs[i] < hi_cut)):
                 k = omega_to_k(freqs[i] * 2 * np.pi, H[i])
                 # Scale, applying the diffusion relation
-                a = pressure_to_eta(amps[i], k, z, H[i])
-                new_amps[i] = a
+                amps[i] = pressure_to_eta(amps[i], k, z, H[i])
         else:
-            new_amps[i] = 0
+            amps[i] = 0
 
-    eta = np.fft.irfft(new_amps) # reverse FFT
-    if window:
-        eta = eta / window_func
+    eta = np.fft.irfft(amps) # reverse FFT
+    if window_func:
+        eta = eta / window
     return eta
 
 
@@ -113,36 +105,38 @@ def _coefficient(k, z, H):
     """Return a conversion factor for pressure and wave height."""
     return rho * g * np.cosh(k * (H + z)) / np.cosh(k * H)
 
-def make_pstatic(pressure):
-    """Extract hydrostatic pressure from a pressure array."""
-    x = np.arange(len(pressure))
-    slope, intercept = np.polyfit(x, pressure, 1)
-    pwave = slope * x + intercept
-    return pwave
 
 if __name__ == '__main__':
-    from DepthCalculation.testing import easy_waves, print_rmse
+    from tests.pressure_to_depth_tests import easy_waves
     from numpy import *
     from matplotlib.pyplot import *
+    import seaborn as sns
     ion()
 
     max_f = .2
     max_a = 10
     max_phase = 10
     length = 6000 # length of the time series in seconds
-    h = 30
-    z = -.1
+    h = 15
+    z = -14.6
     t, actual_y, p = easy_waves(length, h, z, 10)
     sample_frequency = 4
-    computed_y = fft_method(t, p/10000, z, np.ones_like(t)*h, \
-                            1/sample_frequency)
+    cutoff = auto_cutoff(h)
+    computed_y = fft_method(t, p/10000, z, np.ones_like(t)*h,
+                            1/sample_frequency, hi_cut=cutoff)
     static_y = p/rho/g
+    combo_y = combo_method(t, p/10000, z, np.ones_like(t)*h,
+                           1/sample_frequency)
+
+    ## plotting
     clf()
+    plot(t, actual_y, label='Actual y')
+    plot(t, computed_y, label='FFT method y')
+    plot(t, combo_y, label='Combo y')
+    legend()
 
-    combo_y = combo_method(t, p/10000, z, np.ones_like(t)*h, 1/sample_frequency,
-                           max_coeff=12)
+    def rmse(a, b):
+        return sqrt(average(absolute(a-b)**2))
 
-    plot(t, actual_y, 'b')
-    plot(t, computed_y, 'g')
-    plot(t, combo_y, 'r')
-    print_rmse(actual_y, static_y, computed_y)
+    print('FFT method: ', rmse(computed_y, actual_y))
+    print('Combo method: ', rmse(combo_y, actual_y))

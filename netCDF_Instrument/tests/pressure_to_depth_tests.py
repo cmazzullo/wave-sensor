@@ -40,7 +40,7 @@ def make_waves(length, sample_frequency, waves, h, z):
         k = newton(lambda k: g*k*np.tanh(k*h) - (2*pi*f)**2, 0)
         pressure = eta*rho*g*np.cosh(k*(z + h))/np.cosh(k*h)
         total_pressure += pressure
-    c = random.rand()*z/2
+    c = random.rand()*20
     total_height += c*arange(len(total_height)) / len(total_height)
     total_pressure += rho*g*c * arange(len(total_height)) / len(total_height)
     return t, total_height, total_pressure
