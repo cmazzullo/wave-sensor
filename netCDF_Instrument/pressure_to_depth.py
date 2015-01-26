@@ -40,7 +40,6 @@ def fft_method(t, p_dbar, z, H, timestep, gate=0, window_func=np.ones,
     """
     Create wave height data from an array of pressure readings.
     """
-    print(hi_cut)
     # Put the pressure data into frequency space
     n = len(p_dbar) - len(p_dbar) % 2
     window = window_func(n)
