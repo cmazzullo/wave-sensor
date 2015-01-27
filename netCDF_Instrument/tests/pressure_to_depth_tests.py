@@ -81,8 +81,8 @@ if __name__ == '__main__':
     plot(t, y, label='Original η')
     xlabel('time (s)')
     ylabel('η (meters)')
-    plot(t, static, 'g', label='Hydrostatic η')
-    plot(t, y2, 'r', label='FFT reconstructed η')
+    plot(t, static, label='Hydrostatic η')
+    plot(t, y2, label='FFT reconstructed η')
     legend()
 
     def get_transform(seq):
@@ -96,8 +96,8 @@ if __name__ == '__main__':
     grid()
     plot(actual_freqs, 2*absolute(actual_amps), color='black')
 
-    plot(static_freqs, 2*absolute(static_amps), 'x', color='blue')
-    plot(fft_freqs, 2*absolute(fft_amps), 'x', color='red')
+    plot(static_freqs, 2*absolute(static_amps), '.', color='blue')
+    plot(fft_freqs, 2*absolute(fft_amps), '.', color='red')
     xlim(0, .5)
 
     xlabel('frequency (Hz)')
@@ -203,3 +203,20 @@ if __name__ == '__main__':
     fig = figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.scatter(z, h, f(z, h))
+
+    ## Outliers
+    length = 300
+    h = 10
+    z = -9.5
+    n = 10
+    t, y, p = easy_waves(length, h, z, n)
+
+    # Add outliers
+    n_out = 10 # number of outliers
+    outlier_val = -9999999
+    p[random.randint(0, len(p), n_out)] = outlier_val
+    combo_y = combo_method(t, p/10000, z, ones_like(t)*h, t[1] - t[0])
+    clf()
+    plot(t, y, label='Real y')
+    plot(t, combo_y, label='Combo y')
+    legend()
