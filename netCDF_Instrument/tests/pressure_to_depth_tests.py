@@ -213,10 +213,11 @@ if __name__ == '__main__':
 
     # Add outliers
     n_out = 10 # number of outliers
-    outlier_val = -9999999
+    outlier_val = 0
     p[random.randint(0, len(p), n_out)] = outlier_val
     combo_y = combo_method(t, p/10000, z, ones_like(t)*h, t[1] - t[0])
     clf()
     plot(t, y, label='Real y')
     plot(t, combo_y, label='Combo y')
+    # plot(t, p, label='Combo y')
     legend()

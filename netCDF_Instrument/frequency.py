@@ -19,11 +19,12 @@ if __name__ == '__main__':
 
 
     minute = 60*1000
-    inc = minute * 8
+    inc = minute * .2
     min_index = minute * 2
     max_index = min_index + inc
     p = p[min_index:max_index]
     t = t[min_index:max_index]
+    t = t - t[0]
     a, f = get_transform(p, timestep)
     clf()
 
@@ -31,11 +32,11 @@ if __name__ == '__main__':
 
 
     subplot(211)
-    semilogy(f[min_f:], np.absolute(a[min_f:]), ',')
+    semilogy(f[min_f:], np.absolute(a[min_f:]), '.')
     xlabel('Frequency (Hz)')
     ylabel('Water pressure (dbar)')
 
     subplot(212)
-    plot(t/minute, p)
-    xlabel('Time (minutes)')
+    plot(t/minute/60, p)
+    xlabel('Time (hours)')
     ylabel('Water pressure (dbar)')
