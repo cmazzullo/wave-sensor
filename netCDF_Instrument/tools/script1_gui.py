@@ -110,7 +110,7 @@ class Wavegui:
         self.root.update()
 
     def remove_file(self, datafile):
-        self.filenames.remove(datafile.in_filename.stringvar.get())
+        self.filenames.remove(datafile['in_filename'].stringvar.get())
         self.datafiles.remove(datafile)
         self.initialize()
 
@@ -144,8 +144,10 @@ class Wavegui:
                                   label='Longitude (decimal degrees):',
                                   doc='Decimal degrees north of the equator.')
         d['salinity'] = Variable(autosave=True,
-                                 label='Salinity (ppm):',
-                                 options=("Salt Water", "Fresh Water", "Brackish"),
+                                 label='Salinity:',
+                                 options=("Salt Water (> 30 ppt)",
+                                          "Brackish Water (.5 - 30 ppt)",
+                                          "Fresh Water (< .5 ppt)"),
                                  in_air_pressure=False)
         d['initial_water_depth'] = Variable(autosave=True,
                                             label='Initial water depth (meters):',

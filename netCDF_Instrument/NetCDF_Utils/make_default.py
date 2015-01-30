@@ -180,6 +180,7 @@ def make_netcdf(filename, time, pressure, altitude, longitude,
         latitude_var[:] = latitude
         set_attributes(latitude_var, latitudedict)
 
+
 def make_default_netcdf(filename, time, pressure):
     make_netcdf(filename, time, pressure, altitude, longitude, latitude,
                 globs, timedict, sea_water_pressuredict, altitudedict,
