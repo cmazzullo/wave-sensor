@@ -93,7 +93,7 @@ plt.show()
 # z = -2
 # H = 20 * np.ones_like(t)
 # timestep = .25
-# dfft = p2d.fft_method(t, p, z, H, timestep, gate=.3, window=True)
+# dfft = p2d.fft_method(p, z, H, timestep, gate=.3, window=True)
 # d = p2d.method2(p)
 # d[d < 8] = np.nan
 # d[d > 13] = np.nan

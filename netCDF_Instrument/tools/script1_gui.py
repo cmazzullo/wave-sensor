@@ -267,7 +267,7 @@ class Wavegui:
             tkinter.OptionMenu(frame, var.stringvar, *var.options)\
                 .grid(column=2, row=row, sticky=('w', 'e'))
         else:
-            ttk.Entry(frame, width=20, textvariable=var.stringvar)\
+            ttk.Entry(frame, width=30, textvariable=var.stringvar)\
                 .grid(column=2, row=row, sticky=('w', 'e'))
         if var.doc:
             c = lambda: MessageDialog(self.root, message=var.doc,
@@ -282,7 +282,7 @@ def make_frame(frame, header=None):
 
 def add_button(frame, text, command, row, column):
     """Make and grid a button in a uniform way."""
-    b = ttk.Button(frame, text=text, command=command)
+    b = ttk.Button(frame, text=text, command=command, width=15)
     b.grid(column=column, row=row, sticky='w')
     return b
 

@@ -21,9 +21,9 @@ def combo_method(t, p_dbar, z, H, timestep, window_func=np.hamming):
     static_y = hydrostatic_method(static_p)
     wave_p = p_dbar - static_p
     cutoff = auto_cutoff(np.average(H))
-    wave_y = fft_method(t, wave_p, z, H, timestep, hi_cut=cutoff,
+    wave_y = fft_method(wave_p, z, H, timestep, hi_cut=cutoff,
                         window_func=window_func)
-    return static_y + wave_y
+    return trim_to_even(static_y) + wave_y
 
 
 def hydrostatic_method(pressure):
@@ -35,13 +35,23 @@ def auto_cutoff(h):
     return .9/np.sqrt(h)
 
 
-def fft_method(t, p_dbar, z, H, timestep, gate=0, window_func=np.ones,
+def trim_to_even(seq):
+    """Trim a sequence to make it have an even number of elements"""
+    if len(seq) % 2 == 0:
+        return seq
+    else:
+        return seq[:-1]
+
+def fft_method(p_dbar, z, H, timestep, gate=0, window_func=np.ones,
                lo_cut=-1, hi_cut=float('inf')):
-    """
-    Create wave height data from an array of pressure readings.
+    """Create wave height data from an array of pressure readings.
+
+    WARNING: FFT will truncate the last element of an array if it has
+    an odd number of elements!
     """
     # Put the pressure data into frequency space
-    n = len(p_dbar) - len(p_dbar) % 2
+    p_dbar = trim_to_even(p_dbar)
+    n = len(p_dbar)
     window = window_func(n)
     scaled_p = p_dbar[:n] * 1e4 * window  # scale by the window
     amps = np.fft.rfft(scaled_p)
@@ -121,7 +131,7 @@ if __name__ == '__main__':
     t, actual_y, p = easy_waves(length, h, z, 10)
     sample_frequency = 4
     cutoff = auto_cutoff(h)
-    computed_y = fft_method(t, p/10000, z, np.ones_like(t)*h,
+    computed_y = fft_method(p/10000, z, np.ones_like(t)*h,
                             1/sample_frequency, hi_cut=cutoff)
     static_y = p/rho/g
     combo_y = combo_method(t, p/10000, z, np.ones_like(t)*h,

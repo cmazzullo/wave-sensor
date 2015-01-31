@@ -154,7 +154,7 @@ if __name__ == '__main__':
 
         y += 10 * arange(len(y)) / len(y) #Linear trend
 
-        y2 = fft_method(t, p/10000, z, ones_like(t)*h, \
+        y2 = fft_method(p/10000, z, ones_like(t)*h, \
                         1/sample_frequency, hi_cut=hi_cut, \
                         window=False, gate=.8)
         static = p/rho/g

@@ -42,8 +42,8 @@ def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
         corrected_pressure = sea_pressure
 
     if method == 'fft':
-        depth = p2d.fft_method(sea_time, corrected_pressure,
-                               device_depth, water_depth, timestep)
+        depth = p2d.fft_method(corrected_pressure, device_depth,
+                               water_depth, timestep)
     elif method == 'combo':
         depth = p2d.combo_method(sea_time, corrected_pressure,
                                  device_depth, water_depth, timestep)

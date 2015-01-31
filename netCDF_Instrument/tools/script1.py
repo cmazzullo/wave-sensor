@@ -10,9 +10,9 @@ from Instruments.hobo import Hobo
 
 INSTRUMENTS = {
     'LevelTroll': Leveltroll,
-    'RBRSolo': RBRSolo,
-    'Wave Guage': Waveguage,
-    'USGS Homebrew': House,
+    # 'RBRSolo': RBRSolo,
+    # 'Wave Guage': Waveguage,
+    # 'USGS Homebrew': House,
     'Measurement Specialties': MeasureSysLogger,
     'HOBO': Hobo }
 
@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
     inputs = {
         'instrument_name' : 'Measurement Specialties',
-        'in_filename' : '/home/chris/work/wave-sensor/data_files/logger1.csv',
+        'in_filename' : '/home/chris/work/wave-sensor/data_files/logger3.csv',
         'out_filename' : '/home/chris/testfile.nc',
         'latitude' : '20',
         'longitude' : '20',
