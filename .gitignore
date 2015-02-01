@@ -1,8 +1,6 @@
 # Ignore net cdf files and csv files
 *.nc
-.nc
 *.csv
-.csv
 
 # Eclipse things
 .metadata/
@@ -59,5 +57,6 @@ coverage.xml
 docs/_build/
 
 # Emacs
+*~
 \#*
 .\#*
