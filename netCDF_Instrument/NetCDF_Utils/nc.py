@@ -52,7 +52,7 @@ def get_water_depth(in_fname):
     final_time = get_retrieval_time(in_fname)
     time = get_time(in_fname)
     slope = (final_depth - initial_depth) / (final_time - initial_time)
-    depth_approx = slope * time + initial_depth - slope * initial_time
+    depth_approx = slope * (time - initial_time) + initial_depth
     return depth_approx
 
 

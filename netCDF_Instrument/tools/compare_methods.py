@@ -15,7 +15,7 @@ p = trim_to_even(nc.get_pressure(f))
 H = nc.get_water_depth(f)
 z = nc.get_device_depth(f)
 
-combo_y = combo_method(t, p, z, H, timestep, window_func=np.hamming)
+combo_y = combo_method(t, p, z, H, timestep)
 static_y = hydrostatic_method(p)
 
 
