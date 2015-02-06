@@ -6,8 +6,7 @@ from matplotlib.pyplot import *
 ion()
 
 from scipy.optimize import newton
-from pressure_to_depth import fft_method
-from pressure_to_depth import combo_method
+from pressure_to_depth import fft_method, combo_method
 
 g = 9.8
 rho = 1027
@@ -28,7 +27,7 @@ def print_rmse(y, static_y, fft_y):
 
 def make_waves(length, sample_frequency, waves, h, z):
     """Create wave pressure given frequencies, amplitudes and phases"""
-    t = np.arange(length, step=1/sample_frequency)
+    t = np.arange(length*sample_frequency, step=1/sample_frequency)
     total_height = np.zeros_like(t)
     total_pressure = np.zeros_like(t)
     for wave in waves:

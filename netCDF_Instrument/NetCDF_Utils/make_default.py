@@ -4,7 +4,9 @@ import numpy as np
 """This file contains the attributes of a netCDF file as dictionaries.
 The goal here is to make it easy to create netCDF files stocked with
 default information."""
+
 FILL_VALUE = -99999
+
 # GLOBAL ATTRIBUTES
 globs = {
     'date_created': "2014-08-19T18:33:52Z",
@@ -181,7 +183,11 @@ def make_netcdf(filename, time, pressure, altitude, longitude,
         set_attributes(latitude_var, latitudedict)
 
 
-def make_default_netcdf(filename, time, pressure):
+def make_default_netcdf(filename, time, pressure, inputs=None):
+    a = dict()
+    a.update(globs)
+    if inputs != None:
+        a.update(inputs)
     make_netcdf(filename, time, pressure, altitude, longitude, latitude,
-                globs, timedict, sea_water_pressuredict, altitudedict,
+                a, timedict, sea_water_pressuredict, altitudedict,
                 longitudedict, latitudedict)
