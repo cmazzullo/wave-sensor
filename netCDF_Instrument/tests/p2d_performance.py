@@ -20,11 +20,11 @@ data = np.random.rand(length)''' % length
     combo = 'p2d.combo_method(t, data, 10, 11*np.ones(length), 1)'
     return ti.timeit(stmt=combo, setup=setup, number=times) / times
 
-
-lengths = range(100, 10100, 500)
+lengths = range(int(10000), int(100000), 5000)
 time_arr = []
-for length in lengths:
+for i, length in enumerate(lengths):
     times = 10
     time_arr.append(time_combo(length, times))
+    print('%.2f%% done' % (100*(i+1)/len(lengths)))
 
 plot(lengths, time_arr)
