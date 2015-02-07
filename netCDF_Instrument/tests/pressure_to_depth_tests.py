@@ -2,8 +2,7 @@
 
 ## Initialize
 from numpy import *
-from matplotlib.pyplot import *
-ion()
+import numpy as np
 from pressure_to_depth import fft_method, combo_method, omega_to_k
 
 g = 9.8

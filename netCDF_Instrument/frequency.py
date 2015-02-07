@@ -5,7 +5,7 @@ def get_transform(seq, timestep):
     return 2 * rfft(seq) / len(seq), rfftfreq(len(seq), timestep)
 
 if __name__ == '__main__':
-    import seaborn as sns
+    # import seaborn as sns
     from matplotlib.pyplot import *
     import NetCDF_Utils.nc as nc
     ion()

@@ -127,7 +127,7 @@ if __name__ == '__main__':
     from tests.pressure_to_depth_tests import easy_waves
     from numpy import *
     from matplotlib.pyplot import *
-    import seaborn as sns
+    # import seaborn as sns
     ion()
 
     max_f = .2

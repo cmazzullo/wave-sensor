@@ -3,21 +3,24 @@ water depth using fft and hydrostatic methods"""
 
 from pressure_to_depth import combo_method, hydrostatic_method, trim_to_even
 import NetCDF_Utils.nc as nc
-import numpy as np
-import matplotlib
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
-
-import seaborn as sns
-# from NetCDF_Utils.make_default import make_default_netcdf
 from tests.pressure_to_depth_tests import random_waves
 
+import numpy as np
 from tkinter import *
 from tkinter import ttk
 
+### stuff to make cx_freeze work
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.backends.backend_qt4agg, matplotlib.backends.backend_tkagg
+### end
+
+import matplotlib.pyplot as plt
+
+
 # This stuff will be useful when we get proper .nc test files full of
 # known waves
-
+# from NetCDF_Utils.make_default import make_default_netcdf
 # f = '/home/chris/testfile.nc'
 # t = trim_to_even(nc.get_time(f))
 # timestep = t[1] - t[0]

@@ -7,7 +7,7 @@ from numpy.random import rand
 # Maybe come up with a pressure to depth algorithm without an explicit
 # for loop?
 
-import seaborn as sns
+# import seaborn as sns
 from matplotlib.pyplot import *
 ion()
 
