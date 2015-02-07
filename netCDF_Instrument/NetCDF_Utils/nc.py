@@ -152,9 +152,8 @@ def append_variable(fname, standard_name, data, comment='',
 
 def ncdump(fname):
     """Dump all attributes and variables in a netCDF to stdout"""
-    f = netCDF4.Dataset(fname)
+    f = Dataset(fname)
 
-    dirset = set(dir(f))
 
     print('\nDimensions:\n')
     for dim in f.dimensions:

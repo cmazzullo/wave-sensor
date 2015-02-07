@@ -12,7 +12,6 @@ except:
 import NetCDF_Utils.DateTimeConvert as dateconvert
 from NetCDF_Utils.Testing import DataTests
 from NetCDF_Utils.edit_netcdf import NetCDFWriter
-from datetime import datetime
 
 class MeasureSysLogger(NetCDFWriter):
     '''derived class for Measurement Systems cvs files

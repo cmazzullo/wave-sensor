@@ -11,12 +11,6 @@ from tkinter.filedialog import askopenfilename as fileprompt
 import os
 from collections import OrderedDict
 from tools.script1 import INSTRUMENTS, convert_to_netcdf
-from Instruments.rbrsolo import RBRSolo
-from Instruments.leveltroll import Leveltroll
-from Instruments.waveguage import Waveguage
-from Instruments.house import House
-from Instruments.measuresys import MeasureSysLogger
-from Instruments.hobo import Hobo
 
 
 class Wavegui:

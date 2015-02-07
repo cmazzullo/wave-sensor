@@ -1,13 +1,11 @@
 """This needs to read in a netCDF file containing pressure and get the
 water depth using fft and hydrostatic methods"""
 
-from pressure_to_depth import combo_method, hydrostatic_method, trim_to_even
-import NetCDF_Utils.nc as nc
+from pressure_to_depth import combo_method, hydrostatic_method
 from tests.pressure_to_depth_tests import random_waves
 
 import numpy as np
 from tkinter import *
-from tkinter import ttk
 
 ### stuff to make cx_freeze work
 import matplotlib

@@ -1,9 +1,6 @@
 import numpy as np
 from pytz import timezone
-from Instruments.rbrsolo import RBRSolo
 from Instruments.leveltroll import Leveltroll
-from Instruments.waveguage import Waveguage
-from Instruments.house import House
 from Instruments.measuresys import MeasureSysLogger
 from Instruments.hobo import Hobo
 

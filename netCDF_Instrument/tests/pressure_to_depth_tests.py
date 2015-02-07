@@ -100,9 +100,6 @@ if __name__ == '__main__':
     xlabel('frequency (Hz)')
     ylabel('η (meters)')
 
-    def rmse(a, b):
-        return sqrt(average(absolute(a-b)**2))
-
     fft_rmse = rmse(y2, y)
     static_rmse = rmse(static, y)
 

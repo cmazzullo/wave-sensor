@@ -1,8 +1,5 @@
-import os
 import sys
-import pytz
 from pytz import timezone
-from datetime import datetime
 
 #--python 3 compatibility
 pyver = sys.version_info
@@ -90,7 +87,7 @@ class Leveltroll(NetCDFWriter):
             self.data_start = dateconvert.convert_date_to_milliseconds(dt_str,self.date_format_string)
 #             self.data_start_date = datetime.strftime(self.data_start, "%Y-%m-%dT%H:%M:%SZ")
 #             print('Datetime', self.data_start, self.data_start_date)
-        except Exception as e:
+        except Exception:
             raise Exception("ERROR - cannot parse first date time stamp: "+str(self.td_str)+" using format: "+dt_fmt+'\n')
         f.seek(reset_point)
 

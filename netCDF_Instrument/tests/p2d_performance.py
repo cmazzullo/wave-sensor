@@ -1,6 +1,4 @@
-import pressure_to_depth as p2d
 import timeit as ti
-from numpy.random import rand
 # We want to create datasets full of noise with different lengths and
 # see how the pressure to depth conversion performs on them.
 

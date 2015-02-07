@@ -3,7 +3,6 @@ import sys
 import pytz
 import pandas
 import re
-from datetime import datetime
 
 #--python 3 compatibility
 pyver = sys.version_info

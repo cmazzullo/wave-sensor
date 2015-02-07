@@ -14,7 +14,6 @@ pressure, and water level.
 
 import numpy as np
 import shutil
-from numpy import arange
 import pressure_to_depth as p2d
 import NetCDF_Utils.nc as nc
 

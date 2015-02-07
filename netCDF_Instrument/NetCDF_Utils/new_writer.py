@@ -1,9 +1,6 @@
 from netCDF4 import Dataset
 from datetime import datetime
 import pytz
-import numpy as np
-import uuid
-import NetCDF_Utils.DateTimeConvert as timeconvert
 from Instruments.ncdumpesque import dump_all
 
 fname = r'C:\Users\cmazzullo\Desktop\nc_file.nc'
