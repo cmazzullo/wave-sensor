@@ -7,7 +7,7 @@ from numpy.random import rand
 # Maybe come up with a pressure to depth algorithm without an explicit
 # for loop?
 
-import seaborn as sns
+# import seaborn as sns
 from matplotlib.pyplot import *
 ion()
 
@@ -25,6 +25,6 @@ time_arr = []
 for i, length in enumerate(lengths):
     times = 10
     time_arr.append(time_combo(length, times))
-    print('%.2f%% done' % (100*(i+1)/len(lengths)))
+    print('%.f%% done' % (100*(i+1)/len(lengths)))
 
 plot(lengths, time_arr)

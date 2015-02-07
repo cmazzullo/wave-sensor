@@ -2,11 +2,8 @@
 
 ## Initialize
 from numpy import *
-from matplotlib.pyplot import *
-ion()
-
-from scipy.optimize import newton
-from pressure_to_depth import fft_method, combo_method
+import numpy as np
+from pressure_to_depth import fft_method, combo_method, omega_to_k
 
 g = 9.8
 rho = 1027
@@ -30,13 +27,14 @@ def make_waves(length, sample_frequency, waves, h, z):
     t = np.arange(length*sample_frequency, step=1/sample_frequency)
     total_height = np.zeros_like(t)
     total_pressure = np.zeros_like(t)
+    h = np.average(h)
     for wave in waves:
         f = wave[0]
         a = wave[1]
         phi = wave[2]
         eta = a*sin(2*pi*f*t + phi)
         total_height += eta
-        k = newton(lambda k: g*k*np.tanh(k*h) - (2*pi*f)**2, 0)
+        k = omega_to_k(2 * np.pi * f, h)
         pressure = eta*rho*g*np.cosh(k*(z + h))/np.cosh(k*h)
         total_pressure += pressure
     c = random.rand()*20
