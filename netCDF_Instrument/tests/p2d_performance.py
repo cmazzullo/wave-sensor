@@ -21,10 +21,11 @@ data = np.random.rand(length)''' % length
     return ti.timeit(stmt=combo, setup=setup, number=times) / times
 
 
-lengths = range(100, 10100, 500)
+lengths = range(int(1.0e7), int(1.05e7), 5000)
 time_arr = []
-for length in lengths:
+for i, length in enumerate(lengths):
     times = 10
     time_arr.append(time_combo(length, times))
+    print('%f%% done' % i/len(lengths))
 
 plot(lengths, time_arr)

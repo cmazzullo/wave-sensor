@@ -4,7 +4,6 @@
 from numpy import *
 from matplotlib.pyplot import *
 ion()
-
 from scipy.optimize import newton
 from pressure_to_depth import fft_method, combo_method
 
@@ -37,6 +36,7 @@ def make_waves(length, sample_frequency, waves, h, z):
         eta = a*sin(2*pi*f*t + phi)
         total_height += eta
         k = newton(lambda k: g*k*np.tanh(k*h) - (2*pi*f)**2, 0)
+        # k = binary_search(lambda k: g*k*np.tanh(k*h) - (2*pi*f)**2, 0, 1000, 1e-12)
         pressure = eta*rho*g*np.cosh(k*(z + h))/np.cosh(k*h)
         total_pressure += pressure
     c = random.rand()*20

@@ -42,6 +42,14 @@ def trim_to_even(seq):
     else:
         return seq[:-1]
 
+def omega_to_k(omega, H):
+    k = np.arange(0, 10, .01)
+    w = k_to_omega(k, H)
+    deg = 10
+    p = np.polyfit(w, k, deg)
+    return sum(p[i] * omega**(deg - i) for i in range(deg + 1))
+
+
 def fft_method(p_dbar, z, H, timestep, gate=0, window_func=np.ones,
                lo_cut=-1, hi_cut=float('inf')):
     """Create wave height data from an array of pressure readings.
@@ -49,24 +57,19 @@ def fft_method(p_dbar, z, H, timestep, gate=0, window_func=np.ones,
     WARNING: FFT will truncate the last element of an array if it has
     an odd number of elements!
     """
-    # Put the pressure data into frequency space
+    H = np.average(H)
     p_dbar = trim_to_even(p_dbar)
     n = len(p_dbar)
     window = window_func(n)
     scaled_p = p_dbar[:n] * 1e4 * window  # scale by the window
-    amps = np.fft.rfft(scaled_p)
-    freqs = np.fft.rfftfreq(n, d=timestep)
-    for i in range(len(amps)):
-        # Filter out the noise with the gate
-        if ((np.absolute(amps[i] / n) >= gate * window[i])
-            and (lo_cut < freqs[i] < hi_cut)):
-                k = omega_to_k(freqs[i] * 2 * np.pi, H[i])
-                # Scale, applying the diffusion relation
-                amps[i] = pressure_to_eta(amps[i], k, z, H[i])
-        else:
-            amps[i] = 0
 
-    eta = np.fft.irfft(amps) # reverse FFT
+    p_amps = np.fft.rfft(scaled_p)
+    freqs = np.fft.rfftfreq(n, d=timestep)
+    k = omega_to_k(2 * np.pi * freqs, H)
+    d_amps = pressure_to_eta(p_amps, k, z, H)
+    d_amps[np.where((freqs <= lo_cut) | (freqs >= hi_cut))] = 0
+
+    eta = np.fft.irfft(d_amps) # reverse FFT
     if window_func:
         eta = eta / window
     return eta
@@ -83,13 +86,19 @@ def _frequency_to_index(f, n, timestep):
     return np.round(n * f * timestep)
 
 
-def omega_to_k(omega, H):
-    """
-    Gets the wave number from the angular frequency using the
-    dispersion relation for water waves and Newton's method.
-    """
-    f = lambda k: omega**2 - k * g * np.tanh(k * H)
-    return newton(f, 0)
+def binary_search(func, x1, x2, tol):
+    y1 = func(x1)
+    y2 = func(x2)
+    x_mid = (x1 + x2) / 2
+    y_mid = func(x_mid)
+    if abs(y_mid) < tol:
+        return x_mid
+    elif y1 * y_mid < 0:
+        return binary_search(func, x1, x_mid, tol)
+    elif y_mid * y2 < 0:
+        return binary_search(func, x_mid, x2, tol)
+    else:
+        print('Binary root finder failed to find a root!')
 
 
 def k_to_omega(k, H):
