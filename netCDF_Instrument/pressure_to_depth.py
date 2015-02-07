@@ -8,7 +8,6 @@ Provides methods to convert water pressure into water depth.
 """
 
 import numpy as np
-from scipy.optimize import newton
 
 # Constants
 g = 9.8  # gravity (m / s**2)
