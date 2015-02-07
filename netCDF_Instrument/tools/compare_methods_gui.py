@@ -39,8 +39,11 @@ def plot_depth(length, h, z, n_waves, max_f, max_a):
     plt.plot(time, static_y, label='Hydrostatic y')
     plt.xlabel('Time (ms)')
     plt.ylabel('Wave Height (m)')
+    plt.title('Difference between depth calculation methods')
     plt.legend()
+    plt.grid()
     plt.show()
+
 
 fields = 'Time series length (s)', 'Water depth (m)', 'Device depth (m)', 'Number of waves to generate', 'Max frequency of random waves (Hz)', 'Max amplitude of random waves (m)'
 
@@ -85,7 +88,11 @@ if __name__ == '__main__':
    b1 = Button(root, text='Show',
           command=(lambda e=ents: fetch(e)))
    b1.pack(side=LEFT, padx=5, pady=5)
-   b2 = Button(root, text='Quit', command=root.destroy)
+   def quit_button():
+       plt.close()
+       root.destroy()
+
+   b2 = Button(root, text='Quit', command=quit_button)
    b2.pack(side=LEFT, padx=5, pady=5)
    root.title('Compare Depth Calculation Methods')
 
