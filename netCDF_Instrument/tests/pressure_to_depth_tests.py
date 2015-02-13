@@ -24,7 +24,7 @@ def print_rmse(y, static_y, fft_y):
 
 def make_waves(length, sample_frequency, waves, h, z):
     """Create wave pressure given frequencies, amplitudes and phases"""
-    t = np.arange(length*sample_frequency, step=1/sample_frequency)
+    t = np.arange(length, step=1/sample_frequency)
     total_height = np.zeros_like(t)
     total_pressure = np.zeros_like(t)
     h = np.average(h)
