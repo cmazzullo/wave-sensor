@@ -28,6 +28,8 @@ def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
     water_depth = nc.get_water_depth(water_fname)
     timestep = 1 / nc.get_frequency(water_fname)
     sea_pressure = nc.get_pressure(water_fname)
+    print('sea_pressure len')
+    print(len(sea_pressure))
     sea_time = nc.get_time(water_fname)
 
     if air_fname != '':
@@ -51,5 +53,11 @@ def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
     else:
         raise TypeError('Accepted values for "method" are: fft, '
                         'method2 and naive.')
+    if len(depth) == len(sea_pressure) - 1:
+        depth = np.append(depth, np.NaN)
+
+    print('len depth:')
+    print(len(depth))
+
     shutil.copy(water_fname, out_fname)
     nc.append_depth(out_fname, depth)
