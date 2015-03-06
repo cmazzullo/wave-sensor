@@ -17,6 +17,7 @@ class DataTests(object):
         self.valid_temperature_range = [-20,50]
         self.temperature_max_rate_of_change = None
         self.prev_value = np.NaN
+        self.interpolated_data = False
         
        
     def select_tests(self, data_selection):
@@ -39,6 +40,13 @@ class DataTests(object):
         bit_array1 = [self.get_1_value(x) for x in data]
         bit_array2 = [self.get_2_value(x, data_range) for x in data]
         bit_array3 = [self.get_3_value(x, rate_of_change) for x in data]
+        if self.interpolated_data == True:
+            bit_array4 = ['11111111' for x in data]
+            bit_array4[0] = '11110111'
+         
+        else:
+            bit_array4 = ['11110111' for x in data]
+       
        
         final_bits = [bit_array1[x] & bit_array2[x] & bit_array3[x] for x in range(0,len(data))]
         
@@ -56,18 +64,18 @@ class DataTests(object):
         self.five_count_list.insert(0,x)
         
         if flags <= 4:
-            return bit('1111')
+            return bit('11111111')
         else:
-            return bit('1110')  
+            return bit('11111110')  
             
     def get_2_value(self, x, data_range):
         '''Checks if the data point is within a valid range'''
         
         if np.greater_equal(x,data_range[0]) and \
         np.less_equal(x,data_range[1]):
-            return bit('1111')
+            return bit('11111111')
         else:
-            return bit('1101')
+            return bit('11111101')
         
     def get_3_value(self, x, rate_of_change):
         '''Checks to see if rate of change is within valid range'''
@@ -75,10 +83,11 @@ class DataTests(object):
         if np.isnan(self.prev_value) or \
         np.less_equal(np.abs(np.subtract(x,self.prev_value)), rate_of_change):
             self.prev_value = x
-            return bit('1111')
+            return bit('11111111')
         else:
             self.prev_value = x
-            return bit('1011')
+            return bit('11111011')
+        
         
 if __name__ == '__main__':
     test = DataTests()
