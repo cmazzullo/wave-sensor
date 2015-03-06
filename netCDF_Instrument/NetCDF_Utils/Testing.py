@@ -41,14 +41,15 @@ class DataTests(object):
         bit_array2 = [self.get_2_value(x, data_range) for x in data]
         bit_array3 = [self.get_3_value(x, rate_of_change) for x in data]
         if self.interpolated_data == True:
-            bit_array4 = ['11111111' for x in data]
-            bit_array4[0] = '11110111'
+            bit_array4 = [bit('11110111') for x in data]
+            bit_array4[0] = bit('11111111')
          
         else:
-            bit_array4 = ['11110111' for x in data]
+            bit_array4 = [bit('11111111') for x in data]
        
        
-        final_bits = [bit_array1[x] & bit_array2[x] & bit_array3[x] for x in range(0,len(data))]
+        final_bits = [bit_array1[x] & bit_array2[x] & bit_array3[x] & bit_array4[x]
+                       for x in range(0,len(data))]
         
         return [x.to01() for x in final_bits]
     

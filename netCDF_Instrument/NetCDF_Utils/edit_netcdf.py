@@ -58,6 +58,8 @@ class NetCDFReader(object):
             self.depth_data = nc.variables['depth'][:]
         except:
             print('No Depth')
+            
+        nc.close()
 
     def read_file(self,file_name,pressure_bool = True, series_bool=True, milliseconds_bool=False):
         """Read a .nc file
@@ -149,21 +151,6 @@ class NetCDFReader(object):
         self.temperature_frame = pd.DataFrame(self.dataframe_vals)
 
 
-class NetCDFToCSV(NetCDFReader):
-
-    def __init__(self):
-        self.file_name = None
-        self.time_convert = True
-        self.out_file_name = 'C:\\Tappy\\test.csv'
-
-    def convert_to_csv(self):
-        self.get_test_data(self.file_name, self.time_convert)
-
-        test = pd.DataFrame(pd.Series(self.pressure_data,index=self.times))
-        return test;
-#         test.to_csv(self.out_file_name,',',chunksize = 1)
-
-
 class NetCDFWriter(object):
 
     def __init__(self):
@@ -245,8 +232,28 @@ class NetCDFWriter(object):
         var_dict['global_vars_dict'] = global_vars
 
         return var_dict
+    
+
+class NetCDFToCSV(NetCDFReader):
+
+    def __init__(self):
+        self.file_name = None
+        self.time_convert = True
+        self.out_file_name = 'C:\\Tappy\\test{0}.csv'
+
+    def convert_to_csv(self):
+        self.get_test_data(self.file_name, self.time_convert)
+
+        test = pd.DataFrame(pd.Series(self.pressure_data,index=self.times))
+        test.columns = ['Pressure']
+        chunk_size = int((test.shape[0] / 800000) + 1)
+        
+        for x in np.arange(0,chunk_size):
+            data_slice = test[(x*800000):np.min([test.shape[0],(x+1) * 800000])]
+            
+            data_slice.to_csv(path_or_buf= self.out_file_name.format(x))
 
 if __name__ == '__main__':
     a = NetCDFToCSV()
-    a.file_name = 'C:\\Users\\Gregory\\Documents\\GitHub\\wave-sensor\\netCDF_Instrument\\TimeDomainAnalysis\\script3in.nc'
+    a.file_name = 'C:/Tappy/logger3.csv.nc'
     a.convert_to_csv()
