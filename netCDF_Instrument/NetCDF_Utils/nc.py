@@ -40,6 +40,7 @@ def append_depth(fname, depth):
     comment = ('The depth, computed using the variable "corrected '
                'water pressure".')
     name = 'depth'
+    print('len(depth) = ' + str(len(depth)))
     append_variable(fname, name, depth, comment=comment,
                      long_name=name)
 
