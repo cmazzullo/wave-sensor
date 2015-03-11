@@ -2,7 +2,7 @@
 A few convenience methods for quickly extracting/changing data in
 netCDFs
 """
-
+import os
 from datetime import datetime
 from netCDF4 import Dataset
 import netCDF4_utils, netcdftime # these make cx_freeze work
@@ -13,6 +13,33 @@ import pytz
 FILL_VALUE = -1e10
 
 # Utility methods
+
+def chop_netcdf(fname, out_fname, begin, end):
+    """Truncate the data in a netCDF file between two indices"""
+    if os.path.exists(out_fname):
+        os.remove(out_fname)
+    length = end - begin
+    p = get_pressure(fname)[begin:end]
+    t = get_time(fname)[begin:end]
+    d = Dataset(fname)
+    output = Dataset(out_fname, 'w', format='NETCDF4_CLASSIC')
+    output.createDimension('time', length)
+    # copy globals
+    for att in d.ncattrs():
+        setattr(output, att, d.__dict__[att])
+    # copy variables
+    for key in d.variables:
+        name = key
+        datatype = d.variables[key].datatype
+        dim = d.variables[key].dimensions
+        var = output.createVariable(name, datatype, dim, fill_value=FILL_VALUE)
+        for att in d.variables[key].ncattrs():
+            if att != '_FillValue':
+                setattr(var, att, d.variables[key].__dict__[att])
+    output.variables['time'][:] = t
+    output.variables['sea_water_pressure'][:] = p
+    d.close()
+    output.close()
 
 def parse_time(fname, time_name):
     """Convert a UTC offset in attribute "time_name" to a datetime."""
@@ -62,6 +89,10 @@ def get_depth(fname):
     """Get the wave height array from the netCDF at fname"""
     return get_variable_data(fname, 'depth')
 
+
+def get_flags(fname):
+    """Get the time array from the netCDF at fname"""
+    return get_variable_data(fname, 'pressure_qc')
 
 def get_time(fname):
     """Get the time array from the netCDF at fname"""
@@ -154,18 +185,14 @@ def append_variable(fname, standard_name, data, comment='',
 def ncdump(fname):
     """Dump all attributes and variables in a netCDF to stdout"""
     f = Dataset(fname)
-
-
     print('\nDimensions:\n')
     for dim in f.dimensions:
         print(dim, ':\t\t', len(f.dimensions[dim]))
-
     print('\n\nAttributes:\n\n')
     for att in f.__dict__:
         name = (att + ':').ljust(35)
         value = str(f.__dict__[att]).ljust(50)
         print(name, value)
-
     print('\n\nVariables:\n\n')
     for att in f.variables:
         name = (att + ':').ljust(35)
