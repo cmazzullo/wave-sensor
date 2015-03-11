@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Contains a gui that interfaces with this package's netCDF-writing
 modules. Also contains some convenience methods for other guis and a

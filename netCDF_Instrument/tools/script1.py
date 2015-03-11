@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import numpy as np
 from pytz import timezone
 from Instruments.leveltroll import Leveltroll

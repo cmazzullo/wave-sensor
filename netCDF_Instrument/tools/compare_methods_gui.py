@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """This needs to read in a netCDF file containing pressure and get the
 water depth using fft and hydrostatic methods"""
 
