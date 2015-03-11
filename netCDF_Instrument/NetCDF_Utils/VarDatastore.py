@@ -102,8 +102,8 @@ class DataStore(object):
                         'compression': "not used at this time",
                       }
         self.z_var_qc = {
-                                'flag_masks': '1111 1110 1101 1011',
-                                'flag_meanings': "no_known_bad_data last_five_vals_identical, outside_valid_range, invalid_rate_of_change",
+                                  'flag_masks': '11111111 11111110 11111101 11111011 11110111',
+                                'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, invalid_rate_of_change, interpolated_data",
                                 'comment': '1 signifies the value passed the test while a 0 flags a failed test, leading 1 is a placeholder'
                                 }
         self.pressure_var = {
@@ -123,8 +123,8 @@ class DataStore(object):
                              'comment': "",
                              }
         self.pressure_var_qc = {
-                                'flag_masks': '1111 1110 1101 1011',
-                                'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, invalid_rate_of_change",
+                                 'flag_masks': '11111111 11111110 11111101 11111011 11110111',
+                                'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, invalid_rate_of_change, interpolated_data",
                                  'comment': '1 signifies the value passed the test while a 0 flags a failed test, leading 1 is a placeholder'
                                 }
         self.temp_var= {
@@ -144,8 +144,8 @@ class DataStore(object):
                              'comment': "",
                              }
         self.temp_var_qc = {
-                             'flag_masks': '111 110 101 011',
-                             'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, invalid_rate_of_change",
+                              'flag_masks': '11111111 11111110 11111101 11111011 11110111',
+                                'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, invalid_rate_of_change, interpolated_data",
                              'comment': '1 signifies the value passed the test while a 0 flags a failed test, leading 1 is a placeholder'
                             }
 
@@ -189,6 +189,7 @@ class DataStore(object):
                                  "readme": "file created by "+ "gui creator " +str(datetime.now()),
                                  "salinity_ppm": self.salinity,
                                  "sea_name": "gui sea name",
+                                 #add another variable to work with Marie's system will follow up with her
                                  "standard_name_vocabulary": "CF-1.6",
                                  "summary": "This is data collected by a pressure instrument used for extrapolating information regarding weather patterns",
                                  "time_coverage_start": "utilitiy coverage start",

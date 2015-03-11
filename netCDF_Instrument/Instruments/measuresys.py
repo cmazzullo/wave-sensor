@@ -77,6 +77,7 @@ class MeasureSysLogger(NetCDFWriter):
         self.vstore.longitude = self.longitude
 
         #Tests#
+        self.data_tests.interpolated_data = True
         self.data_tests.pressure_data = self.pressure_data
         self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
 
