@@ -40,7 +40,14 @@ class Hobo(NetCDFWriter):
         skip_index = self.read_start('"#"',',')
         # for skipping lines in case there is calibration header data
         df = pandas.read_table(self.in_filename,skiprows=skip_index, header=None, engine='c', sep=',')
-
+        
+        #apparently hobos have a mode to measure depth which triggers measurements at 2 second intervals
+        #this may be arbitrary but a file with regular 30 second intervals breaks up in to 2 second intervals
+        #with blank measurements for pressure at every interval between the initial
+        #since we want evenly spaced data and interpolation would be a waste of time we will filter the records that are blank
+        print(df[2][0], df[2][1])
+        df.dropna()
+        
         self.utc_millisecond_data = dateconvert.convert_to_milliseconds(df.shape[0], df[1][0], \
                                                                         self.date_format_string, self.frequency)
 
