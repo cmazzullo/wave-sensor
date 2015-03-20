@@ -1,4 +1,4 @@
-LevelTroll
+HOBO
 20
 30
 Brackish
@@ -7,5 +7,5 @@ Brackish
 11.5
 20140101 0000
 20140102 0000
-US/Central
-Great Lakes
+US/Eastern
+North American Coastline-North

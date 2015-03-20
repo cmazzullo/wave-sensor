@@ -208,7 +208,7 @@ class NetCDFWriter(object):
 
     def var_dict(self):
         var_dict = dict()
-
+        resolution_string = 'P{0}S';
         lat_dict = {'valid_min': self.latitude, 'valid_max': self.latitude}
         var_dict['lat_var'] = lat_dict
         lon_dict = {'valid_min': self.longitude, 'valid_max': self.longitude}
@@ -228,7 +228,10 @@ class NetCDFWriter(object):
                        'deployment_time': self.deployment_time,
                        'retrieval_time': self.retrieval_time,
                        'device_depth': self.device_depth,
-                       'salinity' : self.salinity}
+                       'salinity' : self.salinity,
+                       'time_coverage_resolution': resolution_string.format(1.0/self.frequency)
+                       }
+                    
         var_dict['global_vars_dict'] = global_vars
 
         return var_dict
