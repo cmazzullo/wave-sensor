@@ -2,6 +2,7 @@
 A few convenience methods for quickly extracting/changing data in
 netCDFs
 """
+import numpy as np
 import os
 from datetime import datetime
 from netCDF4 import Dataset
@@ -21,6 +22,10 @@ def chop_netcdf(fname, out_fname, begin, end):
     length = end - begin
     p = get_pressure(fname)[begin:end]
     t = get_time(fname)[begin:end]
+    flags = get_flags(fname)[begin:end]
+    alt = get_variable_data(fname, 'altitude')
+    lat = get_variable_data(fname, 'latitude')
+    long = get_variable_data(fname, 'longitude')
     d = Dataset(fname)
     output = Dataset(out_fname, 'w', format='NETCDF4_CLASSIC')
     output.createDimension('time', length)
@@ -30,7 +35,8 @@ def chop_netcdf(fname, out_fname, begin, end):
     # copy variables
     for key in d.variables:
         name = key
-        datatype = d.variables[key].datatype
+        # datatype = d.variables[key].datatype
+        datatype = np.dtype('float64')
         dim = d.variables[key].dimensions
         var = output.createVariable(name, datatype, dim, fill_value=FILL_VALUE)
         for att in d.variables[key].ncattrs():
@@ -38,6 +44,10 @@ def chop_netcdf(fname, out_fname, begin, end):
                 setattr(var, att, d.variables[key].__dict__[att])
     output.variables['time'][:] = t
     output.variables['sea_water_pressure'][:] = p
+    output.variables['pressure_qc'][:] = flags
+    output.variables['altitude'][:] = alt
+    output.variables['longitude'][:] = long
+    output.variables['latitude'][:] = lat
     d.close()
     output.close()
 

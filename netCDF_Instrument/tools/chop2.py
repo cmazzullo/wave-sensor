@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import numpy as np
 import matplotlib
-matplotlib.use('TkAgg')
+# matplotlib.use('TkAgg')
+matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
 
 import tkinter as Tk
@@ -21,6 +22,7 @@ def find_index(array, value):
 
 class Chopper:
     def __init__(self, root):
+        print('in init')
         self.fname = ''
         self.root = root
         self.b1 = Tk.Button(self.root, text='Select File', command=self.select_input)
