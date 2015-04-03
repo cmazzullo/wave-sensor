@@ -10,6 +10,7 @@ def make_depth_graph(in_file_name):
     ds = Dataset(in_file_name)
     time = netCDF4.num2date(ds.variables['time'][:],ds.variables['time'].units)
     sea_pressure = ds.variables['sea_water_pressure'][:]
+    pressure_qc = ds.variables['pressure_qc'][:]
     depth = ds.variables['depth'][:]
     ds.close();
 
@@ -21,6 +22,7 @@ def make_depth_graph(in_file_name):
     par1 = ax.twinx()
   
     ax.set_ylabel('Pressure in PSI')
+    ax.set_ylim(14.0,50.0)
     par1.set_ylabel('Depth in Meters')
    
     plt.grid(b=True, which='major', color='grey', linestyle="-")
