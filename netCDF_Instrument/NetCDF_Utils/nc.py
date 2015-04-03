@@ -83,7 +83,8 @@ def append_depth(fname, depth):
 
 def append_depth_qc(fname, sea_qc, air_qc):
     """Insert depth qc array"""
-    name = 'depth_qc'
+    depth_name = 'depth_qc'
+    air_name = "air_qc"
     air_comment = 'The air_qc is a binary and of the (sea)pressure_qc and air_pressure_qc if an air file is used to calculate depth'
     depth_comment = 'The depth_qc is a binary and of the (sea)pressure_qc and air_pressure_qc'
     flag_masks = '11111111 11111110 11111101 11111011 11110111'
@@ -92,10 +93,10 @@ def append_depth_qc(fname, sea_qc, air_qc):
     air_qc = [int(x,2) for x in air_qc]
     sea_qc = [int(str(x),2) for x in sea_qc]
 
-    depth_qc = [bit(air_qc[x] & sea_qc[x]).to01 for x in range(0,len(sea_qc))]
-    append_variable(fname, name, air_qc, comment=air_comment, long_name=name, 
+    depth_qc = [bit(air_qc[x] & sea_qc[x]).to01() for x in range(0,len(sea_qc))]
+    append_variable(fname, air_name, air_qc, comment=air_comment, long_name=air_name, 
                     flag_masks = flag_masks, flag_meanings= flag_meanings)
-    append_variable(fname, name, depth_qc, comment=depth_comment, long_name=name,
+    append_variable(fname, depth_name, depth_qc, comment=depth_comment, long_name=depth_name,
                      flag_masks = flag_masks, flag_meanings= flag_meanings)
    
         
