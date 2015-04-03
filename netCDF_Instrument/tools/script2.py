@@ -17,6 +17,7 @@ import numpy as np
 import shutil
 import pressure_to_depth as p2d
 import NetCDF_Utils.nc as nc
+import NetCDF_Utils.Testing as tests
 
 
 def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
@@ -40,6 +41,12 @@ def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
                                  left=nc.FILL_VALUE, right=nc.FILL_VALUE)
         corrected_pressure = sea_pressure - air_pressure
         nc.append_air_pressure(out_fname, air_pressure)
+        
+        #air pressure tests to determine depth qc data
+        test = tests.DataTests()
+        test.pressure_data = air_pressure
+        air_qc = test.select_tests()
+        nc.append_depth_qc(out_fname, air_qc)
     else:
         corrected_pressure = sea_pressure
 
