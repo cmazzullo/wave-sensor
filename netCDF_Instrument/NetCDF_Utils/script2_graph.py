@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import netCDF4
 from netCDF4 import Dataset
 import numpy as np
+import pandas as pd
 
 def make_depth_graph(in_file_name):
     ds = Dataset(in_file_name)
@@ -12,8 +13,10 @@ def make_depth_graph(in_file_name):
     sea_pressure = ds.variables['sea_water_pressure'][:]
     pressure_qc = ds.variables['pressure_qc'][:]
     depth = ds.variables['depth'][:]
+    
     ds.close();
-
+    df = pd.DataFrame([sea_pressure,pressure_qc,depth])
+    df = df[df[1] == 11110111 or df[1] == 11111111]
     sea_pressure = np.multiply(sea_pressure,1.45037738)
     
     plt.Figure(figsize=(12,4))
@@ -22,7 +25,7 @@ def make_depth_graph(in_file_name):
     par1 = ax.twinx()
   
     ax.set_ylabel('Pressure in PSI')
-    ax.set_ylim(14.0,50.0)
+    ax.set_ylim(14.0,16.0)
     par1.set_ylabel('Depth in Meters')
    
     plt.grid(b=True, which='major', color='grey', linestyle="-")
