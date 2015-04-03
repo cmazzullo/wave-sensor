@@ -8,7 +8,7 @@ from datetime import datetime
 from netCDF4 import Dataset
 import netCDF4_utils, netcdftime # these make cx_freeze work
 import pytz
-
+from bitarray import bitarray as bit
 # Constant
 
 FILL_VALUE = -1e10
@@ -81,6 +81,26 @@ def append_depth(fname, depth):
     append_variable(fname, name, depth, comment=comment,
                      long_name=name)
 
+def append_depth_qc(fname, sea_qc, air_qc):
+    """Insert depth qc array"""
+    name = 'depth_qc'
+    air_comment = 'The air_qc is a binary and of the (sea)pressure_qc and air_pressure_qc if an air file is used to calculate depth'
+    depth_comment = 'The depth_qc is a binary and of the (sea)pressure_qc and air_pressure_qc'
+    flag_masks = '11111111 11111110 11111101 11111011 11110111'
+    flag_meanings =  "no_bad_data last_five_vals_identical, outside_valid_range, invalid_rate_of_change, interpolated_data"
+    
+    
+    
+    air_qc = [bit(x) for x in air_qc]
+    sea_qc = [bit(x) for x in sea_qc]
+
+    depth_qc = [(bit)(air_qc[x] & sea_qc[x]).to01 for x in range(0,len(sea_qc))]
+    append_variable(fname, name, air_qc, comment=air_comment, long_name=name, 
+                    flag_masks = flag_masks, flag_meanings= flag_meanings)
+    append_variable(fname, name, depth_qc, comment=depth_comment, long_name=name,
+                     flag_masks = flag_masks, flag_meanings= flag_meanings)
+   
+        
 # Get variable data
 
 def get_water_depth(in_fname):
@@ -117,6 +137,9 @@ def get_air_pressure(fname):
 def get_pressure(fname):
     """Get the water pressure array from the netCDF at fname"""
     return get_variable_data(fname, 'sea_water_pressure')
+
+def get_pressure_qc(fname):
+    return get_variable_data(fname, 'pressure_qc')
 
 # Get global data
 
@@ -168,7 +191,7 @@ def get_global_attribute(fname, name):
 
 
 def append_variable(fname, standard_name, data, comment='',
-                     long_name=''):
+                     long_name='', flag_masks = None, flag_meanings = None):
     """Append a new variable to an existing netCDF."""
     with Dataset(fname, 'a', format='NETCDF4_CLASSIC') as nc_file:
         pvar = nc_file.createVariable(standard_name, 'f8', ('time',))
@@ -183,6 +206,9 @@ def append_variable(fname, standard_name, data, comment='',
         pvar.coordinates = 'time latitude longitude altitude'
         pvar.long_name = long_name
         pvar.scale_factor = 1.0
+        if flag_masks != None:
+            pvar.flags_masks = flag_masks
+            pvar.flag_meanings = flag_meanings
         if standard_name == 'depth':
             pvar.units = 'meters'
             pvar.nodc_name = 'WATER DEPTH'
