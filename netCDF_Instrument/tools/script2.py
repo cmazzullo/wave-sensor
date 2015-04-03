@@ -39,7 +39,6 @@ def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
         air_pressure = np.interp(sea_time, air_time, raw_air_pressure,
                                  left=nc.FILL_VALUE, right=nc.FILL_VALUE)
         corrected_pressure = sea_pressure - air_pressure
-        nc.append_air_pressure(out_fname, air_pressure)
     else:
         corrected_pressure = sea_pressure
 
@@ -61,4 +60,6 @@ def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
     print(len(depth))
 
     shutil.copy(water_fname, out_fname)
+    if air_fname != '':
+        nc.append_air_pressure(out_fname, air_pressure)
     nc.append_depth(out_fname, depth)
