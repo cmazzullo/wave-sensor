@@ -32,7 +32,10 @@ def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
     print(len(sea_pressure))
     sea_time = nc.get_time(water_fname)
     sea_qc = nc.get_pressure_qc(water_fname)
+    
+    #creating testing object
     test = tests.DataTests()
+    test.interpolated_data = True
     if air_fname != '':
         raw_air_pressure = nc.get_air_pressure(air_fname)
         air_time = nc.get_time(air_fname)
