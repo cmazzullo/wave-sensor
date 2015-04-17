@@ -22,7 +22,6 @@ def find_index(array, value):
 
 class Chopper:
     def __init__(self, root):
-        print('in init')
         self.fname = ''
         self.root = root
         self.b1 = Tk.Button(self.root, text='Select File', command=self.select_input)

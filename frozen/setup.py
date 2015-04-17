@@ -5,22 +5,22 @@ import sys
 from cx_Freeze import setup, Executable
 
 
-options = {
-    'pressure': {
-        'compressed' : True,
-        'path': sys.path + ['modules'],
-        'copy_dependent_files': True
-    }
-}
+# options = {
+#         'include_files': [("C:/Anaconda/Lib/site-packages/mpl_toolkits","mpl_toolkits")],
+#         'compressed' : True,
+#         'path': sys.path + ['modules'],
+#         'copy_dependent_files': True
+#     
+# }
 
 executables = [
-    Executable('FrozenBinaryScript2.py', base = "Win32GUI")
+    Executable('FrozenBinaryScript1_Air.py', base = "Win32GUI")
 ]
 
 setup(name='advanced_cx_Freeze_sample',
       version='0.1',
       description='Advanced sample cx_Freeze script',
-      options=options,
+    #  options=options,
       executables=executables
       )
 

@@ -44,8 +44,8 @@ def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
         corrected_pressure = sea_pressure - air_pressure
        
         test.pressure_data = air_pressure
-        air_qc = test.select_tests('depth')
-        nc.append_depth_qc(out_fname, air_qc)
+#         air_qc = test.select_tests('depth')
+#         nc.append_depth_qc(out_fname, air_qc)
     else:
         corrected_pressure = sea_pressure
 
