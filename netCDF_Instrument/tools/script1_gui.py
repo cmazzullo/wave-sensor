@@ -18,6 +18,7 @@ class Wavegui:
     """ GUI for csv-to-netCDF conversion. """
     def __init__(self, parent, air_pressure=False):
         self.root = parent
+        self.air_pressure = air_pressure
         if air_pressure == False:
             parent.title("Sea Water Pressure -> NetCDF")
         else:
@@ -138,53 +139,57 @@ class Wavegui:
         d['longitude'] = Variable(autosave=True,
                                   label='Longitude (decimal degrees):',
                                   doc='Decimal degrees north of the equator.')
-        d['salinity'] = Variable(autosave=True,
-                                 label='Salinity:',
-                                 options=("Salt Water (> 30 ppt)",
-                                          "Brackish Water (.5 - 30 ppt)",
-                                          "Fresh Water (< .5 ppt)"),
-                                 in_air_pressure=False)
-        d['initial_water_depth'] = Variable(autosave=True,
-                                            label='Initial water depth (meters):',
-                                            in_air_pressure=False)
-        d['final_water_depth'] = Variable(autosave=True,
-                                          label='Final water depth (meters):',
-                                          in_air_pressure=False)
-        d['device_depth'] = Variable(autosave=True,
-                                     label='Depth of device below surface (meters):',
-                                     in_air_pressure=False)
-        d['deployment_time'] = Variable(autosave=True,
-                                        label='Deployment time (YYYYMMDD HHMM):',
-                                        in_air_pressure=False)
-        d['retrieval_time'] = Variable(autosave=True,
-                                       label='Retrieval time (YYYYMMDD HHMM):',
-                                       in_air_pressure=False)
+        
         d['tzinfo'] = Variable(autosave=True,
                                label='Timezone:',
                                options=("US/Central", "US/Eastern"))
-        d['sea_name'] = Variable(label='Sea Name:',
-                                 in_air_pressure=False,
-                                 autosave=True,
-                                 options=('Chesapeake Bay',
-                                          'Great Lakes',
-                                          'Gulf of Alaska',
-                                          'Gulf of California',
-                                          'Gulf of Maine',
-                                          'Gulf of Mexico',
-                                          'Hudson Bay',
-                                          'Massachusetts Bay',
-                                          'NE Atlantic (limit-40 W)',
-                                          'NE Pacific (limit-180)',
-                                          'North American Coastline-North',
-                                          'North American Coastline-South',
-                                          'North Atlantic Ocean',
-                                          'North Pacific Ocean',
-                                          'NW Atlantic (limit-40 W)',
-                                          'NW Pacific (limit-180)',
-                                          'SE Atlantic (limit-20 W)',
-                                          'SE Pacific (limit-140 W)',
-                                          'SW Atlantic (limit-20 W)',
-                                          'SW Pacific (limit-147 E to 140 W)'))
+        
+        if self.air_pressure == False:
+            d['salinity'] = Variable(autosave=True,
+                                     label='Salinity:',
+                                     options=("Salt Water (> 30 ppt)",
+                                              "Brackish Water (.5 - 30 ppt)",
+                                              "Fresh Water (< .5 ppt)"),
+                                     in_air_pressure=False)
+            d['initial_water_depth'] = Variable(autosave=True,
+                                                label='Initial water depth (meters):',
+                                                in_air_pressure=False)
+            d['final_water_depth'] = Variable(autosave=True,
+                                              label='Final water depth (meters):',
+                                              in_air_pressure=False)
+            d['device_depth'] = Variable(autosave=True,
+                                         label='Depth of device below surface (meters):',
+                                         in_air_pressure=False)
+            d['deployment_time'] = Variable(autosave=True,
+                                            label='Deployment time (YYYYMMDD HHMM):',
+                                            in_air_pressure=False)
+            d['retrieval_time'] = Variable(autosave=True,
+                                           label='Retrieval time (YYYYMMDD HHMM):',
+                                           in_air_pressure=False)
+       
+            d['sea_name'] = Variable(label='Sea Name:',
+                                     in_air_pressure=False,
+                                     autosave=True,
+                                     options=('Chesapeake Bay',
+                                              'Great Lakes',
+                                              'Gulf of Alaska',
+                                              'Gulf of California',
+                                              'Gulf of Maine',
+                                              'Gulf of Mexico',
+                                              'Hudson Bay',
+                                              'Massachusetts Bay',
+                                              'NE Atlantic (limit-40 W)',
+                                              'NE Pacific (limit-180)',
+                                              'North American Coastline-North',
+                                              'North American Coastline-South',
+                                              'North Atlantic Ocean',
+                                              'North Pacific Ocean',
+                                              'NW Atlantic (limit-40 W)',
+                                              'NW Pacific (limit-180)',
+                                              'SE Atlantic (limit-20 W)',
+                                              'SE Pacific (limit-140 W)',
+                                              'SW Atlantic (limit-20 W)',
+                                              'SW Pacific (limit-147 E to 140 W)'))
         return d
 
     def process_files(self):
@@ -192,12 +197,13 @@ class Wavegui:
         # First, check that all fields are filled.
         for datafile in self.datafiles:
             union = dict(datafile.items() | self.global_fields.items())
-            for key in union:
-                if union[key].stringvar.get() == '':
-                    MessageDialog(self.root, message="Incomplete entries,"
-                                  " please fill out all fields.",
-                                  title='Incomplete!', wait=True)
-                    return False
+            if self.air_pressure == False:
+                for key in union:
+                    if union[key].stringvar.get() == '':
+                        MessageDialog(self.root, message="Incomplete entries,"
+                                      " please fill out all fields.",
+                                      title='Incomplete!', wait=True)
+                        return False
         message = ('Processing files, this may take a few minutes.')
         d = MessageDialog(self.root, message=message,
                           title='Processing...', buttons=0,

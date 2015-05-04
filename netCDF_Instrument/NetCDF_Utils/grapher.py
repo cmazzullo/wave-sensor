@@ -160,6 +160,7 @@ class Grapher(NetCDFReader):
             plt.ylim(ylimits[0],ylimits[1])
             
         plt.legend(self.plot_data, self.names,bbox_to_anchor=(.80, 1.10), loc=2, borderaxespad=0.0)
+     
         #plt.xlim(time[0],time[::-1][0] + datetime.timedelta(minutes=5))
         plt.show()
         
@@ -272,13 +273,26 @@ class Grapher(NetCDFReader):
             
             
         plt.show()
+        
+    def simple_graph(self):
+        confidence_array = [.01, .9, .25,.5,.9,.75]
+        support_array = [.01, .01, .3, .3,.5, .4]
+        
+        plt.xlim(0,1)
+        plt.ylim(0,1)
+        plt.xlabel('Confidence Threshold')
+        plt.ylabel('Support Threshold')
+        
+        plt.scatter(confidence_array, support_array)
+        plt.show()
        
 if __name__ == "__main__":
     
     #--create an instance    
     graph = Grapher()
     
-    graph.plot_multiple_series_graphs(True,True)
+#     graph.plot_multiple_series_graphs(True,True)
+graph.simple_graph()
 #     graph.plot_both_together(True)
 #     graph.plot_both_together()
    
