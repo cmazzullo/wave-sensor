@@ -54,7 +54,7 @@ class DepthGui:
         
         #global options for matplotlib
         font = {'family' : 'Bitstream Vera Sans',
-            'size'   : 18}
+            'size'   : 16}
     
         matplotlib.rc('font', **font)
         plt.rcParams['figure.figsize'] = (14,10)
@@ -63,35 +63,43 @@ class DepthGui:
         #reading
         ds = Dataset(self.in_file_name)
         time = netCDF4.num2date(ds.variables['time'][:],ds.variables['time'].units)
-        sea_pressure = ds.variables['sea_water_pressure'][:]
-        pressure_qc = ds.variables['pressure_qc'][:]
+        try:
+            air_pressure = ds.variables['air_pressure'][:]
+        except:
+            air_pressure = ds.variables['sea_water_pressure'][:]
+       
+        try:
+            air_qc = ds.variables['air_qc'][:]
+        except:
+            air_qc = ds.variables['pressure_qc'][:]
+       
         depth_qc = ds.variables['depth_qc'][:]
         depth = ds.variables['depth'][:]
         ds.close();
         
         #convert dbars to psi   *Possibly convert meters to feet later on*
-        sea_pressure = np.multiply(sea_pressure,1.45037738)
+        air_pressure = np.multiply(air_pressure,1.45037738)
         
         #create dataframe
-        data = {'Pressure': pd.Series(sea_pressure,index=time),
-                'PressureQC': pd.Series(pressure_qc, index=time),
+        data = {'Pressure': pd.Series(air_pressure,index=time),
+                'PressureQC': pd.Series(air_qc, index=time),
                 'Depth': pd.Series(depth, index=time),
                 'DepthQC': pd.Series(depth_qc, index=time)}
         df = pd.DataFrame(data)
+        
+        #check if the pressure and depth pints do not pass QC
+        #if points did not pass QC assign NaN to its value (aside from stuck sensor and interpolation)
+        df.Pressure[(df['PressureQC'] != 11111111) & (df['PressureQC'] != 11110111)
+                & (df['PressureQC'] != 11111110) & (df['PressureQC'] != 11110110)] = np.NaN;
+    
+        df.Depth[(df['DepthQC'] != 11111111) & (df['DepthQC'] != 11110111)
+                & (df['DepthQC'] != 11111110) & (df['DepthQC'] != 11110110)] = np.NaN;
         
         #Boxcar average for aesthetic purposes if desired
         if box_car_points > 0:
             df.Pressure = pd.rolling_window(df.Pressure,center=True,window=box_car_points, win_type='boxcar')
             df.Depth = pd.rolling_window(df.Depth,center=True,window=box_car_points, win_type='boxcar')
         
-        #check if the pressure and depth pints do not pass QC
-        pqc = df[(df.PressureQC != 11111111) & (df.PressureQC != 11110111)]
-        dqc = df[(df.DepthQC != 11111111) & (df.DepthQC != 11110111)]
-        
-        #if points did not pass QC assign NaN to its value
-        df.loc(pqc.index).Pressure = np.NaN
-        df.loc(dqc.index).Depth = np.NaN
-          
         #Read images 
         logo = image.imread('usgs.png', None)
        

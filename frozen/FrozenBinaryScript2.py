@@ -144,6 +144,7 @@ def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
     print(len(sea_pressure))
     sea_time = get_time(water_fname)
     sea_qc = get_pressure_qc(water_fname)
+    air_qc = None
     
     #creating testing object
     test = DataTests()
@@ -156,8 +157,6 @@ def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
         corrected_pressure = sea_pressure - air_pressure
        
         test.pressure_data = air_pressure
-#         air_qc = test.select_tests('depth')
-#         append_depth_qc(out_fname, air_qc)
     else:
         corrected_pressure = sea_pressure
 
@@ -185,6 +184,9 @@ def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
         #air_qc and depth qc
         air_qc = test.select_tests('')
         append_depth_qc(out_fname, sea_qc, air_qc)
+    else:
+        append_depth_qc(out_fname, sea_qc, None)
+        
     append_depth(out_fname, depth)
     
 FILL_VALUE = -1e10
@@ -266,14 +268,18 @@ def append_depth_qc(fname, sea_qc, air_qc):
     flag_masks = '11111111 11111110 11111101 11111011 11110111'
     flag_meanings =  "no_bad_data last_five_vals_identical, outside_valid_range, invalid_rate_of_change, interpolated_data"
     
-    air_qc = [bit(x) for x in air_qc]
-    sea_qc = [bit(str(x)) for x in sea_qc]
-
-    depth_qc = [(air_qc[x] & sea_qc[x]).to01() for x in range(0,len(sea_qc))]
-    append_variable(fname, air_name, [x.to01() for x in air_qc], comment=air_comment, long_name=air_name, 
-                    flag_masks = flag_masks, flag_meanings= flag_meanings)
-    append_variable(fname, depth_name, depth_qc, comment=depth_comment, long_name=depth_name,
-                     flag_masks = flag_masks, flag_meanings= flag_meanings)
+    if air_qc != None:
+        air_qc = [bit(x) for x in air_qc]
+        sea_qc = [bit(str(x)) for x in sea_qc]
+    
+        depth_qc = [(air_qc[x] & sea_qc[x]).to01() for x in range(0,len(sea_qc))]
+        append_variable(fname, air_name, [x.to01() for x in air_qc], comment=air_comment, long_name=air_name, 
+                        flag_masks = flag_masks, flag_meanings= flag_meanings)
+        append_variable(fname, depth_name, depth_qc, comment=depth_comment, long_name=depth_name,
+                         flag_masks = flag_masks, flag_meanings= flag_meanings)
+    else:
+        append_variable(fname, depth_name, sea_qc, comment=depth_comment, long_name=depth_name,
+                         flag_masks = flag_masks, flag_meanings= flag_meanings)
    
         
 # Get variable data
