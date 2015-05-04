@@ -38,6 +38,8 @@ class Chopper:
         plt.xlabel('Time (s)')
         plt.ylabel('Pressure (dBar)')
         for i, flag in enumerate(qc):
+            if i == len(qc) - 1:
+                break
             if flag != 1111:
                 plt.axvspan(t[i], t[i+1], alpha=0.5, color='red', linewidth=0)
         x1 = t[0]
