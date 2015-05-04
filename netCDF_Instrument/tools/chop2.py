@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import numpy as np
 import matplotlib
-# matplotlib.use('TkAgg')
 matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
 
@@ -12,7 +11,6 @@ from NetCDF_Utils import nc
 from netCDF4 import Dataset
 from NetCDF_Utils.nc import chop_netcdf
 from NetCDF_Utils.DateTimeConvert import convert_date_to_milliseconds
-# import dateutil.parser as parser
 from dateutil import parser
 from datetime import datetime
 from pytz import timezone
@@ -38,9 +36,9 @@ class Chopper:
         line = plt.plot(t, p, color='blue')
         plt.xlabel('Time (s)')
         plt.ylabel('Pressure (dBar)')
-        for i, flag in enumerate(qc):
-            if flag != 1111:
-                plt.axvspan(t[i], t[i+1], alpha=0.5, color='red', linewidth=0)
+        # for i, flag in enumerate(qc):
+        #     if flag != 11110111:
+        #         plt.axvspan(t[i], t[i+1], alpha=0.5, color='red', linewidth=0)
         x1 = t[0]
         x2 = t[-1]
         self.left = ax.axvline(x1, color='black')
@@ -63,11 +61,17 @@ class Chopper:
             patch.figure.canvas.draw()
 
         # self.canvas = canvas = FigureCanvasTkAgg(fig, master=self.root)
+        def resizing(event):
+            print('resizing')
         self.canvas = canvas = self.fig.canvas
         cid_up = canvas.mpl_connect('button_press_event', on_click)
+        # cid_up = canvas.mpl_connect('resize_event', resizing)
         # canvas.get_tk_widget().pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
         canvas.show()
         fig.show()
+        # plt.plot([1,2], [3, 2])
+        plt.ion()
+        plt.show()
         # toolbar = NavigationToolbar2TkAgg( canvas, self.root )
         # toolbar.update()
         # canvas._tkcanvas.pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
@@ -83,6 +87,7 @@ class Chopper:
         Tk.OptionMenu(self.root, self.tzstringvar, *options).pack()
         b = Tk.Button(self.root, text='Export Selection', command=self.export)
         b.pack()
+        print('hello')
 
     def export(self):
         date1 = self.date1.get()
