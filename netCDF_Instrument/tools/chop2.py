@@ -35,9 +35,11 @@ class Chopper:
         line = plt.plot(t, p, color='blue')
         plt.xlabel('Time (s)')
         plt.ylabel('Pressure (dBar)')
-        # for i, flag in enumerate(qc):
-        #     if flag != 11110111:
-        #         plt.axvspan(t[i], t[i+1], alpha=0.5, color='red', linewidth=0)
+        for i, flag in enumerate(qc):
+            if i == len(qc) - 1:
+                break
+            if flag != 1111:
+                plt.axvspan(t[i], t[i+1], alpha=0.5, color='red', linewidth=0)
         x1 = t[0]
         x2 = t[-1]
         self.left = ax.axvline(x1, color='black')
