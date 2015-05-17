@@ -20,12 +20,14 @@ def plot_pressure(fname):
     t = nc.get_time(fname) / 1000
     p = nc.get_pressure(fname)
     qc = nc.get_flags(fname)
-    for i, flag in enumerate(qc):
-        if flag != 1111:
-            plt.axvspan(t[i], t[i+1], alpha=0.5, color='red', linewidth=0)
+    bad_points = p[np.where(qc != 11110111)]
+    bad_times = t[np.where(qc != 11110111)]
     plt.plot(t, p)
+    plt.plot(bad_times, bad_points, 'rx', label='Bad data')
     plt.xlabel('Time (s)')
     plt.ylabel('Pressure (dBar)')
+    plt.legend()
+    plt.title('Water Pressure with Bad Data Marked')
     plt.show()
 
 
