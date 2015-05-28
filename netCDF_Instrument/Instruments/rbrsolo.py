@@ -82,8 +82,8 @@ if __name__ == "__main__":
     lt.creator_name = "Jurgen Klinnsmen"
     lt.creator_url = "www.test.com"
     #--for testing
-    lt.in_filename = os.path.join("benchmark","RBR_RSK.txt")
-    lt.out_filename = os.path.join("benchmark","RBR_RSK.nc")
+    lt.in_filename = "stevens_rbr.txt"
+    lt.out_filename = "stevens_rbr.nc"
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)
     lt.is_baro = True
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     lt.latitude = np.float(0.0)
     lt.salinity_ppm = np.float32(0.0)
     lt.z = np.float32(0.0)
-
+    lt.device_depth = 0
 
     #--get input
     #lt.get_user_input()
