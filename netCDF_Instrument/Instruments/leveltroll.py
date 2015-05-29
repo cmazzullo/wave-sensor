@@ -13,7 +13,6 @@ except:
     raise Exception("numpy is required")
 
 
-
 import NetCDF_Utils.DateTimeConvert as dateconvert
 from NetCDF_Utils.Testing import DataTests
 from NetCDF_Utils.edit_netcdf import NetCDFWriter
@@ -23,11 +22,12 @@ class Leveltroll(NetCDFWriter):
     '''derived class for leveltroll ascii files
     '''
     def __init__(self):
-        self.numpy_dtype = np.dtype([("seconds",np.float32),("pressure",np.float32)])
+        self.numpy_dtype = np.dtype([("seconds", np.float32),
+                                     ("pressure", np.float32)])
         self.record_start_marker = "date and time,seconds"
         self.timezone_marker = "time zone"
         super(Leveltroll,self).__init__()
-        self.date_format_string = "%m/%d/%Y %I:%M:%S %p "
+        self.date_format_string = "%m/%d/%Y %I:%M:%S %p"
         self.temperature_data = None
         self.data_tests = DataTests()
 
@@ -41,17 +41,16 @@ class Leveltroll(NetCDFWriter):
         self.read_header(f)
         self.read_datetime(f)
 
-        data = np.genfromtxt(f,dtype=self.numpy_dtype,delimiter=',',usecols=[1,2,3])
+        data = np.genfromtxt(f, dtype=self.numpy_dtype, delimiter=',',
+                             usecols=[1,2,3])
         f.close()
-
 
         long_seconds = data["seconds"]
         print(long_seconds[::-1])
-        self.utc_millisecond_data = [(x * 1000) + self.data_start for x in long_seconds]
-
+        self.utc_millisecond_data = [(x * 1000) + self.data_start
+                                     for x in long_seconds]
         self.pressure_data = np.divide(data["pressure"], 1.45037738)
-#         self.temperature_data = [x for x in data["temperature"]]
-
+        self.frequency = 1 / (long_seconds[1] - long_seconds[0])
         print(len(self.pressure_data))
 
     def read_header(self,f):
