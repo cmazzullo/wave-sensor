@@ -131,6 +131,8 @@ class Probabilities(Time_Domain_Analysis):
             
 if __name__ == '__main__':
     prob_object = Probabilities()
+    prob_object.in_file_name = "LevelTroll2Slice.nc"
+    prob_object.air_pressure_file = "HOBO.nc" 
     prob_object.run_probabilities()   
     
     

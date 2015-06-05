@@ -73,7 +73,18 @@ class NetCDFReader(object):
         times = nc.variables['time']
 
         temperature = None
-        pressure = nc.variables['sea_water_pressure']
+        
+        try:
+            self.air_pressure_data = nc.variables['air_pressure'][:]
+        except:
+            print('No air pressure')
+        try:
+            self.pressure_data = nc.variables['sea_water_pressure'][:]
+        except:
+            print('No sea pressure')
+
+
+      
         latitude = nc.variables['latitude']
         self.latitude = latitude[:]
         longitude = nc.variables['longitude']
@@ -90,10 +101,10 @@ class NetCDFReader(object):
         if milliseconds_bool:
             time_array = times[:]
             index = pd.Index(time_array)
-            pressure_array = pressure[:]
+            pressure_array = self.pressure_data
             return self.return_data(pressure_array, temperature, index, series_bool, pressure_bool, True)
         else:
-            return self.return_data(pressure, temperature, time_convert, series_bool, pressure_bool)
+            return self.return_data(self.pressure_data, temperature, time_convert, series_bool, pressure_bool)
 
     def return_data(self, pressure, temperature, index, series_bool, pressure_bool, milli_bool = False):
         """Read a .nc file
