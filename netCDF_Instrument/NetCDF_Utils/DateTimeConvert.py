@@ -31,7 +31,6 @@ def convert_milliseconds_to_datetime(milliseconds, tzinfo):
         final_date = date.strftime('%Y-%m-%dT%H:%M:%SZ')
         return final_date
 
-
 def get_time_duration(seconds_difference):
         days = int((((seconds_difference / 1000) / 60) / 60) / 24)
         hours =  int((((seconds_difference / 1000) / 60) / 60) % 24)

@@ -1,4 +1,6 @@
 wave-sensor
 ===
 
-Software to take data files from pressure sensors and store it in netCDF format.
+Software to manage data files from pressure sensors.
+
+Tools included:

@@ -1,11 +1,11 @@
-HOBO
+Measurement Specialties
 20
 30
-Brackish
-9.5
+US/Central
+Salt Water (> 30 ppt)
 10
-11.5
-20140101 0000
+10
+9.5
 20140102 0000
-US/Eastern
-North American Coastline-North
+20140101 0000
+Great Lakes

@@ -21,7 +21,7 @@ import sys
 base = 'Win32GUI' if sys.platform=='win32' else None
 
 executables = [
-    Executable('netCDF_Instrument/tools/compare_methods_gui.py', base=base)
+    Executable('netCDF_Instrument/tools/script1_gui.py', base=base)
 ]
 
 setup(name='compare_methods',

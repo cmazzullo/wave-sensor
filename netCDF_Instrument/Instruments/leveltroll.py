@@ -1,5 +1,6 @@
 import sys
 from pytz import timezone
+from unit_conversion import PSI_TO_DBAR
 
 #--python 3 compatibility
 pyver = sys.version_info
@@ -49,7 +50,8 @@ class Leveltroll(NetCDFWriter):
         print(long_seconds[::-1])
         self.utc_millisecond_data = [(x * 1000) + self.data_start
                                      for x in long_seconds]
-        self.pressure_data = np.divide(data["pressure"], 1.45037738)
+        self.pressure_data = data["pressure"] * PSI_TO_DBAR
+
         self.frequency = 1 / (long_seconds[1] - long_seconds[0])
         print(len(self.pressure_data))
 
@@ -65,7 +67,7 @@ class Leveltroll(NetCDFWriter):
             if line.lower().startswith(self.timezone_marker):
                 self.timezone_string = line.split(':')[1].strip()
         if self.timezone_string is None:
-            raise Exception("ERROR - could not find time zone in file "+\
+            raise Exception("ERROR - could not find time zone in file "+ \
                 self.in_filename+" header before line "+str(line_count)+'\n')
         self.set_timezone()
 

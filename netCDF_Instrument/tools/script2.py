@@ -18,7 +18,7 @@ import pressure_to_depth as p2d
 import NetCDF_Utils.nc as nc
 import NetCDF_Utils.Testing as tests
 
-def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
+def make_depth_file(water_fname, air_fname, out_fname, method='combo'):
     """Adds depth information to a water pressure file.
 
     The argument air_fname is optional, when set to '' no air
@@ -42,11 +42,16 @@ def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
         air_pressure = np.interp(sea_time, air_time, raw_air_pressure,
                                  left=nc.FILL_VALUE, right=nc.FILL_VALUE)
         corrected_pressure = sea_pressure - air_pressure
-       
+
         test.pressure_data = air_pressure
         air_qc = test.select_tests('depth')
     else:
         corrected_pressure = sea_pressure
+
+    # Delete me
+    print('method:', method)
+    print('device_depth:', device_depth)
+    print('water_depth:', water_depth)
 
     if method == 'fft':
         depth = p2d.fft_method(corrected_pressure, device_depth,
@@ -68,11 +73,36 @@ def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
     shutil.copy(water_fname, out_fname)
     if air_fname != '':
         nc.append_air_pressure(out_fname, air_pressure)
-        
+
         #air_qc and depth qc
         air_qc = test.select_tests('')
         nc.append_depth_qc(out_fname, sea_qc, air_qc)
     else:
         nc.append_depth_qc(out_fname, sea_qc, None)
-        
+
     nc.append_depth(out_fname, depth)
+
+
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("in_filename",
+                        help="a netCDF file containing pressure data")
+    parser.add_argument("out_filename",
+                        help="where you want to put the output file")
+    parser.add_argument("--fft",
+                        help="don't remove linear trends first",
+                        dest='method',
+                        const='fft',
+                        default='combo',
+                        action='store_const')
+    parser.add_argument("--naive",
+                        help="only find the hydrostatic depth",
+                        dest='method',
+                        const='naive',
+                        default='combo',
+                        action='store_const')
+    args = parser.parse_args()
+    print(args)
+    make_depth_file(args.in_filename, '', args.out_filename,
+                    method=args.method)

@@ -8,7 +8,7 @@ import pandas as pd
 import pytz
 from NetCDF_Utils.Testing import DataTests
 from NetCDF_Utils.edit_netcdf import NetCDFWriter
-
+from unit_conversion import ATM_TO_DBAR
 
 class Waveguage(NetCDFWriter):
     """Reads in an ASCII file output by a Waveguage pressure sensor
@@ -38,7 +38,7 @@ class Waveguage(NetCDFWriter):
         self.frequency = self._get_frequency()
         self.utc_millisecond_data = self.get_ms_data(timestamps, chunks)
         raw_pressure = self.make_pressure_array(timestamps, chunks)
-        self.pressure_data = raw_pressure * 10.0 + 10.1325
+        self.pressure_data = raw_pressure * 10.0 + ATM_TO_DBAR
         return self.pressure_data, self.utc_millisecond_data
 
 

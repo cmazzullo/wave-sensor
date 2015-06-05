@@ -56,6 +56,9 @@ def fft_method(p_dbar, z, H, timestep, gate=0, window_func=np.ones,
     WARNING: FFT will truncate the last element of an array if it has
     an odd number of elements!
     """
+    print('z', z)
+    print('H', H)
+    print('timestep', timestep)
     H = np.average(H)
     p_dbar = trim_to_even(p_dbar)
     n = len(p_dbar)

@@ -2,6 +2,7 @@ import os
 import pytz
 import pandas
 import re
+from unit_conversion import PSI_TO_DBAR
 
 #--some import error trapping
 try:
@@ -38,7 +39,7 @@ class MeasureSysLogger(NetCDFWriter):
         #Since the instrument is not reliably recording data at 4hz we have decided to
         #interpolate the data to avoid any potential complications in future data analysis
         original_dates = [(x * 1000) + self.data_start for x in df[4]]
-        instrument_pressure = [x / 1.45037738 for x in df[5]]
+        instrument_pressure = df[5].values * PSI_TO_DBAR
 
         self.utc_millisecond_data = dateconvert.convert_to_milliseconds(df.shape[0] - 1, \
                                                             ('%s' % (df[3][0][1:])), \

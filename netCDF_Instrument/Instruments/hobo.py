@@ -1,8 +1,8 @@
 import os
 import pytz
 import pandas
+from unit_conversion import PSI_TO_DBAR
 import sys
-sys.path.append('..')
 
 #--python 3 compatibility
 pyver = sys.version_info
@@ -37,24 +37,19 @@ class Hobo(NetCDFWriter):
         only parse the initial datetime = much faster
         '''
         skip_index = self.read_start('"#"',',')
-        # for skipping lines in case there is calibration header data
-        df = pandas.read_table(self.in_filename,skiprows=skip_index, header=None, engine='c', sep=',')
-        # apparently hobos have a mode to measure depth which triggers
-        # measurements at 2 second intervals this may be arbitrary but
-        # a file with regular 30 second intervals breaks up in to 2
-        # second intervals with blank measurements for pressure at
-        # every interval between the initial since we want evenly
-        # spaced data and interpolation would be a waste of time we
-        # will filter the records that are blank
-        df.dropna()
-        first_stamp = convert_date_to_milliseconds(df[1][0], self.date_format_string)
-        second_stamp = convert_date_to_milliseconds(df[1][1], self.date_format_string)
+        df = pandas.read_table(self.in_filename,skiprows=skip_index,
+                               header=None, engine='c', sep=',',
+                               usecols=(1, 2))
+        df = df.dropna()
+        first_stamp = convert_date_to_milliseconds(df.values[0][0],
+                                                   self.date_format_string)
+        second_stamp = convert_date_to_milliseconds(df.values[1][0],
+                                                    self.date_format_string)
         self.frequency = 1000 / (second_stamp - first_stamp)
-        print('freq = ', self.frequency)
-        self.utc_millisecond_data = convert_to_milliseconds(df.shape[0], df[1][0],
-                                         self.date_format_string, self.frequency)
-        self.pressure_data = [x for x in np.divide(df[2], 1.45037738)]
-        print(len(self.pressure_data))
+        self.utc_millisecond_data = convert_to_milliseconds(df.shape[0],
+                                        df[1][0], self.date_format_string,
+                                        self.frequency)
+        self.pressure_data = df[2].values * PSI_TO_DBAR
 
 
     def read_start(self, expression, delimeter):
@@ -107,10 +102,6 @@ if __name__ == "__main__":
     lt.latitude = np.float(0.0)
     lt.salinity_ppm = np.float32(0.0)
     lt.z = np.float32(0.0)
-
-
-    #--get input
-    #lt.get_user_input()
 
     #--read the ASCII level troll file
     lt.read()
