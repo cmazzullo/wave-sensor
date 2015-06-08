@@ -75,6 +75,7 @@ def get_netCDF(infile_name):
     interp_depth = np.interp(np.arange(0,len(depth)/4,.02),np.arange(0,len(depth)/4,.25),depth)
     interp_depth = np.subtract(interp_depth,np.average(interp_depth))
     
+    
 #    plt.plot(np.arange(len(interp_depth)),interp_depth, color="grey")
     return interp_depth
 
