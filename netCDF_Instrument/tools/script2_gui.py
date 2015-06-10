@@ -93,6 +93,16 @@ class Script2gui:
                 "set to the fill value:%d" % nc.FILL_VALUE)
                 gc.MessageDialog(root, message=message, title='Warning')
 
+        #check to see if time coverage resolution is small enough to perform combo
+        timestep = 1 / nc.get_frequency(self.sea_fname)
+        print(method, timestep)
+        if method =="combo" and timestep > .5:
+            method = "naive"
+            message = "Time resolution too small to run Linear Wave method.  Will run hydrostatic..."
+            gc.MessageDialog(root, message=message,
+                         title='Success!')
+         
+        print(method)   
         script2.make_depth_file(self.sea_fname, self.air_fname,
                                 output_fname, method=method)
         gc.MessageDialog(root, message="Success! Files saved.",
