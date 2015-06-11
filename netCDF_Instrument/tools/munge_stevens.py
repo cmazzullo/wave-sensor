@@ -14,7 +14,7 @@ from plotting import myplot
 
 INCH_TO_METER = 0.0254
 
-stevens_fold = '/home/chris/work/test-data/stevens_data/Stevens Acoustic & Wave Wire/'
+stevens_fold = '/home/chris/work/stevens_data/Stevens Acoustic & Wave Wire/'
 fnames = ['A5763.001', 'A5763.002', 'A5763.003', 'A5763.004',
           'A5763.005', 'A5763.006', 'A5763.007', 'A5763.008',
           'A5763.009', 'A5763.010', 'A5763.011', 'A5763.012',
@@ -26,6 +26,7 @@ fnames = ['A5763.001', 'A5763.002', 'A5763.003', 'A5763.004',
           'A5763.033', 'A5763.034', 'A5763.035', 'A5763.036',
           'A5763.037', 'A5763.038', 'A5763.039', 'A5763.040',
           'A5763.041']
+
 fnames = [stevens_fold + fname for fname in fnames]
 blacklist = (3, 4, 11, 12, 13, 20, 21, 22, 29, 30, 31, 38)
 
@@ -73,12 +74,13 @@ day2_times = 1429609879 + array([
     (20600, 21000),
     (21000, 21500),
     (21500, 22000)])
+
 run_times = concatenate((day1_times, day2_times))
 expected_periods = array([2, 2.5, 3.03, 1, 1.49, 2, 2.5, 3.03, 3.58, 3.99, 4.56, 2.88])
 expected_freqs = 1 / expected_periods
 
 stevens_interval = .02
-data_fold = '/home/chris/work/test-data/stevens_data/'
+data_fold = '/home/chris/work/stevens_data/'
 hobo1 = data_fold + 'Hobo/ncs/StevensDay1Run1G.csv.nc.depth'
 hobo2 = data_fold + 'Hobo/ncs/StevensDay1Run1H.csv.nc.depth'
 tru1 = data_fold + 'TruBlue/ncs/4-20 1100-536PM.csv.nc.depth'
@@ -277,7 +279,13 @@ max_freq = freqs[argmax(amps)]
 
 
 ## curve fitting
-def fit_amplitude_and_phase(series):
+def get_main_frequency(series):
+    timestep = series.index[1] - series.index[0]
+    amps, freqs = get_transform(series.values, stevens_interval)
+    return freqs[argmax(amps[1:]) + 1] # find largest frequency > 0
+
+
+def fit_sine(series):
     freq_guess = get_main_frequency(series)
     phase_guess = 1
     series = remove_mean(series)
@@ -290,22 +298,43 @@ def fit_amplitude_and_phase(series):
 
 wave_props = []
 
+window_stats = []
+stevens_stats = []
 for i in range(12):
     if i in blacklist:
         continue
     run_number = i
     s = remove_mean(stevens_series[run_number])
     s.index -= s.index[0] # large time values swamp the fit, causing failure
-    # freq_guess = 1 / expected_periods[run_number]
-    amp, freq, phase = fit_amplitude_and_phase(s)
-    # wave_props.append({'Run': run_number,
-    #                    'Amplitude': amp,
-    #                    'Frequency': freq,
-    #                    'Phase': phase,
-    #                    'Expected frequency': expected_freqs[i]})
+    w = remove_mean(windows[run_number])
+    w.index -= w.index[0]
+    s_stats = fit_sine(s)
+    w_stats = fit_sine(w)
+    window_stats.append(w_stats)
+    stevens_stats.append(s_stats)
+    amp, freq, phase = s_stats
     y = amp * sin(2*pi*freq*s.index-phase)
-    myplot('Best Fit Sine Wave, Data Set {}'.format(run_number+1),
+    amp, freq, phase = w_stats
+    y2 = amp * sin(2*pi*freq*w.index-phase)
+    myplot('Best Fit Sine Wave, Instrument Data Set {}'.format(run_number+1),
+           {'Instrument data': (w.index, w.values),
+            'Best fit':(w.index, y2)},
+            'Time (s)', 'Wave height (m)')
+    myplot('Best Fit Sine Wave, Stevens Data Set {}'.format(run_number+1),
            {'Stevens data': (s.index, s.values),
             'Best fit':(s.index, y)},
-           'Time (s)', 'Wave height (m)')
+            'Time (s)', 'Wave height (m)')
     show()
+data = concatenate((array(window_stats), array(stevens_stats)), 1)
+df = pd.DataFrame(data, columns=['instrument_amp',
+                                 'instrument_freq',
+                                 'instrument_phase',
+                                 'stevens_amp',
+                                 'stevens_freq',
+                                 'stevens_phase'])
+
+df['instrument_amp'] = absolute(df['instrument_amp'])
+df['stevens_amp'] = absolute(df['stevens_amp'])
+df['instrument_freq'] = absolute(df['instrument_freq'])
+df['stevens_freq'] = absolute(df['stevens_freq'])
+
