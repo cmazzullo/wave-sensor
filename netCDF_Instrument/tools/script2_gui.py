@@ -78,6 +78,7 @@ class Script2gui:
         output_fname = filedialog.asksaveasfilename()
         method = self.methodvar.get()
         sea_t = nc.get_time(self.sea_fname)
+        print('self.air_fname = ', self.air_fname)
         if self.air_fname != '':
             air_t = nc.get_time(self.air_fname)
             if (air_t[-1] < sea_t[0]) or (air_t[0] > sea_t[-1]):
