@@ -38,14 +38,13 @@ class MeasureSysLogger(NetCDFWriter):
 
         #Since the instrument is not reliably recording data at 4hz we have decided to
         #interpolate the data to avoid any potential complications in future data analysis
-        original_dates = [(x * 1000) + self.data_start for x in df[4]]
-        instrument_pressure = df[5].values * PSI_TO_DBAR
+        self.pressure_data = df[5].values * PSI_TO_DBAR
 
-        self.utc_millisecond_data = dateconvert.convert_to_milliseconds(df.shape[0] - 1, \
+        self.utc_millisecond_data = dateconvert.convert_to_milliseconds(df.shape[0], \
                                                             ('%s' % (df[3][0][1:])), \
                                                             self.date_format_string, self.frequency)
 
-        self.pressure_data = np.interp(self.utc_millisecond_data, original_dates, instrument_pressure)
+#         self.pressure_data = np.interp(self.utc_millisecond_data, original_dates, instrument_pressure)
 
         if re.match('^[0-9]{1,3}.[0-9]+$', str(df[6][0])):
             self.temperature_data = [x for x in df[6]]
@@ -78,7 +77,6 @@ class MeasureSysLogger(NetCDFWriter):
         self.vstore.longitude = self.longitude
 
         #Tests#
-        self.data_tests.interpolated_data = True
         self.data_tests.pressure_data = self.pressure_data
         self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
 
