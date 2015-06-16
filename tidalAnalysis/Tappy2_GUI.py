@@ -1,45 +1,31 @@
-import netCDF4
 from netCDF4 import Dataset
-import netCDF4_utils
-import netcdftime
 import pandas as pd
-import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.backends.backend_tkagg
+from tappy2 import *
 
-import PySide
-import tkinter
-import tkinter as Tk
-from tkinter import filedialog
-from tkinter import ttk
-from tkinter import StringVar
-from tkinter.constants import W
+import Tkinter as Tk
+import Tkinter
+import tkFileDialog as filedialog
+from Tkinter import StringVar
+from Tkinter import W
 
-class AverageGui:
+class TappyGui:
     def __init__(self, root):
        
         self.in_file_name = ''
         self.root = root
-        self.root.title('Pressure Average')
-        self.Label = Tk.Label(self.root, text='Averaged Points: (Boxcar Window Size)')
-        self.Label.pack(anchor=W, pady=2, padx=15)
-        self.AveragedPoints = Tk.Entry(self.root)
-        self.AveragedPoints.pack(anchor=W, pady=2, padx=15)
-        self.Label2 = Tk.Label(self.root, text='Data Increments: (e.g. 4 is once a second, 480 is once every 2 mins)')
-        self.Label2.pack(anchor=W, pady=2, padx=15)
-        self.Increments = Tk.Entry(self.root)
-        self.Increments.pack(anchor=W, pady=2, padx=15)
+        self.root.title('Tappy (Tidal Analysis Package)')
         
-        methods = [('Excel CSV', 'excel'),
-                   ('netCDF', 'netcdf'),
-                   ('Excel CSV & netCDF', 'both')]
+        methods = [('None', 'none'),
+                   ('Transform', 'transform'),
+                   ('USGS', 'usgs')]
 
         self.methodvar = StringVar()
-        self.methodvar.set('excel')
+        self.methodvar.set('none')
 
-        ttk.Label(root, text='File Format: (Saves in same directory as file)').pack(anchor=W,pady=2, padx=15)
+        Tk.Label(root, text='Filter:').pack(anchor=W,pady=2, padx=15)
         for name, kwarg in methods:
-            ttk.Radiobutton(root, text=name, variable=self.methodvar,
+            Tk.Radiobutton(root, text=name, variable=self.methodvar,
                             value=kwarg).pack(anchor=W,pady=2, padx=15)
                             
         self.b1 = Tk.Button(self.root, text='Select File', command=self.select_input)
@@ -123,23 +109,28 @@ class AverageGui:
          
     def select_input(self):
         self.in_file_name = filedialog.askopenfilename()
-        print(self.AveragedPoints.get(), self.Increments.get())
-        self.twoMinAverage(self.in_file_name, int(self.AveragedPoints.get()), int(self.Increments.get()))
+        analysis(in_filename,filter="transform")
+        if len(filter_filename) > 0:
+            for x in filter_filename:
+                dotIndex = x.find('.')
+                out_filename = "Final%s.nc" % x[0:dotIndex]
+                filter_subtraction(in_filename,x,out_filename)
+                analysis(out_filename)
         
-class MessageDialog(tkinter.Toplevel):
+class MessageDialog(Tkinter.Toplevel):
     """ A template for nice dialog boxes. """
 
     def __init__(self, parent, message="", title="", buttons=1,
                  wait=True):
-        tkinter.Toplevel.__init__(self, parent)
-        body = ttk.Frame(self)
+        Tkinter.Toplevel.__init__(self, parent)
+        body = Tk.Frame(self)
         self.title(title)
         self.boolean = None
         self.parent = parent
         self.transient(parent)
-        ttk.Label(body, text=message).pack()
+        Tk.Label(body, text=message).pack()
         if buttons == 1:
-            b = ttk.Button(body, text="OK", command=self.destroy)
+            b = Tk.Button(body, text="OK", command=self.destroy)
             b.pack(pady=5)
         elif buttons == 2:
             buttonframe = make_frame(body)
@@ -148,10 +139,10 @@ class MessageDialog(tkinter.Toplevel):
                 self.boolean = boolean
                 self.destroy()
 
-            b1 = ttk.Button(buttonframe, text='YES',
+            b1 = Tk.Button(buttonframe, text='YES',
                             command=lambda: event(True))
             b1.grid(row=0, column=0)
-            b2 = ttk.Button(buttonframe, text='NO',
+            b2 = Tk.Button(buttonframe, text='NO',
                             command=lambda: event(False))
             b2.grid(row=0, column=1)
             buttonframe.pack()
@@ -165,9 +156,11 @@ class MessageDialog(tkinter.Toplevel):
 
 def make_frame(frame, header=None):
     """Make a frame with uniform padding."""
-    return ttk.Frame(frame, padding="3 3 5 5")
+    return Tk.Frame(frame, padding="3 3 5 5")
 
 
 root = Tk.Tk()
-gui = AverageGui(root)
+gui = TappyGui(root)
 root.mainloop()
+
+    

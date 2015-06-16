@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import tkinter as Tk
 from tkinter import filedialog
 from tkinter import ttk
+from tkinter.constants import W
 
 import scipy
 from scipy.integrate.lsoda import *
@@ -42,12 +43,12 @@ class DepthGui:
         self.in_file_name = ''
         self.root = root
         self.root.title('Water Level vs. Pressure Grapher')
-        self.Label = Tk.Label(self.root, text='Averaged Points')
-        self.Label.pack()
+        self.Label = Tk.Label(self.root, text='Averaged Points:')
+        self.Label.pack(anchor=W,padx = 15,pady = 2)
         self.AveragedPoints = Tk.Entry(self.root)
-        self.AveragedPoints.pack()
+        self.AveragedPoints.pack(anchor=W,padx = 15,pady = 2)
         self.b1 = Tk.Button(self.root, text='Select File', command=self.select_input)
-        self.b1.pack()
+        self.b1.pack(anchor=W,padx = 15,pady = 2)
         
     def make_depth_graph(self, box_car_points):
         '''To compare water_pressure and depth in a graph by consuming a netCDF file'''
