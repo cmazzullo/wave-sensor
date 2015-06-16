@@ -17,7 +17,6 @@ from tkinter.filedialog import askopenfilename as fileprompt
 import sys
 sys.path.append('..')
 
-
 from datetime import datetime
 import pytz
 import netCDF4
@@ -961,22 +960,19 @@ class Hobo(NetCDFWriter):
         only parse the initial datetime = much faster
         '''
         skip_index = self.read_start('"#"',',')
-        # for skipping lines in case there is calibration header data
-        df = pandas.read_table(self.in_filename,skiprows=skip_index, header=None, engine='c', sep=',')
-        
-        #apparently hobos have a mode to measure depth which triggers measurements at 2 second intervals
-        #this may be arbitrary but a file with regular 30 second intervals breaks up in to 2 second intervals
-        #with blank measurements for pressure at every interval between the initial
-        #since we want evenly spaced data and interpolation would be a waste of time we will filter the records that are blank
-        print(df[2][0], df[2][1])
-        df.dropna()
-        
-        self.utc_millisecond_data = convert_to_milliseconds(df.shape[0], df[1][0], \
-                                                                        self.date_format_string, self.frequency)
-
-        self.pressure_data = [x for x in np.divide(df[2], 1.45037738)]
-
-        print(len(self.pressure_data))
+        df = pandas.read_table(self.in_filename,skiprows=skip_index,
+                               header=None, engine='c', sep=',',
+                               usecols=(1, 2))
+        df = df.dropna()
+        first_stamp = convert_date_to_milliseconds(df.values[0][0],
+                                                   self.date_format_string)
+        second_stamp = convert_date_to_milliseconds(df.values[1][0],
+                                                    self.date_format_string)
+        self.frequency = 1000 / (second_stamp - first_stamp)
+        self.utc_millisecond_data = convert_to_milliseconds(df.shape[0],
+                                        df[1][0], self.date_format_string,
+                                        self.frequency)
+        self.pressure_data = df[2].values * 0.68947573
 
 
     def read_start(self, expression, delimeter):
@@ -1146,14 +1142,13 @@ class MeasureSysLogger(NetCDFWriter):
 
         #Since the instrument is not reliably recording data at 4hz we have decided to
         #interpolate the data to avoid any potential complications in future data analysis
-        original_dates = [(x * 1000) + self.data_start for x in df[4]]
-        instrument_pressure = [x / 1.45037738 for x in df[5]]
+        self.pressure_data = df[5].values * 0.68947573
 
-        self.utc_millisecond_data = convert_to_milliseconds(df.shape[0] - 1, \
+        self.utc_millisecond_data = convert_to_milliseconds(df.shape[0], \
                                                             ('%s' % (df[3][0][1:])), \
                                                             self.date_format_string, self.frequency)
 
-        self.pressure_data = np.interp(self.utc_millisecond_data, original_dates, instrument_pressure)
+#         self.pressure_data = np.interp(self.utc_millisecond_data, original_dates, instrument_pressure)
 
         if re.match('^[0-9]{1,3}.[0-9]+$', str(df[6][0])):
             self.temperature_data = [x for x in df[6]]

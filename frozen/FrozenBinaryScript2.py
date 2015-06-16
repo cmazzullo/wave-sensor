@@ -54,8 +54,8 @@ class Script2gui:
     def __init__(self, root):
         root.title('Pressure -> Water Height')
 
-        methods = [('Hydrostatic', 'naive')]#,
-                # ('Linear Wave', 'combo')]
+        methods = [('Hydrostatic', 'naive'),
+                ('Linear Wave', 'combo')]
 
         self.methodvar = StringVar()
         self.methodvar.set('combo')
@@ -124,6 +124,15 @@ class Script2gui:
                 "file.\nThe period not covered by both files will be "
                 "set to the fill value:%d" % FILL_VALUE)
                 MessageDialog(root, message=message, title='Warning')
+                
+        #check to see if time coverage resolution is small enough to perform combo
+        timestep = 1 / get_frequency(self.sea_fname)
+        print('timestep', timestep)
+        if method =="combo" and timestep > .5:
+            method = "naive"
+            message = "Time resolution too large to run Linear Wave method.  Will run hydrostatic..."
+            MessageDialog(root, message=message,
+                         title='Success!')
 
         make_depth_file(self.sea_fname, self.air_fname,
                                 output_fname, method=method)
@@ -148,7 +157,7 @@ def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
     
     #creating testing object
     test = DataTests()
-    test.interpolated_data = True
+#     test.interpolated_data = True
     if air_fname != '':
         raw_air_pressure = get_air_pressure(air_fname)
         air_time = get_time(air_fname)
@@ -270,7 +279,7 @@ def append_depth_qc(fname, sea_qc, air_qc):
     
     if air_qc != None:
         air_qc = [bit(x) for x in air_qc]
-        sea_qc = [bit(str(x)) for x in sea_qc]
+        sea_qc = [bit(str(int(x))) for x in sea_qc]
     
         depth_qc = [(air_qc[x] & sea_qc[x]).to01() for x in range(0,len(sea_qc))]
         append_variable(fname, air_name, [x.to01() for x in air_qc], comment=air_comment, long_name=air_name, 
@@ -327,7 +336,7 @@ def get_pressure_qc(fname):
 def get_frequency(fname):
     """Get the frequency of the data in the netCDF at fname"""
     freq_string = get_global_attribute(fname, 'time_coverage_resolution')
-    return float(freq_string[1:-1])
+    return 1 / float(freq_string[1:-1])
 
 
 def get_initial_water_depth(fname):
