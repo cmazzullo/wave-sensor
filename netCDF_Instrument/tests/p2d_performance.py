@@ -7,7 +7,6 @@ import timeit as ti
 
 # import seaborn as sns
 from matplotlib.pyplot import *
-ion()
 
 def time_combo(length, times):
     setup='''import numpy as np

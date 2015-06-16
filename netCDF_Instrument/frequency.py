@@ -8,7 +8,6 @@ if __name__ == '__main__':
     # import seaborn as sns
     from matplotlib.pyplot import *
     import NetCDF_Utils.nc as nc
-    ion()
     fname = '/home/chris/work/test-data/logger3.csv.nc'
     # fname = ('./tests/test_data/gui_leveltroll_test.nc')
     t = nc.get_time(fname)

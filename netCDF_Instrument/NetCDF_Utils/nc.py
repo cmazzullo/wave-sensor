@@ -6,7 +6,7 @@ import numpy as np
 import os
 from datetime import datetime
 from netCDF4 import Dataset
-import netCDF4_utils, netcdftime # these make cx_freeze work
+# import netCDF4_utils, netcdftime # these make cx_freeze work
 import pytz
 from bitarray import bitarray as bit
 # Constant

@@ -6,6 +6,7 @@ import NetCDF_Utils.nc as nc
 import pandas as pd
 from scipy.optimize import curve_fit
 from plotting import myplot
+from power_spectrum import get_transform
 
 # Given a particular stevens data set and a particular instrument data
 # set, we want to find the index at which the sets seem to match up.
@@ -15,20 +16,22 @@ from plotting import myplot
 INCH_TO_METER = 0.0254
 
 stevens_fold = '/home/chris/work/stevens_data/Stevens Acoustic & Wave Wire/'
-fnames = ['A5763.001', 'A5763.002', 'A5763.003', 'A5763.004',
-          'A5763.005', 'A5763.006', 'A5763.007', 'A5763.008',
-          'A5763.009', 'A5763.010', 'A5763.011', 'A5763.012',
-          'A5763.013', 'A5763.014', 'A5763.015', 'A5763.016',
-          'A5763.017', 'A5763.018', 'A5763.019', 'A5763.020',
-          'A5763.021', 'A5763.022', 'A5763.023', 'A5763.024',
-          'A5763.025', 'A5763.026', 'A5763.027', 'A5763.028',
-          'A5763.029', 'A5763.030', 'A5763.031', 'A5763.032',
-          'A5763.033', 'A5763.034', 'A5763.035', 'A5763.036',
-          'A5763.037', 'A5763.038', 'A5763.039', 'A5763.040',
-          'A5763.041']
+fnames = [
+    'A5763.001', 'A5763.002', 'A5763.003', 'A5763.004',
+    'A5763.005', 'A5763.006', 'A5763.007', 'A5763.008',
+    'A5763.009', 'A5763.010', 'A5763.011', 'A5763.012',
+    'A5763.013', 'A5763.014', 'A5763.015', 'A5763.016',
+    'A5763.017', 'A5763.018', 'A5763.019', 'A5763.020',
+    'A5763.021', 'A5763.022', 'A5763.023', 'A5763.024',
+    'A5763.025', 'A5763.026', 'A5763.027', 'A5763.028',
+    'A5763.029', 'A5763.030', 'A5763.031', 'A5763.032',
+    'A5763.033', 'A5763.034', 'A5763.035', 'A5763.036',
+    'A5763.037', 'A5763.038', 'A5763.039', 'A5763.040',
+    'A5763.041']
 
 fnames = [stevens_fold + fname for fname in fnames]
 blacklist = (3, 4, 11, 12, 13, 20, 21, 22, 29, 30, 31, 38)
+
 
 day1_times = 1429527600 + array([
     (9300, 9600),
@@ -75,7 +78,73 @@ day2_times = 1429609879 + array([
     (21000, 21500),
     (21500, 22000)])
 
-run_times = concatenate((day1_times, day2_times))
+# this was done with house4 but it should have been done with house2
+temp_times = array([(1429615056.263425, 1429615566.858695),
+                    (1429615350.837619, 1429615900.709449),
+                    (1429615841.794610, 1429616450.581278),
+                    (1429616372.028160, 1429617039.729667),
+                    (1429616941.538269, 1429617452.133539),
+                    (1429617393.218700, 1429617844.899132),
+                    (1429617805.622572, 1429618178.749885),
+                    (1429618002.005368, 1429618375.132681),
+                    (1429618316.217842, 1429618689.345155),
+                    (1429622715.192478, 1429623265.064308),
+                    (1429623068.681511, 1429623854.212696),
+                    (1429623520.361943, 1429624443.361085),
+                    (1429624600.467322, 1429625032.509474),
+                    (1429625130.700872, 1429625896.593777),
+                    (1429625739.487540, 1429626210.806251),
+                    (1429626132.253133, 1429626603.571844),
+                    (1429626466.103886, 1429626858.869479),
+                    (1429626701.763242, 1429627153.443673),
+                    (1429627938.974858, 1429628194.272493),
+                    (1429628096.081095, 1429628371.017010),
+                    (1429628685.229484, 1429629038.718517),
+                    (1429628999.441958, 1429629490.398948),
+                    (1429629372.569271, 1429629765.334863),
+                    (1429629726.058304, 1429630118.823896),
+                    (1429630020.632498, 1429630315.206692),
+                    (1429630177.738735, 1429630531.227768),
+                    (1429630550.866048, 1429630865.078522),
+                    (1429630943.631640, 1429631316.758953),
+                    (1429631414.950351, 1429631807.715944)])
+
+
+house2_times = array([
+    (1429614382, 1429615147),
+    (1429614277, 1429615599),
+    (1429615251, 1429616155),
+    (1429615912, 1429616712),
+    (1429616468, 1429617198),
+    (1429616990, 1429617546),
+    (1429617303, 1429617859),
+    (1429617546, 1429618103),
+    (1429617824, 1429618450),
+    (1429622902, 1429623423),
+    (1429623110, 1429623632),
+    (1429623458, 1429624258),
+    (1429624119, 1429624849),
+    (1429624745, 1429625510),
+    (1429625336, 1429626031),
+    (1429625857, 1429626310),
+    (1429626136, 1429626622),
+    (1429626310, 1429626970),
+    (1429627561, 1429628083),
+    (1429627735, 1429628257),
+    (1429628257, 1429628918),
+    (1429628709, 1429629335),
+    (1429629126, 1429629648),
+    (1429629474, 1429629926),
+    (1429629717, 1429630135),
+    (1429629926, 1429630378),
+    (1429629996, 1429630726),
+    (1429630517, 1429631178),
+    (1429630969, 1429631700),
+    (1429633265, 1429633890)])
+
+
+# run_times = concatenate((day1_times, day2_times))
+run_times = concatenate((day1_times, house2_times))
 expected_periods = array([2, 2.5, 3.03, 1, 1.49, 2, 2.5, 3.03, 3.58, 3.99, 4.56, 2.88])
 expected_freqs = 1 / expected_periods
 
@@ -105,6 +174,8 @@ def get_stevens_wire_data(fname):
                 time.append(float(l.split()[1]))
     return pd.Series(meters, time)
 
+stevens_series = [get_stevens_wire_data(f) for f in fnames]
+
 
 def get_instrument_data(f):
     """Get time, pressure and depth from a netCDF file f.
@@ -112,18 +183,9 @@ def get_instrument_data(f):
     t = nc.get_time(f) / 1000
     d = nc.get_depth(f)
     print('Sample interval: ', t[1] - t[0])
-
     t_interp = arange(t[0], t[-1], stevens_interval)
     d_interp = interp(t_interp, t, d)
     return pd.Series(d_interp, t_interp)
-
-
-def get_difference(clean_series, start_time, instrument_s):
-    t = clean_series.index
-    end_time = start_time + t[-1] - t[0] + t[1] - t[0]
-    window = instrument_s[start_time:end_time]
-    d_window = remove_mean(window.values)
-    return rmse(d_window, clean_series.values)
 
 
 def find_likely_time(stevens_series, instrument_s, interval):
@@ -131,12 +193,14 @@ def find_likely_time(stevens_series, instrument_s, interval):
     time.
     """
     clean_series = remove_mean(stevens_series)
+    tlen = clean_series.index[-1] - clean_series.index[0]
     end_time = interval[1] - stevens_series.index[-1] + stevens_series[0]
     time = interval[0]
     min_time = time
     min_dif = False
     while time < end_time:
-        dif = get_difference(clean_series, time, instrument_s)
+        window = remove_mean(instrument_s[time:time + tlen + stevens_interval])
+        dif = rmse(clean_series.values, window.values)
         if min_dif == False:
             min_dif = dif
         elif dif < min_dif:
@@ -163,14 +227,16 @@ def swh(series):
 def plot_stevens_over_instrument(instrument_s, stevens_fnames,
                                  runs, blacklist, indices, stevens_series,
                                  plot_title=''):
-    instrument_s.plot(label='Instrument readings (m)', color='black')
+    plot(instrument_s.index, instrument_s.values,
+            label='Instrument readings (m)', color='black')
     for file_number, idx in zip(runs, indices):
+        s = stevens_series[file_number]
+        print(file_number)
         stevens_fname = fnames[file_number]
         if file_number in blacklist:
             continue
-        stevens_series = get_stevens_wire_data(stevens_fname)
-        t = stevens_series.index
-        d = stevens_series.values
+        t = s.index
+        d = s.values
         offset = average(instrument_s[idx:idx + t[-1] - t[0]])
         print('plotting', stevens_fname)
         plot(t + idx, d + offset, label=stevens_fname)
@@ -181,104 +247,28 @@ def plot_stevens_over_instrument(instrument_s, stevens_fnames,
     show()
 
 
-def describe_window(window_number, stevens_series, windows):
-    if window_number in blacklist:
-        print('Data set not processed')
-        return
-    test = remove_mean(stevens_series[window_number])
-    w = remove_mean(windows[window_number])
-    plot(test, label='Wavewire', color='blue')
-    plot(w, label='Instrument', color='red')
-    xlabel('Time (s)')
-    ylabel('Depth of Sensor (m)')
-    title('Stevens Wavewire and Instrument Data')
-    legend()
-    show()
-    def printcm(name, q):
-        format_string = '{:8.4}'
-        print(name, '=\t', format_string.format(q * 100), 'cm')
-    print('Instrument data:')
-    printcm('Hₛ', swh(w))
-    printcm('RMS', swh(w) / 1.4)
-    print('\nWavewire data:')
-    printcm('Hₛ', swh(test))
-    printcm('RMS', swh(test) / 1.4)
+def get_windows(instrument_fname, stevens_series, runs, time_offset=0):
+    instrument_s = get_instrument_data(instrument_fname)
+    instrument_s.index += time_offset
+    indices = []
+    windows = []
+    for file_number, in zip(runs):
+        s = stevens_series[file_number]
+        if file_number in blacklist:
+            indices.append(nan)
+            windows.append(())
+            continue
+        guess = run_times[file_number]
+        fname = fnames[file_number]
+        print('Processing file', file_number)
+        s_len = s.index[-1] - s.index[0]
+        t = find_likely_time(s, instrument_s, guess)
+        w = instrument_s[t:t + s_len]
+        windows.append(w)
+        indices.append(t)
+    return indices, windows
 
 
-describe = lambda n: describe_window(n, stevens_series, windows)
-
-
-# Find where all runs of Stevens data matches the instrument data
-instrument_fname = house1
-runs = range(0, 12)
-instrument_s = get_instrument_data(instrument_fname)
-instrument_s.index += 510
-
-stevens_series = []
-indices = []
-windows = []
-
-for file_number, guess, fname, in zip(runs, run_times, fnames):
-    if file_number in blacklist:
-        stevens_series.append(False)
-        indices.append(nan)
-        windows.append(())
-        continue
-    print('Processing file', file_number)
-    s = get_stevens_wire_data(fname)
-    s_len = s.index[-1] - s.index[0]
-    stevens_series.append(s)
-    t = find_likely_time(s, instrument_s, guess)
-    w = instrument_s[t:t + s_len]
-    windows.append(w)
-    indices.append(t)
-
-
-## plot all series
-plot_stevens_over_instrument(instrument_s, fnames, runs,
-                             blacklist, indices, stevens_series,
-                             plot_title='LevelTroll 1 Second Data')
-
-
-## power spectrum
-from power_spectrum import get_transform
-from plotting import myplot
-
-def get_main_frequency(series):
-    series = remove_mean(series)
-    timestep = series.index[1] - series.index[0]
-    amps, freqs = get_transform(series.values, stevens_interval)
-    return freqs[argmax(amps)]
-
-stevens_freqs = array([get_main_frequency(remove_mean(s))
-                       for i, s in enumerate(stevens_series)
-                       if i not in blacklist])
-
-window_freqs = array([get_main_frequency(remove_mean(s))
-                      for i, s in enumerate(windows)
-                      if i not in blacklist])
-
-run_number = 6
-s = stevens_series[run_number]
-amps, freqs = get_transform(s.values, stevens_interval)
-
-subplot(121)
-myplot('Stevens Data Run {}'.format(run_number),
-       s,
-       'Frequency (Hz)',
-       'Wave height (cm)')
-
-subplot(122)
-myplot('Spectrum of Stevens Run {}'.format(run_number),
-       (freqs, amps * 100),
-       'Frequency (Hz)',
-       'Wave height (cm)')
-xlim(0, 2)
-show()
-max_freq = freqs[argmax(amps)]
-
-
-## curve fitting
 def get_main_frequency(series):
     timestep = series.index[1] - series.index[0]
     amps, freqs = get_transform(series.values, stevens_interval)
@@ -286,55 +276,62 @@ def get_main_frequency(series):
 
 
 def fit_sine(series):
+    print(max(series.index))
+    series = remove_mean(series)
     freq_guess = get_main_frequency(series)
     phase_guess = 1
-    series = remove_mean(series)
     amp_guess = series.max()
     f = lambda t, amp, freq, phase: amp * sin(2*pi*freq*t - phase)
     popt, pcov = curve_fit(f, series.index, series.values,
                            p0=(amp_guess, freq_guess, phase_guess))
     return popt
 
+def get_stats(stevens_series, windows, runs):
+    window_stats = []
+    stevens_stats = []
+    for i, w in zip(runs, windows):
+        s = stevens_series[i]
+        if i in blacklist:
+            continue
+        s.index -= s.index[0] # large time values swamp the fit, causing failure
+        w.index -= w.index[0]
+        s_stats = fit_sine(s)
+        w_stats = fit_sine(w)
+        window_stats.append(w_stats)
+        stevens_stats.append(s_stats)
+    data = concatenate((array(window_stats), array(stevens_stats)), 1)
+    df = pd.DataFrame(data, columns=['instrument_amp',
+                                     'instrument_freq',
+                                     'instrument_phase',
+                                     'stevens_amp',
+                                     'stevens_freq',
+                                     'stevens_phase'])
+    df['instrument_amp'] = absolute(df['instrument_amp'])
+    df['stevens_amp'] = absolute(df['stevens_amp'])
+    df['instrument_freq'] = absolute(df['instrument_freq'])
+    df['stevens_freq'] = absolute(df['stevens_freq'])
+    return df
 
-wave_props = []
 
-window_stats = []
-stevens_stats = []
-for i in range(12):
-    if i in blacklist:
-        continue
-    run_number = i
-    s = remove_mean(stevens_series[run_number])
-    s.index -= s.index[0] # large time values swamp the fit, causing failure
-    w = remove_mean(windows[run_number])
-    w.index -= w.index[0]
-    s_stats = fit_sine(s)
-    w_stats = fit_sine(w)
-    window_stats.append(w_stats)
-    stevens_stats.append(s_stats)
-    amp, freq, phase = s_stats
-    y = amp * sin(2*pi*freq*s.index-phase)
-    amp, freq, phase = w_stats
-    y2 = amp * sin(2*pi*freq*w.index-phase)
-    myplot('Best Fit Sine Wave, Instrument Data Set {}'.format(run_number+1),
-           {'Instrument data': (w.index, w.values),
-            'Best fit':(w.index, y2)},
-            'Time (s)', 'Wave height (m)')
-    myplot('Best Fit Sine Wave, Stevens Data Set {}'.format(run_number+1),
-           {'Stevens data': (s.index, s.values),
-            'Best fit':(s.index, y)},
-            'Time (s)', 'Wave height (m)')
-    show()
-data = concatenate((array(window_stats), array(stevens_stats)), 1)
-df = pd.DataFrame(data, columns=['instrument_amp',
-                                 'instrument_freq',
-                                 'instrument_phase',
-                                 'stevens_amp',
-                                 'stevens_freq',
-                                 'stevens_phase'])
+# runs = range(0, 12)
+# instrument_f = house1
+# indices, windows = get_windows(tru1, stevens_series, runs)
+# indices2, windows2 = get_windows(tru2, stevens_series, runs)
+# indices3, windows3 = get_windows(house1, stevens_series, runs, time_offset=510)
+# data = {tru1: get_stats(stevens_series, windows, runs),
+#         tru2: get_stats(stevens_series, windows2, runs),
+#         house1: get_stats(stevens_series, windows3, runs)}
 
-df['instrument_amp'] = absolute(df['instrument_amp'])
-df['stevens_amp'] = absolute(df['stevens_amp'])
-df['instrument_freq'] = absolute(df['instrument_freq'])
-df['stevens_freq'] = absolute(df['stevens_freq'])
 
+runs = range(12, 41)
+offset = 0
+indices, windows = get_windows(house2, stevens_series, runs, time_offset=offset)
+data = {house2: get_stats(stevens_series, windows, runs)}
+
+wp = pd.Panel(data)
+
+instrument_s = get_instrument_data(house2)
+plot_stevens_over_instrument(instrument_s, fnames, runs, blacklist,
+                             array(indices) - offset, stevens_series)
+
+# average(wp.minor_xs('instrument_amp') - wp.minor_xs('stevens_amp'))

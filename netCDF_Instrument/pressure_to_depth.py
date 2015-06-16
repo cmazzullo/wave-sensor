@@ -8,13 +8,44 @@ Provides methods to convert water pressure into water depth.
 """
 
 import numpy as np
+from NetCDF_Utils.nc import FILL_VALUE
 
 # Constants
 g = 9.8  # gravity (m / s**2)
 rho = 1030  # density of seawater (kg / m**3)
 
 
-def combo_method(t, p_dbar, z, H, timestep, window_func=np.hamming):
+def segment(arr, fill):
+    """Split arr into chunks around the fill value"""
+    f = (arr==fill)
+    return np.split(arr, np.where(f[1:] ^ f[:-1])[0] + 1)
+
+
+def apply_without_fill_value(arr, func, fill_value):
+    """apply func to arr, but don't take fill_value into account"""
+    return np.concatenate([c if c[0]==fill else func(c)
+                        for c in segment(arr, fill_value)])
+
+
+def combo_method(t,p,z,H,timestep):
+    fill = FILL_VALUE
+    f = (p==fill)
+    idx = np.where(f[1:] ^ f[:-1])[0] + 1
+    tchunk = np.split(t, idx)
+    pchunk = np.split(p, idx)
+    Hchunk = np.split(H, idx)
+    dchunks = []
+    tchunks = []
+    for pc, tc, Hc in zip(pchunk, tchunk, Hchunk):
+        if pc[0] == fill:
+            dchunks.append(pc)
+            continue
+        dc = combo_backend(tc,pc,z,Hc,timestep)
+        dchunks.append(dc)
+    return np.concatenate(dchunks)
+
+
+def combo_backend(t, p_dbar, z, H, timestep, window_func=np.hamming):
     coeff = np.polyfit(t, p_dbar, 1)
     static_p = coeff[1] + coeff[0]*t
     static_y = hydrostatic_method(static_p)
@@ -22,7 +53,8 @@ def combo_method(t, p_dbar, z, H, timestep, window_func=np.hamming):
     cutoff = auto_cutoff(np.average(H))
     wave_y = fft_method(wave_p, z, H, timestep, hi_cut=cutoff,
                         window_func=window_func)
-    return trim_to_even(static_y) + wave_y
+    wave_y = np.pad(wave_y, (0, len(t) - len(wave_y)), mode='edge')
+    return static_y + wave_y
 
 
 def hydrostatic_method(pressure):
@@ -56,9 +88,6 @@ def fft_method(p_dbar, z, H, timestep, gate=0, window_func=np.ones,
     WARNING: FFT will truncate the last element of an array if it has
     an odd number of elements!
     """
-    print('z', z)
-    print('H', H)
-    print('timestep', timestep)
     H = np.average(H)
     p_dbar = trim_to_even(p_dbar)
     n = len(p_dbar)
@@ -126,13 +155,23 @@ def _coefficient(k, z, H):
     return rho * g * np.cosh(k * (H + z)) / np.cosh(k * H)
 
 
+# t = np.linspace(0, 100, 401)
+# p = 2*np.sin(t) + 10
+# p[20:100] = -1e10
+# z = -1.52
+# H = np.ones_like(t) * 1.98
+# d = combo_method(t, p, z, H, .25)
+# t2, d2 = combo_method(t,p,z,H,.25)
+# plot(t, p, label='p')
+# plot(t2, d2, label='d')
+# ylim(-100, 100)
+# legend()
+
 if __name__ == '__main__':
     from tests.pressure_to_depth_tests import easy_waves
     from numpy import *
     from matplotlib.pyplot import *
     # import seaborn as sns
-    ion()
-
     max_f = .2
     max_a = 10
     max_phase = 10
