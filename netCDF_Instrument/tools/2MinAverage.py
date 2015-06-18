@@ -15,14 +15,14 @@ class AverageGui:
         self.in_file_name = ''
         self.root = root
         self.root.title('Pressure Average')
-        self.Label = Tk.Label(self.root, text='Averaged Points (Boxcar Window Size)')
-        self.Label.pack()
+        self.Label = Tk.Label(self.root, text='Averaged Points: (Boxcar Window Size)')
+        self.Label.pack(anchor=W, pady=2, padx=15)
         self.AveragedPoints = Tk.Entry(self.root)
-        self.AveragedPoints.pack()
-        self.Label2 = Tk.Label(self.root, text='Data Increments (4 is once a second 480 is once every 2 mins)')
-        self.Label2.pack()
+        self.AveragedPoints.pack(anchor=W, pady=2, padx=15)
+        self.Label2 = Tk.Label(self.root, text='Data Increments: (e.g. 4 is once a second, 480 is once every 2 mins)')
+        self.Label2.pack(anchor=W, pady=2, padx=15)
         self.Increments = Tk.Entry(self.root)
-        self.Increments.pack()
+        self.Increments.pack(anchor=W, pady=2, padx=15)
         
         methods = [('Excel CSV', 'excel'),
                    ('netCDF', 'netcdf'),
@@ -31,13 +31,13 @@ class AverageGui:
         self.methodvar = StringVar()
         self.methodvar.set('excel')
 
-        ttk.Label(root, text='File Format: (Saves in same directory as file)').pack(anchor=W)
+        ttk.Label(root, text='File Format: (Saves in same directory as file)').pack(anchor=W,pady=2, padx=15)
         for name, kwarg in methods:
             ttk.Radiobutton(root, text=name, variable=self.methodvar,
-                            value=kwarg).pack(anchor=W)
+                            value=kwarg).pack(anchor=W,pady=2, padx=15)
                             
         self.b1 = Tk.Button(self.root, text='Select File', command=self.select_input)
-        self.b1.pack()
+        self.b1.pack(anchor=W,pady=2, padx=15)
 
     def twoMinAverage(self,in_file_name, window, increments):
         '''Method to average and slice pressure data files

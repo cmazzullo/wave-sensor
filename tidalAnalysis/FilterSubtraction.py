@@ -6,6 +6,8 @@ Created on Mar 13, 2015
 #import netCDF4
 import numpy
 from netCDF4 import Dataset
+from datetime import datetime
+import pytz
 
 def open_data(file_name, filter_name, out_filename):
     ds1 = Dataset(file_name);
@@ -30,6 +32,9 @@ def open_data(file_name, filter_name, out_filename):
     
     fds.createDimension('time', size=len(final_depth))
     final_time = fds.createVariable('time', 'f8',('time',))
+    
+    epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
+    final_time.setncattr('units',"milliseconds since " + epoch_start.strftime("%Y-%m-%d %H:%M:%S"))
     final_time[:] = time1
     depth = fds.createVariable('depth', 'f8', ('time',))
     depth[:] = final_depth
@@ -38,6 +43,6 @@ def open_data(file_name, filter_name, out_filename):
     
     
 if __name__ == '__main__':
-    open_data('M2_Only.nc','outts_filtered_transform.nc','final.nc')
+    open_data('M2_Only_2AmpNoise.nc','outts_filtered_usgs.nc','big5_usgs.nc')
     
 
