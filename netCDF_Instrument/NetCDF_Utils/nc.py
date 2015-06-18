@@ -92,7 +92,7 @@ def append_depth_qc(fname, sea_qc, air_qc):
 
     if air_qc != None:
         air_qc = [bit(x) for x in air_qc]
-        sea_qc = [bit(str(x)) for x in sea_qc]
+        sea_qc = [bit(str(int(x))) for x in sea_qc]
 
         depth_qc = [(air_qc[x] & sea_qc[x]).to01() for x in range(0,len(sea_qc))]
         append_variable(fname, air_name, [x.to01() for x in air_qc], comment=air_comment, long_name=air_name,

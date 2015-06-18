@@ -54,6 +54,7 @@ class AverageGui:
         sea_pressure = ds.variables['sea_water_pressure'][:]
         pressure_qc = ds.variables['pressure_qc'][:]
         time = ds.variables["time"][:]
+        units = ds.variables['time'].units
         
         #input all of the global attributes to a dictionary
         attrDict = {}
@@ -82,22 +83,15 @@ class AverageGui:
         if(method == "excel" or method == "both"):
             excelFile = pd.DataFrame({'Time': rolling_mean.index, 'Pressure': rolling_mean.values})
             #append file name to new excel file
-            last_index = 0
-            for x in range(0,len(self.in_file_name)):
-                if self.in_file_name[x] == '.':
-                    last_index = x
-                    break
+            last_index = in_file_name.find('.')
+            
             out_file_name = ''.join([in_file_name[0:last_index],'_average.csv'])
             excelFile.to_csv(path_or_buf=out_file_name)
             
             
-        if(method == "netCDF" or method == "both"):
+        if(method == "netcdf" or method == "both"):
         #append file name to new netCDF file
-            last_index = 0
-            for x in range(0,len(self.in_file_name)):
-                if self.in_file_name[x] == '.':
-                    last_index = x
-                    break
+            last_index = in_file_name.find('.')
             
             out_file_name = ''.join([in_file_name[0:last_index],'_average.nc'])
             
@@ -105,6 +99,7 @@ class AverageGui:
             new_ds = Dataset(out_file_name,'w',format="NETCDF4_CLASSIC")
             new_ds.createDimension("time", size=len(rolling_mean))
             new_time = new_ds.createVariable("time","f8", ("time",))
+            new_time.setncattr('units', units)
             new_time[:] = [x for x in rolling_mean.index]
             new_depth = new_ds.createVariable("sea_water_pressure","f8", ("time",))
             new_depth[:] = rolling_mean.values
@@ -125,7 +120,8 @@ class AverageGui:
         self.in_file_name = filedialog.askopenfilename()
         print(self.AveragedPoints.get(), self.Increments.get())
         self.twoMinAverage(self.in_file_name, int(self.AveragedPoints.get()), int(self.Increments.get()))
-        
+         
+  
 class MessageDialog(tkinter.Toplevel):
     """ A template for nice dialog boxes. """
 
