@@ -28,15 +28,11 @@ def make_depth_file(water_fname, air_fname, out_fname, method='combo'):
     water_depth = nc.get_water_depth(water_fname)
     timestep = 1 / nc.get_frequency(water_fname)
     sea_pressure = nc.get_pressure(water_fname)
-    print('sea_pressure len')
-    print(len(sea_pressure))
     sea_time = nc.get_time(water_fname)
     sea_qc = nc.get_pressure_qc(water_fname)
     air_qc = None
-    #creating testing object
     test = tests.DataTests()
     test.interpolated_data = True
-    print('air_fname = ', air_fname)
     if air_fname != '':
         raw_air_pressure = nc.get_air_pressure(air_fname)
         air_time = nc.get_time(air_fname)

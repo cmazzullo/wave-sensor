@@ -4,7 +4,6 @@ from pytz import timezone
 from Instruments.leveltroll import Leveltroll
 from Instruments.measuresys import MeasureSysLogger
 from Instruments.house import House
-
 from Instruments.hobo import Hobo
 from Instruments.house import House
 from Instruments.rbrsolo import RBRSolo
