@@ -139,7 +139,7 @@ class Script2gui:
         MessageDialog(root, message="Success! Files saved.",
                          title='Success!')
 
-def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
+def make_depth_file(water_fname, air_fname, out_fname, method='combo'):
     """Adds depth information to a water pressure file.
 
     The argument air_fname is optional, when set to '' no air
@@ -154,21 +154,21 @@ def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
     sea_time = get_time(water_fname)
     sea_qc = get_pressure_qc(water_fname)
     air_qc = None
-    
     #creating testing object
     test = DataTests()
-#     test.interpolated_data = True
+    test.interpolated_data = True
+    print('air_fname = ', air_fname)
     if air_fname != '':
         raw_air_pressure = get_air_pressure(air_fname)
         air_time = get_time(air_fname)
         air_pressure = np.interp(sea_time, air_time, raw_air_pressure,
                                  left=FILL_VALUE, right=FILL_VALUE)
         corrected_pressure = sea_pressure - air_pressure
-       
+        corrected_pressure[np.where(air_pressure == FILL_VALUE)] = FILL_VALUE
         test.pressure_data = air_pressure
+        air_qc = test.select_tests('')
     else:
         corrected_pressure = sea_pressure
-
     if method == 'fft':
         depth = fft_method(corrected_pressure, device_depth,
                                water_depth, timestep)
@@ -182,20 +182,15 @@ def make_depth_file(water_fname, air_fname, out_fname, method='fft'):
                         'method2 and naive.')
     if len(depth) == len(sea_pressure) - 1:
         depth = np.append(depth, np.NaN)
-
-    print('len depth:')
-    print(len(depth))
-
     shutil.copy(water_fname, out_fname)
     if air_fname != '':
         append_air_pressure(out_fname, air_pressure)
-        
-        #air_qc and depth qc
+        # air_qc and depth qc
         air_qc = test.select_tests('')
         append_depth_qc(out_fname, sea_qc, air_qc)
     else:
         append_depth_qc(out_fname, sea_qc, None)
-        
+
     append_depth(out_fname, depth)
     
 FILL_VALUE = -1e10
@@ -1332,7 +1327,25 @@ g = 9.8  # gravity (m / s**2)
 rho = 1030  # density of seawater (kg / m**3)
 
 
-def combo_method(t, p_dbar, z, H, timestep, window_func=np.hamming):
+def combo_method(t,p,z,H,timestep):
+    fill = FILL_VALUE
+    f = (p==fill)
+    idx = np.where(f[1:] ^ f[:-1])[0] + 1
+    tchunk = np.split(t, idx)
+    pchunk = np.split(p, idx)
+    Hchunk = np.split(H, idx)
+    dchunks = []
+    tchunks = []
+    for pc, tc, Hc in zip(pchunk, tchunk, Hchunk):
+        if pc[0] == fill:
+            dchunks.append(pc)
+            continue
+        dc = combo_backend(tc,pc,z,Hc,timestep)
+        dchunks.append(dc)
+    return np.concatenate(dchunks)
+
+
+def combo_backend(t, p_dbar, z, H, timestep, window_func=np.hamming):
     coeff = np.polyfit(t, p_dbar, 1)
     static_p = coeff[1] + coeff[0]*t
     static_y = hydrostatic_method(static_p)
@@ -1340,7 +1353,8 @@ def combo_method(t, p_dbar, z, H, timestep, window_func=np.hamming):
     cutoff = auto_cutoff(np.average(H))
     wave_y = fft_method(wave_p, z, H, timestep, hi_cut=cutoff,
                         window_func=window_func)
-    return trim_to_even(static_y) + wave_y
+    wave_y = np.pad(wave_y, (0, len(t) - len(wave_y)), mode='edge')
+    return static_y + wave_y
 
 
 def hydrostatic_method(pressure):

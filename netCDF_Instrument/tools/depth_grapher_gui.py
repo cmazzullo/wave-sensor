@@ -27,8 +27,7 @@ import pandas as pd
 
 class DepthGui:
     def __init__(self, root):
-        print('in init')
-        
+       
         self.in_file_name = ''
         self.root = root
         self.root.title('Water Level vs. Pressure Grapher')
@@ -38,54 +37,61 @@ class DepthGui:
         self.AveragedPoints.pack(anchor=W,padx = 15,pady = 2)
         self.b1 = Tk.Button(self.root, text='Select File', command=self.select_input)
         self.b1.pack(anchor=W,padx = 15,pady = 2)
-
+        
     def make_depth_graph(self, box_car_points):
         '''To compare water_pressure and depth in a graph by consuming a netCDF file'''
         
         #global options for matplotlib
         font = {'family' : 'Bitstream Vera Sans',
-            'size'   : 18}
+            'size'   : 16}
     
-        mp.rc('font', **font)
+        matplotlib.rc('font', **font)
         plt.rcParams['figure.figsize'] = (14,10)
         plt.rcParams['figure.facecolor'] = 'white'
      
         #reading
         ds = Dataset(self.in_file_name)
         time = netCDF4.num2date(ds.variables['time'][:],ds.variables['time'].units)
-        sea_pressure = ds.variables['sea_water_pressure'][:]
-        pressure_qc = ds.variables['pressure_qc'][:]
+        try:
+            air_pressure = ds.variables['air_pressure'][:]
+        except:
+            air_pressure = ds.variables['sea_water_pressure'][:]
+       
+        try:
+            air_qc = ds.variables['air_qc'][:]
+        except:
+            air_qc = ds.variables['pressure_qc'][:]
+       
         depth_qc = ds.variables['depth_qc'][:]
         depth = ds.variables['depth'][:]
         ds.close();
         
         #convert dbars to psi   *Possibly convert meters to feet later on*
-        sea_pressure = np.multiply(sea_pressure,1.45037738)
+        air_pressure = np.multiply(air_pressure,1.45037738)
         
         #create dataframe
-        data = {'Pressure': pd.Series(sea_pressure,index=time),
-                'PressureQC': pd.Series(pressure_qc, index=time),
+        data = {'Pressure': pd.Series(air_pressure,index=time),
+                'PressureQC': pd.Series(air_qc, index=time),
                 'Depth': pd.Series(depth, index=time),
                 'DepthQC': pd.Series(depth_qc, index=time)}
         df = pd.DataFrame(data)
+        
+        #check if the pressure and depth pints do not pass QC
+        #if points did not pass QC assign NaN to its value (aside from stuck sensor and interpolation)
+        df.Pressure[(df['PressureQC'] != 11111111) & (df['PressureQC'] != 11110111)
+                & (df['PressureQC'] != 11111110) & (df['PressureQC'] != 11110110)] = np.NaN;
+    
+        df.Depth[(df['DepthQC'] != 11111111) & (df['DepthQC'] != 11110111)
+                & (df['DepthQC'] != 11111110) & (df['DepthQC'] != 11110110)] = np.NaN;
         
         #Boxcar average for aesthetic purposes if desired
         if box_car_points > 0:
             df.Pressure = pd.rolling_window(df.Pressure,center=True,window=box_car_points, win_type='boxcar')
             df.Depth = pd.rolling_window(df.Depth,center=True,window=box_car_points, win_type='boxcar')
         
-        #check if the pressure and depth pints do not pass QC
-        pqc = df[(df.PressureQC != 11111111) & (df.PressureQC != 11110111)]
-        dqc = df[(df.DepthQC != 11111111) & (df.DepthQC != 11110111)]
-        
-        #if points did not pass QC assign NaN to its value
-        df.loc(pqc.index).Pressure = np.NaN
-        df.loc(dqc.index).Depth = np.NaN
-          
         #Read images 
         logo = image.imread('usgs.png', None)
-        legend = image.imread('legend.png', None)
-    
+       
         #Create grids for section formatting
         gs = gridspec.GridSpec(2, 2,
                            width_ratios=[1,2],
@@ -132,7 +138,7 @@ class DepthGui:
 
     def format_date(self,x,arb=None):
         '''Format dates so that they are padded away from the x-axis'''
-        date_str = mdates.num2date(x).strftime('%H:%M %p \n %b-%d-%y')
+        date_str = mdates.num2date(x).strftime('%I:%M %p \n %b-%d-%Y')
         return ''.join([' ','\n',date_str])  
 
     def select_input(self):
