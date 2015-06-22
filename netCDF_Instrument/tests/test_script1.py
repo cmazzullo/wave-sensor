@@ -138,34 +138,34 @@ class KnownValues(unittest.TestCase):
                 known_p = 0.6894757 * known_p
                 self.assertEqual(round(known_p, 4), round(result_p, 4))
 
-    def test_gui_known_numerical_netcdf_attributes(self):
-        with Dataset(GUI_FILENAME, 'r', format='NETCDF4_CLASSIC') as ds:
-            for key in self.known_numerical_netcdf_attributes:
-                known_value = INPUTS[key]
-                result = getattr(ds, key)
-                self.assertEqual(float(known_value), float(result))
+    # def test_gui_known_numerical_netcdf_attributes(self):
+    #     with Dataset(GUI_FILENAME, 'r', format='NETCDF4_CLASSIC') as ds:
+    #         for key in self.known_numerical_netcdf_attributes:
+    #             known_value = INPUTS[key]
+    #             result = getattr(ds, key)
+    #             self.assertEqual(float(known_value), float(result))
 
-    def test_gui_known_string_netcdf_attributes(self):
-        with Dataset(GUI_FILENAME, 'r', format='NETCDF4_CLASSIC') as ds:
-            for key in self.known_string_netcdf_attributes:
-                known_value = INPUTS[key]
-                result = getattr(ds, key)
-                self.assertEqual(str(known_value), str(result))
+    # def test_gui_known_string_netcdf_attributes(self):
+    #     with Dataset(GUI_FILENAME, 'r', format='NETCDF4_CLASSIC') as ds:
+    #         for key in self.known_string_netcdf_attributes:
+    #             known_value = INPUTS[key]
+    #             result = getattr(ds, key)
+    #             self.assertEqual(str(known_value), str(result))
 
-    def test_gui_known_numerical_netcdf_variables(self):
-        with Dataset(GUI_FILENAME, 'r', format='NETCDF4_CLASSIC') as ds:
-            for key in self.known_numerical_netcdf_variables:
-                known_value = INPUTS[key]
-                result = ds.variables[key].getValue()
-                self.assertEqual(str(known_value), str(result))
+    # def test_gui_known_numerical_netcdf_variables(self):
+    #     with Dataset(GUI_FILENAME, 'r', format='NETCDF4_CLASSIC') as ds:
+    #         for key in self.known_numerical_netcdf_variables:
+    #             known_value = INPUTS[key]
+    #             result = ds.variables[key].getValue()
+    #             self.assertEqual(str(known_value), str(result))
 
-    def test_gui_netcdf_known_variables(self):
-        with Dataset(GUI_FILENAME, 'r', format='NETCDF4_CLASSIC') as ds:
-            result_pressure_series = ds.variables['sea_water_pressure'][:]
-            for known_p, result_p in zip(self.known_pressure_series,
-                                         result_pressure_series):
-                known_p = 0.6894757 * known_p
-                self.assertEqual(round(known_p, 4), round(result_p, 4))
+    # def test_gui_netcdf_known_variables(self):
+    #     with Dataset(GUI_FILENAME, 'r', format='NETCDF4_CLASSIC') as ds:
+    #         result_pressure_series = ds.variables['sea_water_pressure'][:]
+    #         for known_p, result_p in zip(self.known_pressure_series,
+    #                                      result_pressure_series):
+    #             known_p = 0.6894757 * known_p
+    #             self.assertEqual(round(known_p, 4), round(result_p, 4))
 
 
 if __name__ == '__main__':

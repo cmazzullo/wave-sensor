@@ -9,6 +9,7 @@ pressure file and outputs a file containing water pressure, air
 pressure and depth.
 """
 
+import tkinter as tk
 from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
@@ -21,18 +22,14 @@ import tools.script1_gui as gc
 class Script2gui:
     def __init__(self, root):
         root.title('Pressure -> Water Height')
-
         methods = [('Hydrostatic', 'naive'),
                    ('Linear Wave', 'combo')]
-
         self.methodvar = StringVar()
         self.methodvar.set('combo')
-
         ttk.Label(root, text='Depth calculation:').pack(anchor=W)
         for name, kwarg in methods:
             ttk.Radiobutton(root, text=name, variable=self.methodvar,
                             value=kwarg).pack(anchor=W)
-
         self.sea_fname = None
         self.sea_var = StringVar()
         self.sea_var.set('File containing water pressure...')
@@ -64,7 +61,7 @@ class Script2gui:
 
     def make_fileselect(self, root, labeltext, stringvar, varname):
         command = lambda: self.select_file(varname, stringvar)
-        frame = gc.make_frame(root)
+        frame = tk.Frame(root)
         l = ttk.Label(frame, justify=LEFT, text=labeltext, width=10)
         l.grid(row=0, column=0, sticky=W)
         b = self.make_button(frame, 'Browse', command)
@@ -102,8 +99,8 @@ class Script2gui:
             message = "Time resolution too small to run Linear Wave method.  Will run hydrostatic..."
             gc.MessageDialog(root, message=message,
                          title='Success!')
-         
-        print(method)   
+
+        print(method)
         script2.make_depth_file(self.sea_fname, self.air_fname,
                                 output_fname, method=method)
         gc.MessageDialog(root, message="Success! Files saved.",
