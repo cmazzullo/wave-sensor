@@ -18,6 +18,7 @@ import pressure_to_depth as p2d
 import NetCDF_Utils.nc as nc
 import NetCDF_Utils.Testing as tests
 
+
 def make_depth_file(water_fname, air_fname, out_fname, method='combo'):
     """Adds depth information to a water pressure file.
 
@@ -38,34 +39,21 @@ def make_depth_file(water_fname, air_fname, out_fname, method='combo'):
         air_time = nc.get_time(air_fname)
         air_pressure = np.interp(sea_time, air_time, raw_air_pressure,
                                  left=nc.FILL_VALUE, right=nc.FILL_VALUE)
-        corrected_pressure = sea_pressure - air_pressure
-        corrected_pressure[np.where(air_pressure == nc.FILL_VALUE)] = nc.FILL_VALUE
+        sea_pressure = sea_pressure - air_pressure
+        sea_pressure[np.where(air_pressure == nc.FILL_VALUE)] = nc.FILL_VALUE
         test.pressure_data = air_pressure
         air_qc = test.select_tests('')
-    else:
-        corrected_pressure = sea_pressure
-    if method == 'fft':
-        depth = p2d.fft_method(corrected_pressure, device_depth,
-                               water_depth, timestep)
-    elif method == 'combo':
-        depth = p2d.combo_method(sea_time, corrected_pressure,
+    if method == 'combo':
+        depth = p2d.combo_method(sea_time, sea_pressure,
                                  device_depth, water_depth, timestep)
     elif method == 'naive':
-        depth = p2d.hydrostatic_method(corrected_pressure)
-    else:
-        raise TypeError('Accepted values for "method" are: fft, '
-                        'method2 and naive.')
-    if len(depth) == len(sea_pressure) - 1:
+        depth = p2d.hydrostatic_method(sea_pressure)
+    if len(depth) == len(sea_pressure) - 1: # this is questionable
         depth = np.append(depth, np.NaN)
     shutil.copy(water_fname, out_fname)
     if air_fname != '':
         nc.append_air_pressure(out_fname, air_pressure)
-        # air_qc and depth qc
-        air_qc = test.select_tests('')
-        nc.append_depth_qc(out_fname, sea_qc, air_qc)
-    else:
-        nc.append_depth_qc(out_fname, sea_qc, None)
-
+    nc.append_depth_qc(out_fname, sea_qc, air_qc)
     nc.append_depth(out_fname, depth)
 
 
@@ -91,12 +79,5 @@ if __name__ == '__main__':
                         default='combo',
                         action='store_const')
     args = parser.parse_args()
-    print(args)
     make_depth_file(args.water_fname, args.air_fname, args.out_fname,
                     method=args.method)
-
-
-# air_fname = '/home/chris/new_data/hobo1_air.csv.nc'
-# water_fname= '/home/chris/new_data/trueblue_water.csv.nc'
-# out_fname = '/home/chris/output.nc'
-# make_depth_file(water_fname, air_fname, out_fname)
