@@ -13,7 +13,6 @@ from collections import OrderedDict
 from tools.script1 import INSTRUMENTS, convert_to_netcdf
 import json
 
-
 GLOBAL_HISTFILE = 'history.json'
 LOCAL_HISTFILE = 'history2.json'
 GLOBAL_FIELDS = OrderedDict([

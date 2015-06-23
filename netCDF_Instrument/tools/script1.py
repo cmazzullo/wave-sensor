@@ -51,8 +51,8 @@ def translate_inputs(inputs):
 if __name__ == '__main__':
 
     inputs = {
-        'instrument_name' : 'Measurement Specialties',
-        'in_filename' : '/home/chris/work/wave-sensor/data_files/logger3.csv',
+        'instrument_name' : 'LevelTroll',
+        'in_filename' : '/home/chris/work/wave-sensor/netCDF_Instrument/tests/test_data/leveltroll_test.csv',
         'out_filename' : '/home/chris/testfile.nc',
         'latitude' : '20',
         'longitude' : '20',
