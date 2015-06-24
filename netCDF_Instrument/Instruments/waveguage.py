@@ -1,5 +1,3 @@
-import sys
-sys.path.append('..')
 import os
 import numpy as np
 from datetime import datetime
@@ -9,6 +7,7 @@ import pytz
 from NetCDF_Utils.Testing import DataTests
 from NetCDF_Utils.edit_netcdf import NetCDFWriter
 from unit_conversion import ATM_TO_DBAR
+
 
 class Waveguage(NetCDFWriter):
     """Reads in an ASCII file output by a Waveguage pressure sensor

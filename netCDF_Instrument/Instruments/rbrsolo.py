@@ -1,12 +1,8 @@
 import os
-import sys
 import pytz
 import pandas
 import re
 import numpy as np
-
-sys.path.append('..')
-
 import NetCDF_Utils.DateTimeConvert as dateconvert
 from NetCDF_Utils.Testing import DataTests
 from NetCDF_Utils.edit_netcdf import NetCDFWriter

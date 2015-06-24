@@ -1,7 +1,7 @@
 import numpy as np
 from bitarray import bitarray as bit
-import sys
-sys.path.append('..')
+
+
 class DataTests(object):
     """QC tests are performed on any data written to a netcdf file"""
 

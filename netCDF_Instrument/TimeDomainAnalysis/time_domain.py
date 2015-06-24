@@ -3,10 +3,7 @@ Created on Jul 25, 2014
 
 @author: Gregory
 '''
-import sys
 import os
-sys.path.append('..')
-
 import numpy as np
 from TimeDomainAnalysis.depth import Depth
 
