@@ -14,6 +14,9 @@ from NetCDF_Utils.nc import FILL_VALUE
 g = 9.8  # gravity (m / s**2)
 rho = 1030  # density of seawater (kg / m**3)
 
+def rmse(a, b):
+    return np.sqrt(np.average(np.absolute(a-b)**2))
+
 
 def segment(arr, fill):
     """Split arr into chunks around the fill value"""
@@ -194,8 +197,6 @@ if __name__ == '__main__':
     plot(t, combo_y, label='Combo y')
     legend()
 
-    def rmse(a, b):
-        return sqrt(average(absolute(a-b)**2))
 
     print('FFT method: ', rmse(computed_y, actual_y))
     print('Combo method: ', rmse(combo_y, actual_y))

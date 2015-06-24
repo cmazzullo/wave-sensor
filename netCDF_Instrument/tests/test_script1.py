@@ -10,7 +10,7 @@ values in INPUTS into the fields of the GUI.
 Coverage:
 Metadata in the netCDF produced by script1 (variables and attributes)
 Pressure data in the netCDF
-
+Leveltroll file format
 """
 
 import unittest
@@ -19,10 +19,10 @@ from os.path import join
 from tools import script1
 import os
 
-IN_FILENAME = join('.', 'test_data', 'leveltroll_test.csv')
-OUT_FILENAME = join('.', 'test_data', 'leveltroll_test.nc')
-GUI_FILENAME = join('.', 'test_data', 'gui_leveltroll_test.nc')
-
+DIRNAME = os.path.dirname(__file__)
+IN_FILENAME = join(DIRNAME, 'test_data', 'leveltroll_test.csv')
+OUT_FILENAME = join(DIRNAME, 'test_data', 'leveltroll_test.nc')
+GUI_FILENAME = join(DIRNAME, 'test_data', 'gui_leveltroll_test.nc')
 INPUTS = {
     'instrument_name' : 'LevelTroll',
     'in_filename' : IN_FILENAME,
@@ -46,8 +46,6 @@ INPUTS = {
 class KnownValues(unittest.TestCase):
 
     def setUp(self):
-        print("Remember to make a fresh file with the GUI if you want "
-              "GUI functionality to be tested!")
         script1.convert_to_netcdf(INPUTS)
 
     def tearDown(self):
@@ -132,35 +130,6 @@ class KnownValues(unittest.TestCase):
 
     def test_netcdf_known_variables(self):
         with Dataset(OUT_FILENAME, 'r', format='NETCDF4_CLASSIC') as ds:
-            result_pressure_series = ds.variables['sea_water_pressure'][:]
-            for known_p, result_p in zip(self.known_pressure_series,
-                                         result_pressure_series):
-                known_p = 0.6894757 * known_p
-                self.assertEqual(round(known_p, 4), round(result_p, 4))
-
-    def test_gui_known_numerical_netcdf_attributes(self):
-        with Dataset(GUI_FILENAME, 'r', format='NETCDF4_CLASSIC') as ds:
-            for key in self.known_numerical_netcdf_attributes:
-                known_value = INPUTS[key]
-                result = getattr(ds, key)
-                self.assertEqual(float(known_value), float(result))
-
-    def test_gui_known_string_netcdf_attributes(self):
-        with Dataset(GUI_FILENAME, 'r', format='NETCDF4_CLASSIC') as ds:
-            for key in self.known_string_netcdf_attributes:
-                known_value = INPUTS[key]
-                result = getattr(ds, key)
-                self.assertEqual(str(known_value), str(result))
-
-    def test_gui_known_numerical_netcdf_variables(self):
-        with Dataset(GUI_FILENAME, 'r', format='NETCDF4_CLASSIC') as ds:
-            for key in self.known_numerical_netcdf_variables:
-                known_value = INPUTS[key]
-                result = ds.variables[key].getValue()
-                self.assertEqual(str(known_value), str(result))
-
-    def test_gui_netcdf_known_variables(self):
-        with Dataset(GUI_FILENAME, 'r', format='NETCDF4_CLASSIC') as ds:
             result_pressure_series = ds.variables['sea_water_pressure'][:]
             for known_p, result_p in zip(self.known_pressure_series,
                                          result_pressure_series):

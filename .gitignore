@@ -1,3 +1,6 @@
+# Ignore history files spit out by the GUIs
+history*.json
+
 # Ignore net cdf files and csv files
 *.nc
 *.csv

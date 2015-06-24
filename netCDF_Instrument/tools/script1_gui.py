@@ -1,344 +1,191 @@
 #!/usr/bin/env python3
 """
-Contains a gui that interfaces with this package's netCDF-writing
-modules. Also contains some convenience methods for other guis and a
+Contains a GUI that interfaces with this package's netCDF-writing
+modules. Also contains some convenience methods for other GUIs and a
 general class, MessageDialog, for creating custom dialog boxes.
 """
 
-from functools import partial
-import tkinter
+import tkinter as tk
 from tkinter import ttk
-from tkinter.filedialog import askopenfilename as fileprompt
+from tkinter.filedialog import askopenfilename
 import os
 from collections import OrderedDict
 from tools.script1 import INSTRUMENTS, convert_to_netcdf
+import json
+
+GLOBAL_HISTFILE = 'history.json'
+LOCAL_HISTFILE = 'history2.json'
+GLOBAL_FIELDS = OrderedDict([
+    ('creator_name', ['Your full name:', '']),
+    ('creator_email', ['Your email address:', '']),
+    ('creator_url', ['Your personal url:', ''])])
+LOCAL_FIELDS = OrderedDict([
+    ('instrument_name', ['Instrument:', [
+        'Measurement Specialties', 'HOBO', 'RBRSolo', 'USGS Homebrew',
+        'LevelTroll'], True]),
+    ('latitude', ['Latitude (decimal degrees):', '', True]),
+    ('longitude', ['Longitude (decimal degrees):', '', True]),
+    ('tzinfo', ['Timezone:', ['US/Central', 'US/Eastern'], True]),
+    ('salinity', ['Salinity:', [
+        'Salt Water (> 30 ppt)', 'Brackish Water (.5 - 30 ppt)',
+        'Fresh Water (< .5 ppt)'], False]),
+    ('initial_water_depth', ['Initial water depth (meters):', '', False]),
+    ('final_water_depth', ['Final water depth (meters):', '', False]),
+    ('device_depth', ['Depth of device (meters):', '', False]),
+    ('deployment_time', ['Deployment time (YYYYMMDD HHMM):', '', False]),
+    ('retrieval_time', ['Retrieval time (YYYYMMDD HHMM):', '', False]),
+    ('sea_name', ['Sea Name:', [
+        'Chesapeake Bay', 'Great Lakes', 'Gulf of Alaska', 'Gulf of California',
+        'Gulf of Maine', 'Gulf of Mexico', 'Hudson Bay', 'Massachusetts Bay',
+        'NE Atlantic (limit-40 W)', 'NE Pacific (limit-180)',
+        'North American Coastline-North', 'North American Coastline-South',
+        'North Atlantic Ocean', 'North Pacific Ocean',
+        'NW Atlantic (limit-40 W)', 'NW Pacific (limit-180)',
+        'SE Atlantic (limit-20 W)', 'SE Pacific (limit-140 W)',
+        'SW Atlantic (limit-20 W)', 'SW Pacific (limit-147 E to 140 W)'],
+                  False])])
 
 
 class Wavegui:
     """ GUI for csv-to-netCDF conversion. """
     def __init__(self, parent, air_pressure=False):
-        self.root = parent
+        self.parent = parent
         self.air_pressure = air_pressure
-        if air_pressure == False:
-            parent.title("Sea Water Pressure -> NetCDF")
-        else:
-            parent.title("Air Pressure -> NetCDF")
-        if air_pressure:
-            self.df_history = 'gui_df_history.txt'
-        else:
-            self.df_history = 'gui_df_history_air.txt'
-        self.global_history = 'gui_global_history.txt'
+        parent.title("CSV -> NetCDF")
         self.air_pressure = air_pressure
-        d = OrderedDict()
-        d['creator_name'] = Variable(label='Your full name:', autosave=True)
-        d['creator_email'] = Variable(label='Your email address:', autosave=True)
-        d['creator_url'] = Variable(label='Your personal url:', autosave=True)
-        self.global_fields = d
-        self.datafiles = list()
-        self.filenames = set()
-        self.initialize()
+        self.datafiles = OrderedDict()
+        self.book = ttk.Notebook(self.parent)
+        self.book.grid(row=1, column=0)
+        self.global_form = Form(self.parent, list(GLOBAL_FIELDS.values()),
+                                GLOBAL_HISTFILE)
+        self.global_form.grid(row=2, column=0)
+        add = lambda: [self.add_file(fname)
+                       for fname in askopenfilename(multiple=True)]
+        buttons = [
+            ("Add File(s)", add),
+            ("Save Globals", self.global_form.dump),
+            ("Load Globals", self.global_form.load),
+            ("Process Files", self.process_files),
+            ("Quit", self.parent.destroy)]
+        ButtonBar(self.parent, buttons).grid(row=3, column=0)
 
-    def initialize(self):
-        """
-        Make the initial frames and entry fields.
-
-        If no files are selected, just creates a frame where a user
-        can input global variables. If some files are selected,
-        creates both a frame for global variables and a frame for
-        file-specific variables.
-        """
-        try:
-            self.global_frame.destroy()
-            self.file_frame.destroy()
-        except AttributeError:
-            pass
-
-        self.global_frame = make_frame(self.root)
-        add_label(self.global_frame, 'Global Settings:')
-        entries = make_frame(self.global_frame)
-        for row, key in enumerate(self.global_fields):
-            self.make_widget(entries, self.global_fields[key], row)
-        entries.pack(fill='both', expand=1)
-        save_globals = partial(self.save_history, self.global_history,
-                               self.global_fields)
-        load_globals = partial(self.load_history, self.global_history,
-                               self.global_fields)
-        buttons = [("Add File(s)", self.add_files, 0, 0),
-                   ("Save Globals", save_globals, 0, 1),
-                   ("Load Globals", load_globals, 0, 2),
-                   ("Quit", self.root.destroy, 0, 5)]
-        if self.filenames:
-            buttons += [("Load Default", self.load_per_file, 0, 3),
-                        ("Process Files", self.process_files, 0, 4)]
-            self.file_frame = make_frame(self.root)
-            add_label(self.file_frame, 'File specific settings:')
-            tabs = make_frame(self.file_frame)
-            book = ttk.Notebook(tabs, width=50)
-            for datafile in self.datafiles:
-                tab = make_frame(tabs)
-                widgets = make_frame(tab)
-                for row, key in enumerate(datafile):
-                    self.make_widget(widgets, datafile[key], row)
-                widgets.pack(fill='both', expand=1)
-                save = partial(self.save_history, self.df_history,
-                               datafile)
-                rm = partial(self.remove_file, datafile)
-                load = partial(self.load_history, self.df_history,
-                               datafile)
-                buttonlist = [
-                    ('Save Entries', save, 0, 1),
-                    ('Remove File', rm, 0, 2),
-                    ('Load Default', load, 0, 3)]
-                make_buttonbox(tab, buttonlist)
-                fname = os.path.basename(datafile['in_filename'].stringvar.get())
-                maxlen = 7
-                if len(fname) > maxlen:
-                    fname = fname[:maxlen] + '...'
-                book.add(tab, text=fname)
-            tabs.pack(fill='both', expand=1)
-            book.pack(fill='both', expand=1)
-
-            self.file_frame.grid(row=0, column=0, sticky=('n', 'w', 'e', 's'))
-
-        make_buttonbox(self.global_frame, buttons)
-        self.global_frame.update()
-        self.global_frame.grid(row=1, column=0, sticky=('n', 'w', 'e', 's'))
-        self.root.update()
-
-    def remove_file(self, datafile):
-        self.filenames.remove(datafile['in_filename'].stringvar.get())
-        self.datafiles.remove(datafile)
-        self.initialize()
-
-    def add_files(self):
+    def add_file(self, fname):
         """Add a new file tab to the file frame."""
-        new_fnames = set(fileprompt(multiple=True)) - self.filenames
-        self.filenames |= new_fnames
-        new_datafiles = [self.make_file_dict(fname) for fname in new_fnames]
-        self.datafiles += new_datafiles
-        if self.filenames:
-            self.initialize()
+        tab = tk.Frame(self.book)
+        self.book.add(tab, text=os.path.basename(fname))
+        datafile = Form(tab, list(LOCAL_FIELDS.values()), LOCAL_HISTFILE)
+        datafile.pack()
+        self.datafiles[fname] = datafile
+        removef = lambda: self.remove_file(fname)
+        ButtonBar(tab, (('Remove File', removef),
+                        ('Save Entries', datafile.dump),
+                        ('Load Entries', datafile.load))).pack()
 
-    def make_file_dict(self, fname):
-        d = OrderedDict()
-        d['in_filename'] = Variable(name_in_device='in_filename',
-                                    label='Input filename:',
-                                    filename='in')
-        d['in_filename'].stringvar.set(fname)
-        d['out_filename'] = Variable(name_in_device='out_filename',
-                                     label='Output filename:',
-                                     filename='out')
-        d['out_filename'].stringvar.set(fname + '.nc')
-
-        d['instrument_name'] = Variable(options=INSTRUMENTS.keys(),
-                                   label='Instrument:',
-                                   autosave=True)
-        d['latitude'] = Variable(label='Latitude (decimal degrees):',
-                                 autosave=True,
-                                 doc='Decimal degrees east of the Prime Meridian.')
-        d['longitude'] = Variable(autosave=True,
-                                  label='Longitude (decimal degrees):',
-                                  doc='Decimal degrees north of the equator.')
-        
-        d['tzinfo'] = Variable(autosave=True,
-                               label='Timezone:',
-                               options=("US/Central", "US/Eastern"))
-        
-        if self.air_pressure == False:
-            d['salinity'] = Variable(autosave=True,
-                                     label='Salinity:',
-                                     options=("Salt Water (> 30 ppt)",
-                                              "Brackish Water (.5 - 30 ppt)",
-                                              "Fresh Water (< .5 ppt)"),
-                                     in_air_pressure=False)
-            d['initial_water_depth'] = Variable(autosave=True,
-                                                label='Initial water depth (meters):',
-                                                in_air_pressure=False)
-            d['final_water_depth'] = Variable(autosave=True,
-                                              label='Final water depth (meters):',
-                                              in_air_pressure=False)
-            d['device_depth'] = Variable(autosave=True,
-                                         label='Depth of device below surface (meters):',
-                                         in_air_pressure=False)
-            d['deployment_time'] = Variable(autosave=True,
-                                            label='Deployment time (YYYYMMDD HHMM):',
-                                            in_air_pressure=False)
-            d['retrieval_time'] = Variable(autosave=True,
-                                           label='Retrieval time (YYYYMMDD HHMM):',
-                                           in_air_pressure=False)
-       
-            d['sea_name'] = Variable(label='Sea Name:',
-                                     in_air_pressure=False,
-                                     autosave=True,
-                                     options=('Chesapeake Bay',
-                                              'Great Lakes',
-                                              'Gulf of Alaska',
-                                              'Gulf of California',
-                                              'Gulf of Maine',
-                                              'Gulf of Mexico',
-                                              'Hudson Bay',
-                                              'Massachusetts Bay',
-                                              'NE Atlantic (limit-40 W)',
-                                              'NE Pacific (limit-180)',
-                                              'North American Coastline-North',
-                                              'North American Coastline-South',
-                                              'North Atlantic Ocean',
-                                              'North Pacific Ocean',
-                                              'NW Atlantic (limit-40 W)',
-                                              'NW Pacific (limit-180)',
-                                              'SE Atlantic (limit-20 W)',
-                                              'SE Pacific (limit-140 W)',
-                                              'SW Atlantic (limit-20 W)',
-                                              'SW Pacific (limit-147 E to 140 W)'))
-        return d
 
     def process_files(self):
         """Run the csv to netCDF conversion on the selected files."""
-        # First, check that all fields are filled.
-        for datafile in self.datafiles:
-            union = dict(datafile.items() | self.global_fields.items())
-            if self.air_pressure == False:
-                for key in union:
-                    if union[key].stringvar.get() == '':
-                        MessageDialog(self.root, message="Incomplete entries,"
-                                      " please fill out all fields.",
-                                      title='Incomplete!', wait=True)
-                        return False
-        message = ('Processing files, this may take a few minutes.')
-        d = MessageDialog(self.root, message=message,
-                          title='Processing...', buttons=0,
-                          wait=False)
-        self.root.update()
-        for datafile in self.datafiles:
-            union = dict(datafile.items() | self.global_fields.items())
-            inputs = {key : union[key].stringvar.get() for key in union}
+        globs = dict(zip(GLOBAL_FIELDS.keys(),
+                         self.global_form.export_entries()))
+        message = ('Working, this may take a few minutes.')
+        dialog = MessageDialog(self.parent, message=message,
+                               title='Processing...', buttons=0, wait=False)
+        for fname, datafile in self.datafiles.items():
+            inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
+            inputs.update(globs)
             inputs['sea_pressure'] = not self.air_pressure
+            inputs['in_filename'] = fname
+            inputs['out_filename'] = fname + '.nc'
             convert_to_netcdf(inputs)
-        d.destroy()
-        MessageDialog(self.root, message="Success! Files saved.",
+            self.remove_file(fname)
+        dialog.destroy()
+        MessageDialog(self.parent, message="Success! Files saved.",
                       title='Success!')
-        self.datafiles = list()
-        self.filenames = set()
-        self.initialize()
 
-    def save_history(self, filename, vardict):
-        """Save per-file entries to a history file for later use"""
-        with open(filename, 'w') as f:
-            for key in vardict:
-                if vardict[key].autosave:
-                    f.write(vardict[key].stringvar.get() + '\n')
+    def remove_file(self, fname):
+        """Remove the current file's tab from the window."""
+        self.book.forget('current')
+        self.datafiles.pop(fname)
 
-    def load_per_file(self):
-        for dfile in self.datafiles:
-            self.load_history(self.df_history, dfile)
 
-    def load_history(self, filename, datafile):
-        """Load saved per-file entries into a file's tab"""
-        # if any fields are filled, ask first
-        any_fields_filled = (
-            any(self.global_fields[v].stringvar.get()
-                for v in self.global_fields
-                if not self.global_fields[v].filename))
-        message = 'This will overwrite your entries. Are you sure?'
-        def proceed():
-            d = MessageDialog(self.root, message=message,
-                              title='Confirm', buttons=2, wait=True)
-            return d.boolean
+class Form(tk.Frame):
+    """A widget that contains form fields that users can fill"""
+    def __init__(self, root, fields, histfile):
+        """Create all the tk.Entry widgets and populate the widget with them."""
+        tk.Frame.__init__(self, root)
+        self.histfile = histfile
+        self.entries = [self.make_entry_row(field, row)
+                        for row, field in enumerate(fields)]
 
-        if not any_fields_filled or proceed():
-            if os.path.isfile(filename):
-                with open(filename, 'r') as f:
-                    l = [v for v in datafile if datafile[v].autosave]
-                    for line, key in zip(f, l):
-                        print('line:', line, 'key:', key)
-                        datafile[key].stringvar.set(line.rstrip())
-
-    def make_widget(self, frame, var, row):
-        """Make a widget based on the properties of a Variable."""
-        air = self.air_pressure
-        air_var = var.in_air_pressure
-        water_var = var.in_water_pressure
-        if ((not air_var) and air) or ((not water_var and not air)):
-            return
-        add_label(frame, var.label, pos=(row, 1))
-        if var.filename:
-            fname = os.path.basename(var.stringvar.get())
-            add_label(frame, text=fname, pos=(row, 2))
-        elif var.options:
-            tkinter.OptionMenu(frame, var.stringvar, *var.options)\
-                .grid(column=2, row=row, sticky=('w', 'e'))
+    def make_entry_row(self, field, row):
+        """Create an Entry based on a field and return its StringVar."""
+        label = tk.Label(self, text=field[0], width=30, anchor='w')
+        label.grid(row=row, column=0, sticky='W')
+        content = tk.StringVar()
+        value = field[1]
+        if isinstance(value, str):
+            content.set(value)
+            widget = tk.Entry(self, textvariable=content, width=30)
         else:
-            ttk.Entry(frame, width=30, textvariable=var.stringvar)\
-                .grid(column=2, row=row, sticky=('w', 'e'))
-        if var.doc:
-            c = lambda: MessageDialog(self.root, message=var.doc,
-                                      title='Help')
-            add_button(frame, 'Help', c, row, 3)
+            content.set(value[0])
+            widget = tk.OptionMenu(self, content, *value)
+        widget.grid(row=row, column=1, sticky=('W', 'E'))
+        return content
+
+    def export_entries(self):
+        """Export the user's input as a list of strings."""
+        return [entry.get() for entry in self.entries]
+
+    def import_entries(self, in_entries):
+        """Populate the form fields with a list of strings."""
+        for ein, current in zip(in_entries, self.entries):
+            current.set(ein)
+
+    def dump(self):
+        """Write the user's inputs to a file."""
+        with open(self.histfile, 'w') as fname:
+            json.dump(self.export_entries(), fname)
+
+    def load(self):
+        """Populate the form fields with a list from a file."""
+        with open(self.histfile) as fname:
+            self.import_entries(json.load(fname))
 
 
-def make_frame(frame, header=None):
-    """Make a frame with uniform padding."""
-    return ttk.Frame(frame, padding="3 3 5 5")
+class ButtonBar(tk.Frame):
+    """A widget containing buttons arranged horizontally."""
+    def __init__(self, root, buttonlist):
+        """Create a Button for each entry in buttonlist"""
+        tk.Frame.__init__(self, root)
+        for i, props in enumerate(buttonlist):
+            button = tk.Button(self, text=props[0], command=props[1], width=8)
+            button.grid(row=0, column=i, sticky=('W', 'E'))
 
 
-def add_button(frame, text, command, row, column):
-    """Make and grid a button in a uniform way."""
-    b = ttk.Button(frame, text=text, command=command, width=15)
-    b.grid(column=column, row=row, sticky='w')
-    return b
-
-
-def make_buttonbox(frame, buttonlist):
-    """Expects button tuples: (text, command, row, column)"""
-    box = make_frame(frame)
-    for b in buttonlist:
-        text, command, row, column = b
-        add_button(box, text, command, row, column)
-    box.pack(fill='both', expand=1)
-    return box
-
-
-def add_label(frame, text, pos=None):
-    """Make a label and pack/grid it"""
-    label = ttk.Label(frame, text=text)
-    if pos:
-        row, column = pos
-        label.grid(column=column, row=row, sticky='w')
-    else:
-        label.pack(fill='both', expand=1)
-    return label
-
-
-class MessageDialog(tkinter.Toplevel):
+class MessageDialog(tk.Toplevel):
     """ A template for nice dialog boxes. """
-
-    def __init__(self, parent, message="", title="", buttons=1,
-                 wait=True):
-        tkinter.Toplevel.__init__(self, parent)
-        body = ttk.Frame(self)
+    def __init__(self, parent, message="", title="", buttons=1, wait=True):
+        tk.Toplevel.__init__(self, parent)
+        body = tk.Frame(self)
         self.title(title)
         self.boolean = None
         self.parent = parent
         self.transient(parent)
-        ttk.Label(body, text=message).pack()
+        tk.Label(body, text=message).pack()
         if buttons == 1:
-            b = ttk.Button(body, text="OK", command=self.destroy)
+            b = tk.Button(body, text="OK", command=self.destroy)
             b.pack(pady=5)
         elif buttons == 2:
-            buttonframe = make_frame(body)
-
+            buttonframe = tk.Frame(body, padding="3 3 5 5")
             def event(boolean):
                 self.boolean = boolean
                 self.destroy()
-
-            b1 = ttk.Button(buttonframe, text='YES',
-                            command=lambda: event(True))
+            b1 = tk.Button(buttonframe, text='YES',
+                           command=lambda: event(True))
             b1.grid(row=0, column=0)
-            b2 = ttk.Button(buttonframe, text='NO',
-                            command=lambda: event(False))
+            b2 = tk.Button(buttonframe, text='NO',
+                           command=lambda: event(False))
             b2.grid(row=0, column=1)
             buttonframe.pack()
-
         body.pack()
         self.grab_set()
         self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
@@ -346,30 +193,7 @@ class MessageDialog(tkinter.Toplevel):
         if wait:
             self.wait_window(self)
 
-
-class Variable:
-    """
-    Stores data about each attribute to be added to the netCDF file.
-
-    Also contains metadata that allows the GUI to build widgets from
-    the Variable and use the data inside it in the csv-to-netCDF
-    converters.
-    """
-    def __init__(self, name_in_device=None, label=None, doc=None,
-                 options=None, filename=False, autosave=False,
-                 in_air_pressure=True, in_water_pressure=True):
-        self.name_in_device = name_in_device
-        self.label = label
-        self.doc = doc
-        self.options = options
-        self.stringvar = tkinter.StringVar()
-        self.stringvar.set('')
-        self.filename = filename
-        self.autosave = autosave
-        self.in_air_pressure = in_air_pressure
-        self.in_water_pressure = in_water_pressure
-
 if __name__ == '__main__':
-    root = tkinter.Tk()
+    root = tk.Tk()
     gui = Wavegui(root, air_pressure=False)
     root.mainloop()
