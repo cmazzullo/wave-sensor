@@ -2,13 +2,13 @@
 
 """
 NAME:
-    filter.py  
+    tappy_filter.py  
 
 SYNOPSIS:
-    filter.py is only an importable library
+    tappy_filter.py is only an importable library
 
 DESCRIPTION:
-    The filter.py will eventually contain all filters used by TAPPY.
+    The tappy_filter.py will eventually contain all filters used by TAPPY.
 
 OPTIONS:
     None - import only
@@ -38,6 +38,7 @@ EXAMPLES:
 
 #===imports======================
 import numpy as np
+import sys
 
 #===globals======================
 modname = "filter"
@@ -48,11 +49,11 @@ def msg(txt):
     sys.stdout.write(txt)
     sys.stdout.flush()
 
-def debug(ftn, txt):
-    """Used for debugging."""
-    if debug_p:
-        sys.stdout.write("%s.%s:%s\n" % (modname, ftn, txt))
-        sys.stdout.flush()
+# def debug(ftn, txt):
+#     """Used for debugging."""
+#     if debug_p:
+#         sys.stdout.write("%s.%s:%s\n" % (modname, ftn, txt))
+#         sys.stdout.flush()
 
 def fatal(ftn, txt):
     """If can't continue."""
@@ -66,7 +67,7 @@ def usage():
 #====================================
 
 def fft_lowpass(nelevation, low_bound, high_bound):
-    """ Performs a low pass filer on the nelevation series.
+    """ Performs a low pass filter on the nelevation series.
     low_bound and high_bound specifes the boundary of the filter.
     """
     import numpy.fft as F
@@ -77,21 +78,44 @@ def fft_lowpass(nelevation, low_bound, high_bound):
     freq = F.fftfreq(len(nelevation))[:len(nelevation)/2]
     factor = np.ones_like(result)
     factor[freq > low_bound] = 0.0
-
+    print result
     sl = np.logical_and(high_bound < freq, freq < low_bound)
+    print factor
+    print sl
 
     a = factor[sl]
+    print 'a', a
     # Create float array of required length and reverse
     a = np.arange(len(a) + 2).astype(float)[::-1]
-
+    print np.arange(len(a) + 2)
+    print a
     # Ramp from 1 to 0 exclusive
     a = (a/a[0])[1:-1]
 
     # Insert ramp into factor
     factor[sl] = a
-
+    print factor[sl]
     result = result * factor
-    print 'result=', len(result)
+    print result
+    print 'resultnog=', len(result)
     relevation = F.irfft(result, len(nelevation))
     print 'result=', len(relevation)
     return relevation
+    
+def demerliac_filter(dates_filled, nelevation):
+    
+    kernel = [1, 3, 8, 15, 21, 32, 45, 55, 72, 91, 105, 128, 153, 
+            171, 200, 231, 253, 288, 325, 351, 392, 435, 465, 512, 
+                558, 586, 624, 658, 678, 704, 726, 738, 752, 762, 766,
+            768, 766, 762, 752, 738, 726, 704, 678, 658, 624, 586, 
+            558, 512, 465, 435, 392, 351, 325, 288, 253, 231, 200,
+            171, 153, 128, 105, 91, 72, 55, 45, 32, 21, 15, 8, 3, 1]
+    
+    half_kern = len(kernel)//2
+
+    nslice = slice(half_kern, -half_kern)
+
+    relevation = np.convolve(nelevation, kernel, mode = 1)
+    return dates_filled[nslice], relevation[nslice]
+
+    

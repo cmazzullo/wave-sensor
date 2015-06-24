@@ -121,12 +121,24 @@ class DepthGui:
         
         #x axis formatter for dates (function format_date() below)
         ax.xaxis.set_major_formatter(ticker.FuncFormatter(self.format_date))
+        
+        #get minimum and maximum depth
+        depth_min_start = np.min(df.Depth)
+        depth_max = np.max(df.Depth)
+        depth_min = np.floor(depth_min_start * 100.0)/100.0
+        depth_max = np.ceil(depth_max * 100.0)/100.0
+        par1.set_ylim([depth_min,depth_max])
+        
+        #changes scale so the air pressure is more readable
+        minY = np.floor(np.min(df.Pressure))
+        maxY = np.ceil(np.max(df.Pressure))
+        ax.set_ylim([minY,maxY])
        
-        #get minimum depth, then plot the pressure, depth, and min depth
-        depth_min = np.min(df.Depth)
+        #plot the pressure, depth, and min depth
+      
         p1, = ax.plot(time_nums,df.Pressure, color="red")
         p2, = par1.plot(time_nums,df.Depth, color="blue")
-        p3, = par1.plot(time_nums,np.repeat(depth_min, len(df.Depth)), linestyle="--", color="orange")
+        p3, = par1.plot(time_nums,np.repeat(depth_min_start, len(df.Depth)), linestyle="--", color="orange")
        
         ax.toggle_axisline('')
         

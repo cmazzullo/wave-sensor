@@ -33,9 +33,13 @@ class MeasureSysLogger(NetCDFWriter):
         #for skipping lines in case there is calibration header data
         df = pandas.read_table(self.in_filename,skiprows=skip_index + 1, header=None, engine='c', sep=',', usecols=[3,4,5,6])
 
-        first_date = df[3][0][1:]
-        self.data_start = dateconvert.convert_date_to_milliseconds(first_date, self.date_format_string)
-
+        #right now getting from the third and fourth point because the firmware upgrade skips a measurement in the first
+        self.data_start = dateconvert.convert_date_to_milliseconds(df[3][3][1:],
+                                                   self.date_format_string)
+        second_stamp = dateconvert.convert_date_to_milliseconds(df[3][4][1:],
+                                                    self.date_format_string)
+        self.frequency = 1000 / (second_stamp - self.data_start)
+        print('freq',self.frequency)
         #Since the instrument is not reliably recording data at 4hz we have decided to
         #interpolate the data to avoid any potential complications in future data analysis
         self.pressure_data = df[5].values * PSI_TO_DBAR
@@ -75,6 +79,9 @@ class MeasureSysLogger(NetCDFWriter):
         self.vstore.utc_millisecond_data = self.utc_millisecond_data
         self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
+        
+        time_resolution = 1000 / (self.frequency * 1000)
+        self.vstore.time_coverage_resolution = ''.join(["P",str(time_resolution),"S"])
 
         #Tests#
         self.data_tests.pressure_data = self.pressure_data
@@ -90,7 +97,7 @@ if __name__ == "__main__":
     lt.creator_name = "Jurgen Klinnsmen"
     lt.creator_url = "www.test.com"
     #--for testing
-    lt.in_filename = "measure_special.csv"
+    lt.in_filename = "measure.csv"
     lt.out_filename = "measure_special2.csv.nc"
     if os.path.exists(lt.out_filename):
         os.remove(lt.out_filename)

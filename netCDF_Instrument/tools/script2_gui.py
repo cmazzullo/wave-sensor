@@ -99,7 +99,7 @@ class Script2gui:
         print(method, timestep)
         if method =="combo" and timestep > .5:
             method = "naive"
-            message = "Time resolution too small to run Linear Wave method.  Will run hydrostatic..."
+            message = "Time resolution too large to run Linear Wave method.  Will run hydrostatic..."
             gc.MessageDialog(root, message=message,
                          title='Success!')
          

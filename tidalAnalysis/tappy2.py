@@ -48,7 +48,6 @@ import numpy as np
 from scipy.optimize import leastsq
 import datetime
 import re
-import tappy_lib
 import sparser
 import astronomia.calendar as cal
 import astronomia.util as uti
@@ -1268,8 +1267,9 @@ class tappy(Util):
                 3) cosine-Lanczos squared filter
                 4) cosine-Lanczos filter
             """
-            import filter
-            return dates_filled, filter.fft_lowpass(nelevation, 1/30.0, 1/40.0)
+            from tappy_filter import fft_lowpass
+            print 'performing, transform'
+            return dates_filled, fft_lowpass(nelevation, 1/30.0, 1/40.0)
 
         if nstype == 'kalman':
             # I threw this in from an example on scipy's web site.  I will keep
@@ -1341,9 +1341,9 @@ class tappy(Util):
             return dates_filled, relevation
 
         if nstype == 'doodson':
-            # Doodson filter
+            # Doodson tappy_filter
 
-            # The Doodson X0 filter is a simple filter designed to damp out
+            # The Doodson X0 tappy_filter is a simple tappy_filter designed to damp out
             # the main tidal frequencies. It takes hourly values, 19 values
             # either side of the central one. A weighted average is taken
             # with the following weights
@@ -1352,9 +1352,9 @@ class tappy(Util):
 
             # In "Data Analaysis and Methods in Oceanography":
 
-            # "The cosine-Lanczos filter, the transform filter, and the
-            # Butterworth filter are often preferred to the Godin filter,
-            # to earlier Doodson filter, because of their superior ability
+            # "The cosine-Lanczos tappy_filter, the transform tappy_filter, and the
+            # Butterworth tappy_filter are often preferred to the Godin tappy_filter,
+            # to earlier Doodson tappy_filter, because of their superior ability
             # to remove tidal period variability from oceanic signals."
 
             kern = [1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 2, 0, 1, 1, 0, 2, 1, 1, 2,
@@ -1396,6 +1396,14 @@ class tappy(Util):
             relevation = np.convolve(nelevation, kern, mode = 1)
             return dates_filled[nslice], relevation[nslice]
 
+        if nstype == 'demerliac':
+            
+            from tappy_filter import demerliac_filter
+            
+            
+            return demerliac_filter(dates_filled, nelevation)
+        
+        
         if nstype == 'boxcar':
             kern = np.ones(25)/25.
             half_kern = len(kern)//2
@@ -1459,7 +1467,7 @@ class tappy(Util):
 #             return dates_filled[nslice], relevation[nslice]
 
         if nstype == 'cd':
-            print "Complex demodulation filter doesn't work right yet - still testing."
+            print "Complex demodulation tappy_filter doesn't work right yet - still testing."
 
             (new_dates, new_elev) = self.missing('fill', dates_filled, nelevation)
             kern = np.ones(25) * (1./25.)
@@ -1568,9 +1576,12 @@ class tappy(Util):
                            "3. Height": pd.Series(height), "4. Phase": pd.Series(phase),
                            "5. Inferred": pd.Series(inferred)})
         
-        dotIndex = out_filename.find('.')
-        print "".join([out_filename[0:dotIndex],'.csv'])
-        df.to_csv(path_or_buf="".join([out_filename[0:dotIndex],'.csv']))
+        #check to see if the file is being saved in csv format, if not append csv
+        dotIndex = out_filename.find('.csv')
+        if dotIndex == -1:
+            out_filename =  "".join([out_filename,'.csv'])
+            
+        df.to_csv(path_or_buf="".join([out_filename]))
         
         print "\n# AVERAGE (Z0) = ", self.fitted_average
         if self.linear_trend:
@@ -1783,6 +1794,7 @@ def prediction(
 def analysis(
         data_filename,
         def_filename=None,
+        output_filename=None,
         config=None,
         quiet=False,
         debug=False,
@@ -1823,7 +1835,7 @@ def analysis(
        :param linear_trend: Include a linear trend in the least squares fit.
        :param remove_extreme: Remove values outside of 2 standard deviations before analysis.
        :param zero_ts: Zero the input time series before constituent analysis by subtracting filtered data. One of: transform,usgs,doodson,boxcar
-       :param filter:  Filter input data set with tide elimination filters. The -o outputts option is implied. Any mix separated by commas and no spaces: transform,usgs,doodson,boxcar
+       :param tappy_filter:  Filter input data set with tide elimination filters. The -o outputts option is implied. Any mix separated by commas and no spaces: transform,usgs,doodson,boxcar
        :param pad_filters: Pad input data set with values to return same size after filtering.  Realize edge effects are unavoidable.  One of ["tide", "minimum", "maximum", "mean", "median", "reflect", "wrap"]
        :param include_inferred: Do not incorporate any inferred constituents into the least squares fit.
        :param print_vau_table: For debugging - will print a table of V and u values to compare against Schureman.
@@ -1912,23 +1924,24 @@ def analysis(
     filter_filename = []
     if x.filter:
         for item in x.filter.split(','):
-            if item in ['mstha', 'wavelet', 'cd', 'boxcar', 'usgs', 'doodson', 'lecolazet1', 'kalman', 'transform']:# 'lecolazet', 'godin', 'sfa']:
+            if item in ['mstha', 'wavelet', 'cd', 'boxcar', 'usgs', 'doodson', 'lecolazet1', 'kalman', 'transform', 'demerliac']:# 'lecolazet', 'godin', 'sfa']:
                 filtered_dates, result = x.filters(item, x.dates, x.elevation)
                 
-                #Create a new filename in the same directory to sotre the filter data
+                #Create a new filename in the same directory to sotre the tappy_filter data
                 dotIndex = data_filename.find('.')
                 filter_name = (''.join([data_filename[0:dotIndex],'_',item,data_filename[dotIndex:]]))
                 filter_filename.append(filter_name)
                 
-                #write the filter file
+                #write the tappy_filter file
                 x.write_file(filtered_dates, result, fname=filter_name)
                 
         (x.speed_dict, x.key_list) = x.which_constituents(len(x.dates),
                                                           package,
                                                           rayleigh_comp = ray)
-
-    if not x.quiet and len(filter_filename) < 1:
-        x.print_con(data_filename)
+    
+    #if filter_filename is less than one then no filters were applied
+    if len(filter_filename) < 1:
+        x.print_con(output_filename)
     else:
         return filter_filename
 
@@ -2087,12 +2100,12 @@ def filter_subtraction(file_name, filter_name, out_filename):
     fds.close()
 if __name__ == '__main__':
     in_filename = 'Big5_30day.nc'
-    filter_filename = analysis(in_filename,filter="transform")
+    filter_filename = analysis(in_filename,filter="demerliac")
     if filter_filename != None:
         for x in filter_filename:
             print(x)
             dotIndex = x.find('.')
             out_filename = "Final%s.nc" % x[0:dotIndex]
             filter_subtraction(in_filename,x,out_filename)
-            analysis(out_filename)
+            analysis(out_filename, output_filename='C:\Tappy\results.csv')
 
