@@ -4,7 +4,7 @@ Uses some made up data files in the tests directory.
 
 The user will need to make a fresh netCDF file using the GUI to make
 sure that it's working. To do this, run the GUI on the file
-leveltroll_test.csv in the test_data directory, and manually enter the
+leveltroll.csv in the test_data directory, and manually enter the
 values in INPUTS into the fields of the GUI.
 
 Coverage:
@@ -20,9 +20,9 @@ from tools import script1
 import os
 
 DIRNAME = os.path.dirname(__file__)
-IN_FILENAME = join(DIRNAME, 'test_data', 'leveltroll_test.csv')
-OUT_FILENAME = join(DIRNAME, 'test_data', 'leveltroll_test.nc')
-GUI_FILENAME = join(DIRNAME, 'test_data', 'gui_leveltroll_test.nc')
+IN_FILENAME = join(DIRNAME, 'test_data', 'leveltroll.csv')
+OUT_FILENAME = join(DIRNAME, 'test_data', 'leveltroll.nc')
+
 INPUTS = {
     'instrument_name' : 'LevelTroll',
     'in_filename' : IN_FILENAME,

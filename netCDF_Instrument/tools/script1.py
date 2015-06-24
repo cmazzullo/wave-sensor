@@ -1,13 +1,7 @@
 #!/usr/bin/env python3
 import numpy as np
 from pytz import timezone
-from Instruments.leveltroll import Leveltroll
-from Instruments.measuresys import MeasureSysLogger
-from Instruments.house import House
-from Instruments.hobo import Hobo
-from Instruments.house import House
-from Instruments.rbrsolo import RBRSolo
-
+from csv_readers import Leveltroll, MeasureSysLogger, House, Hobo, RBRSolo
 
 INSTRUMENTS = {
     'LevelTroll': Leveltroll,
@@ -16,7 +10,6 @@ INSTRUMENTS = {
     'USGS Homebrew': House,
     'Measurement Specialties': MeasureSysLogger,
     'HOBO': Hobo }
-
 
 def convert_to_netcdf(inputs):
     translated = translate_inputs(inputs)
