@@ -959,7 +959,7 @@ class Hobo(NetCDFWriter):
         '''load the data from in_filename
         only parse the initial datetime = much faster
         '''
-        skip_index = self.read_start('"#"',',')
+        skip_index = self.read_start(['"#"','#'],',')
         df = pandas.read_table(self.in_filename,skiprows=skip_index,
                                header=None, engine='c', sep=',',
                                usecols=(1, 2))
@@ -977,10 +977,12 @@ class Hobo(NetCDFWriter):
 
     def read_start(self, expression, delimeter):
         skip_index = 0;
+        
         with open(self.in_filename,'r') as fileText:
             for x in fileText:
                 file_string = x.split(delimeter)[0].strip()
-                if expression == file_string:
+                print(file_string, skip_index)
+                if file_string in expression:
                     print('Success! Index %s' % skip_index)
                     break
                 skip_index += 1
@@ -1125,7 +1127,7 @@ class MeasureSysLogger(NetCDFWriter):
         self.timezone_marker = "time zone"
         super(MeasureSysLogger,self).__init__()
         self.tz_info = pytz.timezone("US/Eastern")
-        self.frequency = 4
+        self.frequency = 1/30
         self.date_format_string = '%m/%d/%Y %I:%M:%S.%f %p'
         self.data_tests = DataTests()
 
@@ -1137,8 +1139,11 @@ class MeasureSysLogger(NetCDFWriter):
         #for skipping lines in case there is calibration header data
         df = pandas.read_table(self.in_filename,skiprows=skip_index + 1, header=None, engine='c', sep=',', usecols=[3,4,5,6])
 
-        first_date = df[3][0][1:]
-        self.data_start = convert_date_to_milliseconds(first_date, self.date_format_string)
+        self.data_start = convert_date_to_milliseconds(df[3][3][1:],
+                                                   self.date_format_string)
+        second_stamp = convert_date_to_milliseconds(df[3][4][1:],
+                                                    self.date_format_string)
+        self.frequency = 1000 / (second_stamp - self.data_start)
 
         #Since the instrument is not reliably recording data at 4hz we have decided to
         #interpolate the data to avoid any potential complications in future data analysis
@@ -1180,6 +1185,9 @@ class MeasureSysLogger(NetCDFWriter):
         self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
 
+        time_resolution = 1000 / (self.frequency * 1000)
+        self.vstore.time_coverage_resolution = ''.join(["P",str(time_resolution),"S"])
+        
         #Tests#
         self.data_tests.interpolated_data = True
         self.data_tests.pressure_data = self.pressure_data
@@ -1190,7 +1198,7 @@ class MeasureSysLogger(NetCDFWriter):
 
         
 INSTRUMENTS = {
-    'LevelTroll': Leveltroll,
+#     'LevelTroll': Leveltroll,
     # 'RBRSolo': RBRSolo,
     # 'Wave Guage': Waveguage,
     # 'USGS Homebrew': House,

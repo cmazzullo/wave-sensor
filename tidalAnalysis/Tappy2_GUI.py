@@ -6,8 +6,8 @@ from tappy2 import *
 import Tkinter as Tk
 import Tkinter
 import tkFileDialog as filedialog
-from Tkinter import StringVar
-from Tkinter import W, E, LEFT, BOTH
+from Tkinter import StringVar, BooleanVar
+from Tkinter import W, E, LEFT, BOTH, DISABLED, ACTIVE
 
 class TappyGui:
     def __init__(self, root):
@@ -16,53 +16,88 @@ class TappyGui:
         self.root = root
         self.root.title('Tappy (Tidal Analysis Package)')
         
+        
+        #gets the tappy_filter method
         methods = [('None', 'none'),
                    ('Transform', 'transform'),
                    ('USGS', 'usgs')]
 
         self.methodvar = StringVar()
         self.methodvar.set('none')
-
+        
         Tk.Label(root, text='Filter:').pack(anchor=W,pady=2, padx=15)
         for name, kwarg in methods:
             Tk.Radiobutton(root, text=name, variable=self.methodvar,
                             value=kwarg).pack(anchor=W,pady=2, padx=15)
-                            
-        self.b1 = Tk.Button(self.root, text='Select File', command=self.select_input)
+        
+        Tk.Label(root, text='Options:').pack(anchor=W,pady=2, padx=15)
+        
+        #choose linear trend
+        self.linearTrend = BooleanVar()
+        Tk.Checkbutton(root, text="Linear Trend", variable = self.linearTrend) \
+        .pack(anchor=W,pady= 2,padx=15)
+        
+        #reads the input file name chosen in file upload
+        self.in_file_name = StringVar()
+        self.make_fileselect(root,"Tide File:",self.in_file_name,"tide_fname")
+        
+        #chooses output file directory and begins the analysis of the input file
+        c3 = lambda: self.select_output_file(root)                    
+        self.b1 = Tk.Button(self.root, text='Export File', 
+                            state = DISABLED, command=c3)
         self.b1.pack(anchor=W,pady=2, padx=15)
          
-    def select_input(self):
-        self.in_file_name = filedialog.askopenfilename()
-        filter_filename = analysis(self.in_file_name,filter=self.methodvar.get())
-        if filter_filename != None:
-            for x in filter_filename:
-                print(x)
-                dotIndex = x.find('.')
-                out_filename = "%s_filtered.nc" % x[0:dotIndex]
-                filter_subtraction(self.in_file_name,x,out_filename)
-                analysis(out_filename)
-        MessageDialog(root, message="Success! Tappy Results saved.",
-                         title='Success!')
-                
     def make_fileselect(self, root, labeltext, stringvar, varname):
+        '''create frame and file upload button for a variable'''
         command = lambda: self.select_file(varname, stringvar)
         frame = make_frame(root)
         l = Tk.Label(frame, justify=LEFT, text=labeltext, width=10)
         l.grid(row=0, column=0, sticky=W)
-        b = self.make_button(frame, 'Browse', command)
+        b = make_button(frame, 'Browse', command)
         b.grid(row=0, column=2, sticky=W)
         e = Tk.Label(frame, textvariable=stringvar, justify=LEFT,
                       width=32)
-        e.grid(row=0, column=1, sticky=(W, E))
+        e.grid(row=0, column=1, sticky=(W,E))
         frame.pack(anchor=W, fill=BOTH)
 
     def select_output_file(self, root):
-        output_fname = filedialog.asksaveasfilename()
+        '''Name output file and process results'''
         
+        #name the output file
+        output_fname = filedialog.asksaveasfilename()
+       
+        #gets the tappy_filter name if there was a tappy_filter applied and re-applies analysis
+        filter_filename = analysis(self.in_file_name.get(),filter=self.methodvar.get(), output_filename=output_fname, linear_trend=self.linearTrend.get())
+        if filter_filename != None:
+            for x in filter_filename:
+                dotIndex = x.find('.')
+                out_filename = "%s_filtered.nc" % x[0:dotIndex]
+                filter_subtraction(self.in_file_name.get(),x,out_filename)
+                analysis(out_filename, output_filename=output_fname, linear_trend=self.linearTrend.get())
+                
+        #success message
+        MessageDialog(root, message="Success! Tappy Results saved.",
+                         title='Success!')
+        
+        
+    def select_file(self, varname, stringvar):
+        fname = filedialog.askopenfilename()
+        if fname != '':
+            stringvar.set(fname)
+            setattr(self, varname, fname)
+            if self.in_file_name:
+                self.b1['state'] = ACTIVE
+
+def make_button(root, text, command, state=None):
+        b = Tk.Button(root, text=text, command=command, state=state,
+                       width=10)
+        return b
+         
 def make_frame(frame, header=None):
     """Make a frame with uniform padding."""
-    return Tk.Frame(frame, padding="3 3 5 5")
-       
+#     return Tk.Frame(frame, padding="3 3 5 5")
+    return Tk.Frame(frame, width=20)
+
 class MessageDialog(Tkinter.Toplevel):
     """ A template for nice dialog boxes. """
 

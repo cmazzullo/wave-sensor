@@ -88,6 +88,7 @@ class DepthGui:
                 'DepthQC': pd.Series(depth_qc, index=time)}
         df = pd.DataFrame(data)
         
+       
         #check if the pressure and depth pints do not pass QC
         #if points did not pass QC assign NaN to its value (aside from stuck sensor and interpolation)
         df.Pressure[(df['PressureQC'] != 11111111) & (df['PressureQC'] != 11110111)
@@ -97,7 +98,7 @@ class DepthGui:
                 & (df['DepthQC'] != 11111110) & (df['DepthQC'] != 11110110)] = np.NaN;
         
         #Boxcar average for aesthetic purposes if desired
-        if box_car_points > 0:
+        if box_car_points > 1:
             df.Pressure = pd.rolling_window(df.Pressure,center=True,window=box_car_points, win_type='boxcar')
             df.Depth = pd.rolling_window(df.Depth,center=True,window=box_car_points, win_type='boxcar')
         
@@ -134,11 +135,22 @@ class DepthGui:
         #x axis formatter for dates (function format_date() below)
         ax.xaxis.set_major_formatter(ticker.FuncFormatter(self.format_date))
        
-        #get minimum depth, then plot the pressure, depth, and min depth
-        depth_min = np.min(df.Depth)
+        #get minimum and maximum depth
+        depth_min_start = np.min(df.Depth)
+        depth_max = np.max(df.Depth)
+        depth_min = np.floor(depth_min_start * 100.0)/100.0
+        depth_max = np.ceil(depth_max * 100.0)/100.0
+        par1.set_ylim([depth_min,depth_max])
+        
+        #changes scale so the air pressure is more readable
+        minY = np.floor(np.min(df.Pressure))
+        maxY = np.ceil(np.max(df.Pressure))
+        ax.set_ylim([minY,maxY])
+        
+        #plot the pressure, depth, and min depth
         p1, = ax.plot(time_nums,df.Pressure, color="red")
-        p2, = par1.plot(time_nums,df.Depth, color="blue")
-        p3, = par1.plot(time_nums,np.repeat(depth_min, len(df.Depth)), linestyle="--", color="orange")
+        p2, = par1.plot(time_nums,df.Depth, color="blue", alpha=.75)
+        p3, = par1.plot(time_nums,np.repeat(depth_min_start, len(df.Depth)), linestyle="--", color="orange")
        
         ax.toggle_axisline('')
         

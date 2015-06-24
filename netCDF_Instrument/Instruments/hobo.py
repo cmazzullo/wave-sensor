@@ -36,7 +36,7 @@ class Hobo(NetCDFWriter):
         '''load the data from in_filename
         only parse the initial datetime = much faster
         '''
-        skip_index = self.read_start('"#"',',')
+        skip_index = self.read_start(['"#"','#'],',')
         df = pandas.read_table(self.in_filename,skiprows=skip_index,
                                header=None, engine='c', sep=',',
                                usecols=(1, 2))
@@ -57,7 +57,7 @@ class Hobo(NetCDFWriter):
         with open(self.in_filename,'r') as fileText:
             for x in fileText:
                 file_string = x.split(delimeter)[0].strip()
-                if expression == file_string:
+                if file_string in expression:
                     print('Success! Index %s' % skip_index)
                     break
                 skip_index += 1
