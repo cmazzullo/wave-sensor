@@ -32,12 +32,12 @@ class Hobo(NetCDFWriter):
                                header=None, engine='c', sep=',',
                                usecols=(1, 2))
         df = df.dropna()
-        first_stamp = convert_date_to_milliseconds(df.values[0][0],
+        first_stamp = dateconvert.convert_date_to_milliseconds(df.values[0][0],
                                                    self.date_format_string)
-        second_stamp = convert_date_to_milliseconds(df.values[1][0],
+        second_stamp = dateconvert.convert_date_to_milliseconds(df.values[1][0],
                                                     self.date_format_string)
         self.frequency = 1000 / (second_stamp - first_stamp)
-        self.utc_millisecond_data = convert_to_milliseconds(df.shape[0],
+        self.utc_millisecond_data = dateconvert.convert_to_milliseconds(df.shape[0],
                                         df[1][0], self.date_format_string,
                                         self.frequency)
         self.pressure_data = df[2].values * PSI_TO_DBAR

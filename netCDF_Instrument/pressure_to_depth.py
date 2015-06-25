@@ -48,14 +48,13 @@ def combo_method(t,p,z,H,timestep):
     return np.concatenate(dchunks)
 
 
-def combo_backend(t, p_dbar, z, H, timestep, window_func=np.hamming):
+def combo_backend(t, p_dbar, z, H, timestep):
     coeff = np.polyfit(t, p_dbar, 1)
     static_p = coeff[1] + coeff[0]*t
     static_y = hydrostatic_method(static_p)
     wave_p = p_dbar - static_p
     cutoff = auto_cutoff(np.average(H))
-    wave_y = fft_method(wave_p, z, H, timestep, hi_cut=cutoff,
-                        window_func=window_func)
+    wave_y = fft_method(wave_p, z, H, timestep, hi_cut=cutoff)
     wave_y = np.pad(wave_y, (0, len(t) - len(wave_y)), mode='edge')
     return static_y + wave_y
 
@@ -84,7 +83,7 @@ def omega_to_k(omega, H):
     return sum(p[i] * omega**(deg - i) for i in range(deg + 1))
 
 
-def fft_method(p_dbar, z, H, timestep, gate=0, window_func=np.ones,
+def fft_method(p_dbar, z, H, timestep, gate=0, window_func=np.hamming,
                lo_cut=-1, hi_cut=float('inf')):
     """Create wave height data from an array of pressure readings.
 
