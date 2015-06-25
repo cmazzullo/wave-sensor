@@ -5,7 +5,7 @@ Script 2 has 4 responsibilities:
   3. Combine air pressure and water pressure NCs
   4. Append depth data to the final NC
 """
-
+import pressure_to_depth as p2d
 from nose.tools import *
 from numpy import *
 import numpy.testing as nptest
@@ -78,3 +78,14 @@ def test_script2_air_file_cases():
 def test_make_depth_file():
     make_depth_file(IN_FILENAME, '', OUT_FILENAME)
     os.remove(OUT_FILENAME)
+
+
+def test_depth_data():
+    make_depth_file(water_fname, '', OUT_FILENAME)
+    p = nc.get_pressure(water_fname)
+    t = nc.get_time(water_fname)
+    z = -1 * nc.get_device_depth(water_fname)
+    h = nc.get_water_depth(water_fname)
+    known_d = p2d.combo_method(t, p, z, h, t[1] - t[0])
+    d = nc.get_depth(OUT_FILENAME)
+    nptest.assert_allclose(d, known_d, rtol=1e-3)
