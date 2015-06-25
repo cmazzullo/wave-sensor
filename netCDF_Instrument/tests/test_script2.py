@@ -22,7 +22,7 @@ FILL_VALUE = -1e10
 
 # cases:
 
-def make_test_pressure(water_interval, air_interval):
+def make_known_pressure(water_interval, air_interval):
     t0 = water_interval[0]
     p = zeros(water_interval[-1] - water_interval[0] + 1)
     w1 = 0
@@ -63,16 +63,16 @@ def test_script2_no_air_file():
     nptest.assert_equal(known_p, p)
 
 
-def case_test(case_fname, case_interval):
+def check_case(case_fname, case_interval):
     make_depth_file(water_fname, case_fname, OUT_FILENAME)
-    known_depth = make_test_pressure(water_interval, case_interval)
+    known_depth = make_known_pressure(water_interval, case_interval)
     d = nc.get_depth(OUT_FILENAME)
     nptest.assert_equal(d, known_depth)
 
 
 def test_script2_air_file_cases():
     for case_fname, case_interval in zip(fnames, intervals):
-        case_test(case1_fname, case1_interval)
+        check_case(case1_fname, case1_interval)
 
 
 def test_make_depth_file():
