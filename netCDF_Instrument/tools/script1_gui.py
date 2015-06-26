@@ -25,7 +25,8 @@ LOCAL_FIELDS = OrderedDict([
         'LevelTroll'], True]),
     ('latitude', ['Latitude (decimal degrees):', '', True]),
     ('longitude', ['Longitude (decimal degrees):', '', True]),
-    ('tzinfo', ['Timezone:', ['US/Central', 'US/Eastern'], True]),
+    ('tzinfo', ['Timezone:', ['US/Central', 'US/Eastern'], True])])
+WATER_ONLY_FIELDS = OrderedDict([
     ('salinity', ['Salinity:', [
         'Salt Water (> 30 ppt)', 'Brackish Water (.5 - 30 ppt)',
         'Fresh Water (< .5 ppt)'], False]),
@@ -45,12 +46,14 @@ LOCAL_FIELDS = OrderedDict([
         'SW Atlantic (limit-20 W)', 'SW Pacific (limit-147 E to 140 W)'],
                   False])])
 
-
 class Wavegui:
     """ GUI for csv-to-netCDF conversion. """
     def __init__(self, parent, air_pressure=False):
         self.parent = parent
         self.air_pressure = air_pressure
+        self.local_fields = LOCAL_FIELDS
+        if not air_pressure:
+            self.local_fields.update(WATER_ONLY_FIELDS)
         parent.title("CSV -> NetCDF")
         self.air_pressure = air_pressure
         self.datafiles = OrderedDict()

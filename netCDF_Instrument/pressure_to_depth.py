@@ -48,14 +48,13 @@ def combo_method(t,p,z,H,timestep):
     return np.concatenate(dchunks)
 
 
-def combo_backend(t, p_dbar, z, H, timestep, window_func=np.hamming):
+def combo_backend(t, p_dbar, z, H, timestep):
     coeff = np.polyfit(t, p_dbar, 1)
     static_p = coeff[1] + coeff[0]*t
     static_y = hydrostatic_method(static_p)
     wave_p = p_dbar - static_p
     cutoff = auto_cutoff(np.average(H))
-    wave_y = fft_method(wave_p, z, H, timestep, hi_cut=cutoff,
-                        window_func=window_func)
+    wave_y = fft_method(wave_p, z, H, timestep, hi_cut=cutoff)
     wave_y = np.pad(wave_y, (0, len(t) - len(wave_y)), mode='edge')
     return static_y + wave_y
 
@@ -84,7 +83,7 @@ def omega_to_k(omega, H):
     return sum(p[i] * omega**(deg - i) for i in range(deg + 1))
 
 
-def fft_method(p_dbar, z, H, timestep, gate=0, window_func=np.ones,
+def fft_method(p_dbar, z, H, timestep, gate=0, window_func=np.hamming,
                lo_cut=-1, hi_cut=float('inf')):
     """Create wave height data from an array of pressure readings.
 
@@ -156,47 +155,3 @@ def eta_to_pressure(eta, k, z, H):
 def _coefficient(k, z, H):
     """Return a conversion factor for pressure and wave height."""
     return rho * g * np.cosh(k * (H + z)) / np.cosh(k * H)
-
-
-# t = np.linspace(0, 100, 401)
-# p = 2*np.sin(t) + 10
-# p[20:100] = -1e10
-# z = -1.52
-# H = np.ones_like(t) * 1.98
-# d = combo_method(t, p, z, H, .25)
-# t2, d2 = combo_method(t,p,z,H,.25)
-# plot(t, p, label='p')
-# plot(t2, d2, label='d')
-# ylim(-100, 100)
-# legend()
-
-if __name__ == '__main__':
-    from tests.pressure_to_depth_tests import easy_waves
-    from numpy import *
-    from matplotlib.pyplot import *
-    # import seaborn as sns
-    max_f = .2
-    max_a = 10
-    max_phase = 10
-    length = 6000 # length of the time series in seconds
-    h = 15
-    z = -14.6
-    t, actual_y, p = easy_waves(length, h, z, 10)
-    sample_frequency = 4
-    cutoff = auto_cutoff(h)
-    computed_y = fft_method(p/10000, z, np.ones_like(t)*h,
-                            1/sample_frequency, hi_cut=cutoff)
-    static_y = p/rho/g
-    combo_y = combo_method(t, p/10000, z, np.ones_like(t)*h,
-                           1/sample_frequency)
-
-    ## plotting
-    clf()
-    plot(t, actual_y, label='Actual y')
-    plot(t, computed_y, label='FFT method y')
-    plot(t, combo_y, label='Combo y')
-    legend()
-
-
-    print('FFT method: ', rmse(computed_y, actual_y))
-    print('Combo method: ', rmse(combo_y, actual_y))
