@@ -83,6 +83,7 @@ class Wavegui:
         ButtonBar(tab, (('Remove File', removef),
                         ('Save Entries', datafile.dump),
                         ('Load Entries', datafile.load))).pack()
+        self.parent.update()
 
 
     def process_files(self):
