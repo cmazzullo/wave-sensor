@@ -161,7 +161,7 @@ class ButtonBar(tk.Frame):
         """Create a Button for each entry in buttonlist"""
         tk.Frame.__init__(self, root)
         for i, props in enumerate(buttonlist):
-            button = tk.Button(self, text=props[0], command=props[1], width=8)
+            button = tk.Button(self, text=props[0], command=props[1], width=12)
             button.grid(row=0, column=i, sticky=('W', 'E'))
 
 
