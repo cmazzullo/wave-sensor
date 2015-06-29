@@ -2,16 +2,18 @@
 to be extracted manually for some reason, otherwise the executable will not run"""
 
 import sys
+import traceback
 from cx_Freeze import setup, Executable
-
 
 # options = {
 #         'include_files': [("C:/Anaconda/Lib/site-packages/mpl_toolkits","mpl_toolkits")],
-#         'compressed' : True,
+# #         'compressed' : True,
 #         'path': sys.path + ['modules'],
-#         'copy_dependent_files': True
-#     
+# #         'copy_dependent_files': True
+#      
 # }
+sys.path.append('C:\\Users\\Gregory\\Documents\\GitHub\\wave-sensor\\netCDF_Instrument')
+build_exe_options = {"path": sys.path}
 
 executables = [
     Executable('FrozenDepthGraph.py', base = "Win32GUI")
@@ -20,7 +22,7 @@ executables = [
 setup(name='advanced_cx_Freeze_sample',
       version='0.1',
       description='Advanced sample cx_Freeze script',
-    #  options=options,
-      executables=executables
+      executables=executables,
+      options={"build_exe": build_exe_options},
       )
 
