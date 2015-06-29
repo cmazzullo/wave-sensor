@@ -10,7 +10,7 @@ from tkinter import filedialog
 from NetCDF_Utils import nc
 from netCDF4 import Dataset
 from NetCDF_Utils.nc import chop_netcdf
-from NetCDF_Utils.DateTimeConvert import convert_date_to_milliseconds
+from unit_conversion import convert_date_to_ms
 from dateutil import parser
 from datetime import datetime
 from pytz import timezone
@@ -92,8 +92,8 @@ class Chopper:
             tz = timezone(self.tzstringvar.get())
             d1 = parser.parse(date1).replace(tzinfo=tz)
             d2 = parser.parse(date2).replace(tzinfo=tz)
-            t1 = convert_date_to_milliseconds('', '', d1)
-            t2 = convert_date_to_milliseconds('', '', d2)
+            t1 = date_to_s(d1)
+            t2 = date_to_s(d2)
             i1 = find_index(self.t, t1)
             i2 = find_index(self.t, t2)
         else:
