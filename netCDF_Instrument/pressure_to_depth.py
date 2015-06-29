@@ -119,21 +119,6 @@ def _frequency_to_index(f, n, timestep):
     return np.round(n * f * timestep)
 
 
-def binary_search(func, x1, x2, tol):
-    y1 = func(x1)
-    y2 = func(x2)
-    x_mid = (x1 + x2) / 2
-    y_mid = func(x_mid)
-    if abs(y_mid) < tol:
-        return x_mid
-    elif y1 * y_mid < 0:
-        return binary_search(func, x1, x_mid, tol)
-    elif y_mid * y2 < 0:
-        return binary_search(func, x_mid, x2, tol)
-    else:
-        print('Binary root finder failed to find a root!')
-
-
 def k_to_omega(k, H):
     """Takes the wave number and water depth as arguments, returns the
     angular frequency."""

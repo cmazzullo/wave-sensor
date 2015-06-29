@@ -236,7 +236,7 @@ class MeasureSysLogger(NetCDFWriter):
         skip_index = self.read_start('^ID$',',')
         #for skipping lines in case there is calibration header data
         df = pd.read_table(self.in_filename,skiprows=skip_index + 1, header=None, engine='c', sep=',', usecols=[3,4,5,6])
-        
+
         self.data_start = uc.datestring_to_ms(df[3][3][1:],
                                                    self.date_format_string)
         second_stamp = uc.datestring_to_ms(df[3][4][1:],
@@ -272,10 +272,10 @@ class MeasureSysLogger(NetCDFWriter):
             self.vstore.pressure_var['standard_name'] = "air_pressure"
         self.vstore.pressure_data = self.pressure_data
         self.vstore.utc_millisecond_data = self.utc_millisecond_data
-        
+
         time_resolution = 1000 / (self.frequency * 1000)
         self.vstore.time_coverage_resolution = ''.join(["P",str(time_resolution),"S"])
-        
+
         self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
         #Tests#
