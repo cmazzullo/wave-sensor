@@ -1,6 +1,6 @@
 from datetime import datetime
 from NetCDF_Utils.edit_netcdf import NetCDFWriter
-from NetCDF_Utils.Testing import DataTests
+import DataTests
 import unit_conversion as uc
 import numpy as np
 import pandas as pd
@@ -15,7 +15,6 @@ class Hobo(NetCDFWriter):
         super().__init__()
         self.tz_info = pytz.timezone("US/Eastern")
         self.date_format_string = '%m/%d/%y %I:%M:%S %p'
-        self.data_tests = DataTests()
 
     def read(self):
         '''load the data from in_filename
@@ -57,8 +56,7 @@ class Hobo(NetCDFWriter):
         self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
         #Tests#
-        self.data_tests.pressure_data = self.pressure_data
-        self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
+        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data)
         self.write_netCDF(self.vstore, len(self.pressure_data))
 
 
@@ -71,7 +69,6 @@ class House(NetCDFWriter):
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 4
         self.date_format_string = '%Y.%m.%d %H:%M:%S '
-        self.data_tests = DataTests()
 
     def read(self):
         '''Load the data from in_filename'''
@@ -120,8 +117,7 @@ class House(NetCDFWriter):
         self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
         #Tests#
-        self.data_tests.pressure_data = self.pressure_data
-        self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
+        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data)
         self.write_netCDF(self.vstore, len(self.pressure_data))
 
 
@@ -136,7 +132,6 @@ class Leveltroll(NetCDFWriter):
         super(Leveltroll,self).__init__()
         self.date_format_string = "%m/%d/%Y %I:%M:%S %p"
         self.temperature_data = None
-        self.data_tests = DataTests()
 
     def read(self):
         '''load the data from in_filename
@@ -220,8 +215,7 @@ class Leveltroll(NetCDFWriter):
         self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
         #Tests#
-        self.data_tests.pressure_data = self.pressure_data
-        self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
+        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data)
         self.write_netCDF(self.vstore, len(self.pressure_data))
 
 
@@ -234,7 +228,6 @@ class MeasureSysLogger(NetCDFWriter):
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 4
         self.date_format_string = '%m/%d/%Y %I:%M:%S.%f %p'
-        self.data_tests = DataTests()
 
     def read(self):
         '''load the data from in_filename
@@ -243,8 +236,12 @@ class MeasureSysLogger(NetCDFWriter):
         skip_index = self.read_start('^ID$',',')
         #for skipping lines in case there is calibration header data
         df = pd.read_table(self.in_filename,skiprows=skip_index + 1, header=None, engine='c', sep=',', usecols=[3,4,5,6])
-        first_date = df[3][0][1:]
-        self.data_start = uc.datestring_to_ms(first_date, self.date_format_string)
+        
+        self.data_start = uc.datestring_to_ms(df[3][3][1:],
+                                                   self.date_format_string)
+        second_stamp = uc.datestring_to_ms(df[3][4][1:],
+                                                    self.date_format_string)
+        self.frequency = 1000 / (second_stamp - self.data_start)
         #Since the instrument is not reliably recording data at 4hz we have decided to
         #interpolate the data to avoid any potential complications in future data analysis
         self.pressure_data = df[5].values * uc.PSI_TO_DBAR
@@ -275,11 +272,14 @@ class MeasureSysLogger(NetCDFWriter):
             self.vstore.pressure_var['standard_name'] = "air_pressure"
         self.vstore.pressure_data = self.pressure_data
         self.vstore.utc_millisecond_data = self.utc_millisecond_data
+        
+        time_resolution = 1000 / (self.frequency * 1000)
+        self.vstore.time_coverage_resolution = ''.join(["P",str(time_resolution),"S"])
+        
         self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
         #Tests#
-        self.data_tests.pressure_data = self.pressure_data
-        self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
+        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data)
         self.write_netCDF(self.vstore, len(self.pressure_data))
 
 
@@ -292,7 +292,6 @@ class RBRSolo(NetCDFWriter):
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 4
         self.date_format_string = '%d-%b-%Y %H:%M:%S.%f'
-        self.data_tests = DataTests()
 
     def read(self):
         '''load the data from in_filename
@@ -303,9 +302,8 @@ class RBRSolo(NetCDFWriter):
         df = pd.read_csv(self.in_filename,skiprows=skip_index, delim_whitespace=True, \
                             header=None, engine='c', usecols=[0,1,2])
         #This gets the date and time since they are in two separate columns
-        self.utc_millisecond_data = uc.convert_to_ms(df.shape[0] - 1, \
-                                                            ('%s %s' % (df[0][0],df[1][0])), \
-                                                            self.date_format_string, self.frequency)
+        self.utc_millisecond_data = uc.generate_ms(('%s %s' % (df[0][0],df[1][0])), \
+                                                            df.shape[0] - 1,self.date_format_string, self.frequency)
         self.pressure_data = [x for x in df[2][:-1]]
 
     def read_start(self, expression, delimeter):
@@ -331,8 +329,7 @@ class RBRSolo(NetCDFWriter):
         self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
         #Tests#
-        self.data_tests.pressure_data = self.pressure_data
-        self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
+        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data)
         self.write_netCDF(self.vstore, len(self.pressure_data))
 
 
@@ -346,7 +343,6 @@ class Waveguage(NetCDFWriter):
     def __init__(self):
         self.tz_info = pytz.timezone("US/Eastern")
         super(Waveguage, self).__init__()
-        self.data_tests = DataTests()
 
     def read(self):
         """Sets start_time to a datetime object, utc_millisecond_data
@@ -471,7 +467,6 @@ class Waveguage(NetCDFWriter):
         self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
         #Tests#
-        self.data_tests.pressure_data = self.pressure_data
-        self.vstore.pressure_qc_data = self.data_tests.select_tests('pressure')
+        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data)
 
         self.write_netCDF(self.vstore, len(self.pressure_data))
