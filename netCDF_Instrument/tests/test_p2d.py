@@ -4,7 +4,7 @@ import numpy.testing as nptest
 from matplotlib.pyplot import *
 from scipy.optimize import bisect
 from unit_conversion import PASCAL_TO_DBAR
-from pressure_to_depth import combo_method, rmse
+from pressure_to_depth import combo_method
 
 G = 9.8
 SEAWATER_DENSITY = 1030

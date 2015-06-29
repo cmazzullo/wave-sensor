@@ -14,25 +14,10 @@ from NetCDF_Utils.nc import FILL_VALUE
 g = 9.8  # gravity (m / s**2)
 rho = 1030  # density of seawater (kg / m**3)
 
-def rmse(a, b):
-    return np.sqrt(np.average(np.absolute(a-b)**2))
 
-
-def segment(arr, fill):
-    """Split arr into chunks around the fill value"""
-    f = (arr==fill)
-    return np.split(arr, np.where(f[1:] ^ f[:-1])[0] + 1)
-
-
-def apply_without_fill_value(arr, func, fill_value):
-    """apply func to arr, but don't take fill_value into account"""
-    return np.concatenate([c if c[0]==fill else func(c)
-                        for c in segment(arr, fill_value)])
-
-
-def combo_method(t,p,z,H,timestep):
+def combo_method(t, p, z, H, timestep):
     fill = FILL_VALUE
-    f = (p==fill)
+    f = (p == fill)
     idx = np.where(f[1:] ^ f[:-1])[0] + 1
     tchunk = np.split(t, idx)
     pchunk = np.split(p, idx)
@@ -43,7 +28,7 @@ def combo_method(t,p,z,H,timestep):
         if pc[0] == fill:
             dchunks.append(pc)
             continue
-        dc = combo_backend(tc,pc,z,Hc,timestep)
+        dc = combo_backend(tc, pc, z, Hc, timestep)
         dchunks.append(dc)
     return np.concatenate(dchunks)
 
@@ -106,17 +91,6 @@ def fft_method(p_dbar, z, H, timestep, gate=0, window_func=np.hamming,
     if window_func:
         eta = eta / window
     return eta
-
-
-def _frequency_to_index(f, n, timestep):
-    """
-    Gets the index of a frequency in np.fftfreq.
-
-    f -- the desired frequency
-    n -- the length given to fftfreq
-    sample_freq -- the sampling frequency
-    """
-    return np.round(n * f * timestep)
 
 
 def k_to_omega(k, H):
