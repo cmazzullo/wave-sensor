@@ -56,7 +56,7 @@ class Hobo(NetCDFWriter):
         self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
         #Tests#
-        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data)
+        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data,0)
         self.write_netCDF(self.vstore, len(self.pressure_data))
 
 
@@ -117,7 +117,7 @@ class House(NetCDFWriter):
         self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
         #Tests#
-        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data)
+        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data,0)
         self.write_netCDF(self.vstore, len(self.pressure_data))
 
 
@@ -215,7 +215,7 @@ class Leveltroll(NetCDFWriter):
         self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
         #Tests#
-        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data)
+        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data,0)
         self.write_netCDF(self.vstore, len(self.pressure_data))
 
 
@@ -279,7 +279,7 @@ class MeasureSysLogger(NetCDFWriter):
         self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
         #Tests#
-        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data)
+        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data,0)
         self.write_netCDF(self.vstore, len(self.pressure_data))
 
 
@@ -329,7 +329,7 @@ class RBRSolo(NetCDFWriter):
         self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
         #Tests#
-        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data)
+        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data,0)
         self.write_netCDF(self.vstore, len(self.pressure_data))
 
 
@@ -467,6 +467,6 @@ class Waveguage(NetCDFWriter):
         self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
         #Tests#
-        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data)
+        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data,0)
 
         self.write_netCDF(self.vstore, len(self.pressure_data))

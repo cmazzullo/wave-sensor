@@ -16,7 +16,7 @@ import numpy as np
 import shutil
 import pressure_to_depth as p2d
 import NetCDF_Utils.nc as nc
-import NetCDF_Utils.Testing as tests
+import DataTests
 
 
 def make_depth_file(water_fname, air_fname, out_fname, method='combo'):
@@ -32,8 +32,7 @@ def make_depth_file(water_fname, air_fname, out_fname, method='combo'):
     sea_time = nc.get_time(water_fname)
     sea_qc = nc.get_pressure_qc(water_fname)
     air_qc = None
-    test = tests.DataTests()
-    test.interpolated_data = True
+    
     if air_fname != '':
         raw_air_pressure = nc.get_air_pressure(air_fname)
         air_time = nc.get_time(air_fname)
@@ -41,8 +40,8 @@ def make_depth_file(water_fname, air_fname, out_fname, method='combo'):
                                  left=nc.FILL_VALUE, right=nc.FILL_VALUE)
         sea_pressure = sea_pressure - air_pressure
         sea_pressure[np.where(air_pressure == nc.FILL_VALUE)] = nc.FILL_VALUE
-        test.pressure_data = air_pressure
-        air_qc = test.select_tests('')
+        
+        air_qc = DataTests.run_tests(air_pressure,1)
     if method == 'combo':
         depth = p2d.combo_method(sea_time, sea_pressure,
                                  device_depth, water_depth, timestep)

@@ -31,7 +31,7 @@ Contains a GUI that interfaces with this package's netCDF-writing
 modules. Also contains some convenience methods for other GUIs and a
 general class, MessageDialog, for creating custom dialog boxes.
 """
-import tkinter
+
 import tkinter as tk
 from tkinter import ttk
 from tkinter.filedialog import askopenfilename

@@ -64,7 +64,7 @@ class Script2gui:
 
     def make_fileselect(self, root, labeltext, stringvar, varname):
         command = lambda: self.select_file(varname, stringvar)
-        frame = gc.make_frame(root)
+        frame = make_frame(root)
         l = ttk.Label(frame, justify=LEFT, text=labeltext, width=10)
         l.grid(row=0, column=0, sticky=W)
         b = self.make_button(frame, 'Browse', command)
@@ -110,6 +110,9 @@ class Script2gui:
                          title='Success!')
 
 
+def make_frame(frame, header=None):
+    """Make a frame with uniform padding."""
+    return ttk.Frame(frame, padding="3 3 5 5")
 if __name__ == '__main__':
     root = Tk()
     g = Script2gui(root)
