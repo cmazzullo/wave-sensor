@@ -2,7 +2,7 @@ from datetime import datetime
 import pytz
 import numpy as np
 import uuid
-import NetCDF_Utils.DateTimeConvert as timeconvert
+import unit_conversion
 
 class DataStore(object):
     '''Use this as an abstract data store, then pass a netcdf write stream to send data method'''
@@ -300,13 +300,13 @@ class DataStore(object):
         first_milli = self.utc_millisecond_data[0]
         second_milli = self.utc_millisecond_data[-1]
         self.global_vars_dict["time_coverage_start"] = \
-        timeconvert.convert_milliseconds_to_datetime(first_milli, pytz.utc)
+        unit_conversion.convert_ms_to_datestring(first_milli, pytz.utc)
 
         self.global_vars_dict["time_coverage_end"] = \
-        timeconvert.convert_milliseconds_to_datetime(second_milli, pytz.utc)
+        unit_conversion.convert_ms_to_datestring(second_milli, pytz.utc)
 
         self.global_vars_dict["time_coverage_duration"] = \
-        timeconvert.get_time_duration(second_milli - first_milli)
+        unit_conversion.get_time_duration(second_milli - first_milli)
 
         self.global_vars_dict['title'] = 'Measure of pressure at %s degrees latitude, %s degrees longitude  by %s' \
         ' from the date range of %s to %s' % (self.latitude, self.longitude, self.global_vars_dict["creator_name"], \

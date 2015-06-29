@@ -1,17 +1,11 @@
 from datetime import datetime
 from NetCDF_Utils.edit_netcdf import NetCDFWriter
 from NetCDF_Utils.Testing import DataTests
-from pytz import timezone
-from unit_conversion import ATM_TO_DBAR
-from unit_conversion import PSI_TO_DBAR
-import NetCDF_Utils.DateTimeConvert as dateconvert
+import unit_conversion as uc
 import numpy as np
-import os
-import pandas
 import pandas as pd
 import pytz
 import re
-import sys
 
 
 class Hobo(NetCDFWriter):
@@ -28,19 +22,18 @@ class Hobo(NetCDFWriter):
         only parse the initial datetime = much faster
         '''
         skip_index = self.read_start('"#"',',')
-        df = pandas.read_table(self.in_filename,skiprows=skip_index,
+        df = pd.read_table(self.in_filename,skiprows=skip_index,
                                header=None, engine='c', sep=',',
                                usecols=(1, 2))
         df = df.dropna()
-        first_stamp = dateconvert.convert_date_to_milliseconds(df.values[0][0],
+        first_stamp = uc.datestring_to_ms(df.values[0][0],
                                                    self.date_format_string)
-        second_stamp = dateconvert.convert_date_to_milliseconds(df.values[1][0],
+        second_stamp = uc.datestring_to_ms(df.values[1][0],
                                                     self.date_format_string)
         self.frequency = 1000 / (second_stamp - first_stamp)
-        self.utc_millisecond_data = dateconvert.convert_to_milliseconds(df.shape[0],
-                                        df[1][0], self.date_format_string,
-                                        self.frequency)
-        self.pressure_data = df[2].values * PSI_TO_DBAR
+        start_ms = uc.datestring_to_ms(df[1][0], self.date_format_string)
+        self.utc_millisecond_data = uc.generate_ms(start_ms, df.shape[0], self.frequency)
+        self.pressure_data = df[2].values * uc.PSI_TO_DBAR
 
     def read_start(self, expression, delimeter):
         skip_index = 0;
@@ -83,15 +76,17 @@ class House(NetCDFWriter):
     def read(self):
         '''Load the data from in_filename'''
         skip_index = self.read_start('^[0-9]{4},[0-9]{4}$',' ')
-        df = pandas.read_table(self.in_filename,skiprows=skip_index, header=None,
+        df = pd.read_table(self.in_filename,skiprows=skip_index, header=None,
                                engine='c', sep=',', names=('a','b'))
         self.pressure_data = [self.pressure_convert(np.float64(x)) for x in df[df.b.isnull() == False].a]
         self.temperature_data = [self.temperature_convert(np.float64(x)) for x in df[df.b.isnull() == False].b]
         with open(self.in_filename, 'r') as wavelog:
             for x in wavelog:
                 if re.match('^[0-9]{4}.[0-9]{2}.[0-9]{2}', x): # second arg has extra space that is unnecessary
-                    self.utc_millisecond_data = dateconvert.convert_to_milliseconds(len(self.pressure_data), x, \
-                                                                        self.date_format_string, self.frequency)
+                    start_ms = uc.datestring_to_ms(x, self.date_format_string)
+                    self.utc_millisecond_data = uc.generate_ms(start_ms, len(self.pressure_data), self.frequency)
+
+                    #                                                     self.date_format_string, self.frequency)
                     break
 
     def pressure_convert(self, x):
@@ -157,7 +152,7 @@ class Leveltroll(NetCDFWriter):
         print(long_seconds[::-1])
         self.utc_millisecond_data = [(x * 1000) + self.data_start
                                      for x in long_seconds]
-        self.pressure_data = data["pressure"] * PSI_TO_DBAR
+        self.pressure_data = data["pressure"] * uc.PSI_TO_DBAR
         self.frequency = 1 / (long_seconds[1] - long_seconds[0])
         print(len(self.pressure_data))
 
@@ -189,7 +184,7 @@ class Leveltroll(NetCDFWriter):
         raw = line.strip().split(',')
         dt_str = raw[0]
         try:
-            self.data_start = dateconvert.convert_date_to_milliseconds(dt_str,self.date_format_string)
+            self.data_start = uc.datestring_to_ms(dt_str,self.date_format_string)
 #             self.data_start_date = datetime.strftime(self.data_start, "%Y-%m-%dT%H:%M:%SZ")
 #             print('Datetime', self.data_start, self.data_start_date)
         except Exception:
@@ -203,7 +198,7 @@ class Leveltroll(NetCDFWriter):
         tz_dict = {"central":"US/Central","eastern":"US/Eastern"}
         for tz_str,tz in tz_dict.items():
             if self.timezone_string.lower().startswith(tz_str):
-                self.tzinfo = timezone(tz)
+                self.tzinfo = pytz.timezone(tz)
                 return
         raise Exception("could not find a timezone match for " + self.timezone_string)
     @property
@@ -247,15 +242,15 @@ class MeasureSysLogger(NetCDFWriter):
         '''
         skip_index = self.read_start('^ID$',',')
         #for skipping lines in case there is calibration header data
-        df = pandas.read_table(self.in_filename,skiprows=skip_index + 1, header=None, engine='c', sep=',', usecols=[3,4,5,6])
+        df = pd.read_table(self.in_filename,skiprows=skip_index + 1, header=None, engine='c', sep=',', usecols=[3,4,5,6])
         first_date = df[3][0][1:]
-        self.data_start = dateconvert.convert_date_to_milliseconds(first_date, self.date_format_string)
+        self.data_start = uc.datestring_to_ms(first_date, self.date_format_string)
         #Since the instrument is not reliably recording data at 4hz we have decided to
         #interpolate the data to avoid any potential complications in future data analysis
-        self.pressure_data = df[5].values * PSI_TO_DBAR
-        self.utc_millisecond_data = dateconvert.convert_to_milliseconds(df.shape[0], \
-                                                            ('%s' % (df[3][0][1:])), \
-                                                            self.date_format_string, self.frequency)
+        self.pressure_data = df[5].values * uc.PSI_TO_DBAR
+
+        start_ms = uc.datestring_to_ms('%s' % df[3][0][1:], self.date_format_string)
+        self.utc_millisecond_data = uc.generate_ms(start_ms, df.shape[0], self.frequency)
 #         self.pressure_data = np.interp(self.utc_millisecond_data, original_dates, instrument_pressure)
         if re.match('^[0-9]{1,3}.[0-9]+$', str(df[6][0])):
             self.temperature_data = [x for x in df[6]]
@@ -305,10 +300,10 @@ class RBRSolo(NetCDFWriter):
         '''
         skip_index = self.read_start('^[0-9]{2}-[A-Z]{1}[a-z]{2,8}-[0-9]{4}$',' ')
         #for skipping lines in case there is calibration header data
-        df = pandas.read_csv(self.in_filename,skiprows=skip_index, delim_whitespace=True, \
+        df = pd.read_csv(self.in_filename,skiprows=skip_index, delim_whitespace=True, \
                             header=None, engine='c', usecols=[0,1,2])
         #This gets the date and time since they are in two separate columns
-        self.utc_millisecond_data = dateconvert.convert_to_milliseconds(df.shape[0] - 1, \
+        self.utc_millisecond_data = uc.convert_to_ms(df.shape[0] - 1, \
                                                             ('%s %s' % (df[0][0],df[1][0])), \
                                                             self.date_format_string, self.frequency)
         self.pressure_data = [x for x in df[2][:-1]]
@@ -366,7 +361,7 @@ class Waveguage(NetCDFWriter):
         self.frequency = self._get_frequency()
         self.utc_millisecond_data = self.get_ms_data(timestamps, chunks)
         raw_pressure = self.make_pressure_array(timestamps, chunks)
-        self.pressure_data = raw_pressure * 10.0 + ATM_TO_DBAR
+        self.pressure_data = raw_pressure * 10.0 + uc.ATM_TO_DBAR
         return self.pressure_data, self.utc_millisecond_data
 
     def make_pressure_array(self, t, chunks):
