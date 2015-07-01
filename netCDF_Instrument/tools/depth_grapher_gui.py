@@ -5,7 +5,7 @@ from tkinter.constants import W
 
 import tools.depth_grapher
 from tools.depth_grapher import make_depth_graph
-
+import easygui
 
 
 class DepthGui:
@@ -23,7 +23,11 @@ class DepthGui:
         
     def select_input(self):
         self.in_file_name = filedialog.askopenfilename()
-        make_depth_graph(int(self.AveragedPoints.get()), self.in_file_name)
+        
+        try:
+            make_depth_graph(int(self.AveragedPoints.get()), self.in_file_name)
+        except:
+            easygui.msgbox('Could not plot file, check file type', 'Error')
 
 class Variable:
     """
@@ -46,8 +50,9 @@ class Variable:
         self.autosave = autosave
         self.in_air_pressure = in_air_pressure
         self.in_water_pressure = in_water_pressure
-        
-root = Tk.Tk()
-gui = DepthGui(root)
-root.mainloop()
+
+if __name__ == '__main__':       
+    root = Tk.Tk()
+    gui = DepthGui(root)
+    root.mainloop()
 # plt.close('all')

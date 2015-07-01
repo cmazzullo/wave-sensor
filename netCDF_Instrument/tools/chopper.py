@@ -10,10 +10,11 @@ from tkinter import filedialog
 from NetCDF_Utils import nc
 from netCDF4 import Dataset
 from NetCDF_Utils.nc import chop_netcdf
-from unit_conversion import convert_date_to_ms
+from unit_conversion import date_to_s
 from dateutil import parser
 from datetime import datetime
 from pytz import timezone
+import easygui
 
 def find_index(array, value):
     return (np.abs(array - value)).argmin()
@@ -109,10 +110,15 @@ class Chopper:
         self.root.destroy()
 
     def select_input(self):
-        self.fname = filedialog.askopenfilename()
-        self.b1.destroy()
-        self.plot_pressure()
+        try:
+            self.fname = filedialog.askopenfilename()
+            self.plot_pressure()
+            self.b1.destroy()
+        except:
+            easygui.msgbox("Could not open file, check file type.", "Error")
+            
 
-root = Tk.Tk()
-gui = Chopper(root)
-root.mainloop()
+if __name__ == '__main__':
+    root = Tk.Tk()
+    gui = Chopper(root)
+    root.mainloop()

@@ -21,8 +21,8 @@ GLOBAL_FIELDS = OrderedDict([
     ('creator_url', ['Your personal url:', ''])])
 LOCAL_FIELDS = OrderedDict([
     ('instrument_name', ['Instrument:', [
-        'Measurement Specialties', 'HOBO', 'RBRSolo', 'USGS Homebrew',
-        'LevelTroll'], True]),
+        'Measurement Specialties', 'HOBO', #'RBRSolo', 'USGS Homebrew','LevelTroll'
+        ], True]),
     ('latitude', ['Latitude (decimal degrees):', '', True]),
     ('longitude', ['Longitude (decimal degrees):', '', True]),
     ('tzinfo', ['Timezone:', ['US/Central', 'US/Eastern'], True])])
@@ -88,22 +88,30 @@ class Wavegui:
 
     def process_files(self):
         """Run the csv to netCDF conversion on the selected files."""
-        globs = dict(zip(GLOBAL_FIELDS.keys(),
-                         self.global_form.export_entries()))
         message = ('Working, this may take a few minutes.')
-        dialog = MessageDialog(self.parent, message=message,
-                               title='Processing...', buttons=0, wait=False)
-        for fname, datafile in self.datafiles.items():
-            inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
-            inputs.update(globs)
-            inputs['sea_pressure'] = not self.air_pressure
-            inputs['in_filename'] = fname
-            inputs['out_filename'] = fname + '.nc'
-            convert_to_netcdf(inputs)
-            self.remove_file(fname)
-        dialog.destroy()
-        MessageDialog(self.parent, message="Success! Files saved.",
-                      title='Success!')
+        
+        try:
+            dialog = MessageDialog(self.parent, message=message,
+                                   title='Processing...', buttons=0, wait=False)
+            globs = dict(zip(GLOBAL_FIELDS.keys(),
+                             self.global_form.export_entries()))
+           
+            
+            for fname, datafile in self.datafiles.items():
+                inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
+                inputs.update(globs)
+                inputs['sea_pressure'] = not self.air_pressure
+                inputs['in_filename'] = fname
+                inputs['out_filename'] = fname + '.nc'
+                convert_to_netcdf(inputs)
+                self.remove_file(fname)
+            dialog.destroy()
+            MessageDialog(self.parent, message="Success! Files saved.",
+                          title='Success!')
+        except:
+            dialog.destroy()
+            MessageDialog(self.parent, message="Could not process files, please check file type.",
+                          title='Error')
 
     def remove_file(self, fname):
         """Remove the current file's tab from the window."""
@@ -116,6 +124,7 @@ class Form(tk.Frame):
     def __init__(self, root, fields, histfile):
         """Create all the tk.Entry widgets and populate the widget with them."""
         tk.Frame.__init__(self, root)
+        self.root = root
         self.histfile = histfile
         self.entries = [self.make_entry_row(field, row)
                         for row, field in enumerate(fields)]
@@ -151,8 +160,12 @@ class Form(tk.Frame):
 
     def load(self):
         """Populate the form fields with a list from a file."""
-        with open(self.histfile) as fname:
-            self.import_entries(json.load(fname))
+        try:
+            with open(self.histfile) as fname:
+                self.import_entries(json.load(fname))
+        except:
+            MessageDialog(self.root, message="No entry file found, fill in fields and click save to create one.",
+                      title='Error')
 
 
 class ButtonBar(tk.Frame):

@@ -16,10 +16,11 @@ cdef int check_1
 cdef int check_2
 cdef int check_3
 cdef int check_4
-qc = []
+
 
 @cython.boundscheck(False)
 def run_tests(np.ndarray[DTYPE2_t, ndim=1] data, int interpolate):
+    qc = []
     length = data.shape[0]
     
     if interpolate == 0:
