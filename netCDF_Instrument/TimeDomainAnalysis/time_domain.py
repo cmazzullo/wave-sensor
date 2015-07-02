@@ -59,9 +59,7 @@ class Time_Domain_Analysis(Depth):
                 L= np.sqrt(self.g * depth[x]) * (1 - (depth[x] / L0)) * period
             else:
                 L=L0
-            eta.append( \
-                        (((pwave[x] / self.rho) / self.g) \
-                            * np.cosh(((2 * np.pi) / L) * depth[x])))
+            eta.append((((pwave[x] / self.rho) / self.g) * np.cosh(((2 * np.pi) / L) * depth[x])))
 
         counter2 = 0
         etamax = 0
@@ -131,8 +129,7 @@ class Time_Domain_Analysis(Depth):
                     H.pop()
                 reduction = Hreduced / Hunreduced
                 for j in range(start, i):
-                    eta[j] = ((Pwave[j] * reduction) / (self.rho * self.g)) * \
-                             np.cosh(2 * np.pi * depth[j] / wavelength)
+                    eta[j] = ((Pwave[j] * reduction) / (self.rho * self.g)) * np.cosh(2 * np.pi * depth[j] / wavelength)
                 start = i + 1
                 period = Pmax = Pmin = 0
                 counter += 1

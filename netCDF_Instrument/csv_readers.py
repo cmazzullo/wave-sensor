@@ -163,16 +163,15 @@ class Leveltroll(NetCDFWriter):
             if line.lower().startswith(self.timezone_marker):
                 self.timezone_string = line.split(':')[1].strip()
         if self.timezone_string is None:
-            raise Exception("ERROR - could not find time zone in file "+ \
-                self.in_filename+" header before line "+str(line_count)+'\n')
+            raise Exception("ERROR - could not find time zone in file " +
+                            self.in_filename+" header before line "
+                            + str(line_count)+'\n')
         self.set_timezone()
 
     def read_datetime(self,f):
         '''read the first datetime and cast
         '''
         dt_fmt = "%m/%d/%Y %I:%M:%S %p "
-#         dt_converter = lambda x: datetime.strptime(str(x),dt_fmt)\
-#             .replace(tzinfo=self.tzinfo)
         reset_point = f.tell()
         bit_line = f.readline()
         line = bit_line.decode()
@@ -299,11 +298,11 @@ class RBRSolo(NetCDFWriter):
         '''
         skip_index = self.read_start('^[0-9]{2}-[A-Z]{1}[a-z]{2,8}-[0-9]{4}$',' ')
         #for skipping lines in case there is calibration header data
-        df = pd.read_csv(self.in_filename,skiprows=skip_index, delim_whitespace=True, \
-                            header=None, engine='c', usecols=[0,1,2])
+        df = pd.read_csv(self.in_filename,skiprows=skip_index, delim_whitespace=True,
+                         header=None, engine='c', usecols=[0,1,2])
         #This gets the date and time since they are in two separate columns
-        self.utc_millisecond_data = uc.generate_ms(('%s %s' % (df[0][0],df[1][0])), \
-                                                            df.shape[0] - 1,self.date_format_string, self.frequency)
+        self.utc_millisecond_data = uc.generate_ms(('%s %s' % (df[0][0],df[1][0])),
+                                                   df.shape[0] - 1,self.date_format_string, self.frequency)
         self.pressure_data = [x for x in df[2][:-1]]
 
     def read_start(self, expression, delimeter):
@@ -351,8 +350,7 @@ class Waveguage(NetCDFWriter):
         data = self.get_data()
         chunks = self.get_pressure_chunks(data)
         timestamps = self.get_times(data)
-        self.data_start_date = datetime.\
-            strftime(timestamps[0], "%Y-%m-%dT%H:%M:%SZ")
+        self.data_start_date = datetime.strftime(timestamps[0], "%Y-%m-%dT%H:%M:%SZ")
         self.data_duration_time = timestamps[-1] - timestamps[0]
         self.frequency = self._get_frequency()
         self.utc_millisecond_data = self.get_ms_data(timestamps, chunks)
@@ -441,8 +439,7 @@ class Waveguage(NetCDFWriter):
         p = p[14:-1]
         stamps = make_stamps(p)
         date_format = 'Y%yM%mD%dH%HM%MS%S'
-        stamps = [datetime.strptime(stamp, date_format).\
-                      replace(tzinfo=self.tzinfo)
+        stamps = [datetime.strptime(stamp, date_format).replace(tzinfo=self.tzinfo)
                   for stamp in stamps]
         return stamps
 

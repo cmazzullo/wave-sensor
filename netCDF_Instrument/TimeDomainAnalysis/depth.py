@@ -92,12 +92,9 @@ class Depth(NetCDFWriter, NetCDFReader):
 
         if correct_tides == False:
             p1 = np.poly1d(a)
-
-            self.pwave_data = pd.Series(np.subtract(self.sea_pressure_data,p1(range_index)), \
-                                    index=self.pressure_data.index)
-
+            self.pwave_data = pd.Series(self.sea_pressure_data - p1(range_index),
+                                        index=self.pressure_data.index)
         else:
-
             samfreq = 4  # the sampling frequency
             p = self.sea_pressure_data
             clean_p = (p - np.average(p)) / (max(p) - min(p))
@@ -112,10 +109,10 @@ class Depth(NetCDFWriter, NetCDFReader):
     def create_hyrostatic_pressure_data(self):
         """Subtracts sea pressure from pwave data unless performing a predetermined wave height data set for testing"""
         if(self.flat_test):
-            self.hydrostat_pressure_data = pd.Series(self.sea_pressure_data, index = self.pressure_data.index)
+            self.hydrostat_pressure_data = pd.Series(self.sea_pressure_data, index=self.pressure_data.index)
         else:
-            self.hydrostat_pressure_data = pd.Series(np.subtract(self.sea_pressure_data, \
-                                        self.pwave_data), index = self.pressure_data.index)
+            self.hydrostat_pressure_data = pd.Series(self.sea_pressure_data - self.pwave_data,
+                                                     index=self.pressure_data.index)
 
 
     def create_depth_data(self):
@@ -132,14 +129,14 @@ class Depth(NetCDFWriter, NetCDFReader):
         air_pressure_mean = np.mean(self.air_pressure_data)
         interp_mean = np.mean(self.interp_data)
 
-        p1, = plt.plot(self.pressure_data.index,self.sea_pressure_data, label="sea pres"  \
-                 ,alpha=0.70, linewidth="3.0", linestyle="-")
-        p2, = plt.plot(self.pressure_data.index,self.pwave_data, label="pwave", \
-                 alpha=0.70, linewidth="3.0", linestyle="-")
-        p3, = plt.plot(self.pressure_data.index,self.hydrostat_pressure_data, label='hydro', \
-                  alpha=0.70, linewidth="3.0", linestyle="-")
+        p1, = plt.plot(self.pressure_data.index,self.sea_pressure_data, label="sea pres",
+                       alpha=0.70, linewidth="3.0", linestyle="-")
+        p2, = plt.plot(self.pressure_data.index,self.pwave_data, label="pwave",
+                       alpha=0.70, linewidth="3.0", linestyle="-")
+        p3, = plt.plot(self.pressure_data.index,self.hydrostat_pressure_data,
+                       label='hydro', alpha=0.70, linewidth="3.0", linestyle="-")
         p4, = plt.plot(self.pressure_data.index,self.depth_data,label='depth',
-                    alpha=.60, linewidth="3.0", linestyle="-")
+                       alpha=.60, linewidth="3.0", linestyle="-")
 
         plt.legend(bbox_to_anchor=(.80, 1.10), loc=2, borderaxespad=0.0)
         plt.show()

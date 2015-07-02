@@ -23,7 +23,6 @@ def combo_method(t, p, z, H, timestep):
     pchunk = np.split(p, idx)
     Hchunk = np.split(H, idx)
     dchunks = []
-    tchunks = []
     for pc, tc, Hc in zip(pchunk, tchunk, Hchunk):
         if pc[0] == fill:
             dchunks.append(pc)
@@ -60,6 +59,13 @@ def trim_to_even(seq):
     else:
         return seq[:-1]
 
+
+def k_to_omega(k, H):
+    """Takes the wave number and water depth as arguments, returns the
+    angular frequency."""
+    return np.sqrt(k * g * np.tanh(k * H))
+
+
 def omega_to_k(omega, H):
     k = np.arange(0, 10, .01)
     w = k_to_omega(k, H)
@@ -93,22 +99,10 @@ def fft_method(p_dbar, z, H, timestep, gate=0, window_func=np.hamming,
     return eta
 
 
-def k_to_omega(k, H):
-    """Takes the wave number and water depth as arguments, returns the
-    angular frequency."""
-    return np.sqrt(k * g * np.tanh(k * H))
-
-
 def pressure_to_eta(del_p, k, z, H):
     """Convert the non-hydrostatic pressure to height above z=0."""
     c = _coefficient(k, z, H)
     return del_p / c
-
-
-def eta_to_pressure(eta, k, z, H):
-    """Convert wave height to pressure using linear wave theory."""
-    c = _coefficient(k, z, H)
-    return eta * c
 
 
 def _coefficient(k, z, H):

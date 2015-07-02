@@ -59,13 +59,8 @@ class Chopper:
             patch.set_xy(xy)
             patch.figure.canvas.draw()
 
-        def resizing(event):
-            print('resizing')
         self.canvas = canvas = self.fig.canvas
-        cid_up = canvas.mpl_connect('button_press_event', on_click)
-        # canvas.show()
-        # fig.show()
-        # plt.show(block=False)
+        canvas.mpl_connect('button_press_event', on_click)
         plt.draw()
         Tk.Label(text='Start date (MM/DD/YY HH:MM):').pack()
         self.date1 = Tk.StringVar()
