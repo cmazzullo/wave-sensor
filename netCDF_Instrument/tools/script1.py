@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 import numpy as np
 from pytz import timezone
-from csv_readers import Leveltroll, MeasureSysLogger, House, Hobo, RBRSolo
+from csv_readers import Leveltroll, MeasureSysLogger, House, Hobo, RBRSolo, Waveguage
 
 INSTRUMENTS = {
-#     'LevelTroll': Leveltroll,
-#     'RBRSolo': RBRSolo,
-#     'Wave Guage': Waveguage,
-#     'USGS Homebrew': House,
+    'LevelTroll': Leveltroll,
+    'RBRSolo': RBRSolo,
+    'Wave Guage': Waveguage,
+    'USGS Homebrew': House,
     'Measurement Specialties': MeasureSysLogger,
     'HOBO': Hobo }
 
