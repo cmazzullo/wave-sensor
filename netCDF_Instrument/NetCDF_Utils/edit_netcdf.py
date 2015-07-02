@@ -205,7 +205,7 @@ class NetCDFWriter(object):
         self.deployment_time = None
         self.retrieval_time = None
 
-    def write(self, sea_pressure = True):
+    def write(self, sea_pressure=True):
         if sea_pressure == False:
             self.vstore.pressure_name = "air_pressure"
             self.vstore.pressure_var['standard_name'] = "air_pressure"
@@ -213,6 +213,7 @@ class NetCDFWriter(object):
         self.vstore.utc_millisecond_data = self.utc_millisecond_data
         self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
+        self.vstore.time_coverage_resolution = ''.join(["P", str(1 / self.frequency), "S"])
         self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data.astype(np.double), 0)
         self.write_netCDF(self.vstore, len(self.pressure_data))
 
