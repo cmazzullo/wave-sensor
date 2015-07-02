@@ -2099,7 +2099,7 @@ def filter_subtraction(file_name, filter_name, out_filename):
     
     fds.close()
 if __name__ == '__main__':
-    in_filename = 'Big5_30day.nc'
+    in_filename = 'Big5_30dayNoise.nc'
     filter_filename = analysis(in_filename,filter="demerliac")
     if filter_filename != None:
         for x in filter_filename:
@@ -2107,5 +2107,5 @@ if __name__ == '__main__':
             dotIndex = x.find('.')
             out_filename = "Final%s.nc" % x[0:dotIndex]
             filter_subtraction(in_filename,x,out_filename)
-            analysis(out_filename, output_filename='C:\Tappy\results.csv')
+            analysis(out_filename, output_filename='C:\Tappy\\results.csv')
 
