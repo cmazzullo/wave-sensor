@@ -137,9 +137,9 @@ class MessageDialog(Tkinter.Toplevel):
 
 
 
-
-root = Tk.Tk()
-gui = TappyGui(root)
-root.mainloop()
+if __name__ == "__main__":
+    root = Tk.Tk()
+    gui = TappyGui(root)
+    root.mainloop()
 
     

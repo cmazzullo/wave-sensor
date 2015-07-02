@@ -78,17 +78,11 @@ def fft_lowpass(nelevation, low_bound, high_bound):
     freq = F.fftfreq(len(nelevation))[:len(nelevation)/2]
     factor = np.ones_like(result)
     factor[freq > low_bound] = 0.0
-    print result
     sl = np.logical_and(high_bound < freq, freq < low_bound)
-    print factor
-    print sl
-
+    
     a = factor[sl]
-    print 'a', a
     # Create float array of required length and reverse
     a = np.arange(len(a) + 2).astype(float)[::-1]
-    print np.arange(len(a) + 2)
-    print a
     # Ramp from 1 to 0 exclusive
     a = (a/a[0])[1:-1]
 
@@ -114,7 +108,7 @@ def demerliac_filter(dates_filled, nelevation):
     half_kern = len(kernel)//2
 
     nslice = slice(half_kern, -half_kern)
-
+    kernel = [x/24576.0 for x in kernel]
     relevation = np.convolve(nelevation, kernel, mode = 1)
     return dates_filled[nslice], relevation[nslice]
 
