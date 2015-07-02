@@ -20,23 +20,20 @@ class Hobo(NetCDFWriter):
         '''load the data from in_filename
         only parse the initial datetime = much faster
         '''
-        skip_index = self.read_start('"#"',',')
-        df = pd.read_table(self.in_filename,skiprows=skip_index,
-                               header=None, engine='c', sep=',',
-                               usecols=(1, 2))
+        skip_index = self.read_start('"#"', ',')
+        df = pd.read_table(self.in_filename, skiprows=skip_index, header=None,
+                           engine='c', sep=',', usecols=(1, 2))
         df = df.dropna()
-        first_stamp = uc.datestring_to_ms(df.values[0][0],
-                                                   self.date_format_string)
-        second_stamp = uc.datestring_to_ms(df.values[1][0],
-                                                    self.date_format_string)
+        first_stamp = uc.datestring_to_ms(df.values[0][0], self.date_format_string)
+        second_stamp = uc.datestring_to_ms(df.values[1][0], self.date_format_string)
         self.frequency = 1000 / (second_stamp - first_stamp)
         start_ms = uc.datestring_to_ms(df[1][0], self.date_format_string)
         self.utc_millisecond_data = uc.generate_ms(start_ms, df.shape[0], self.frequency)
         self.pressure_data = df[2].values * uc.PSI_TO_DBAR
 
     def read_start(self, expression, delimeter):
-        skip_index = 0;
-        with open(self.in_filename,'r') as fileText:
+        skip_index = 0
+        with open(self.in_filename, 'r') as fileText:
             for x in fileText:
                 file_string = x.split(delimeter)[0].strip()
                 if expression == file_string:
@@ -45,58 +42,39 @@ class Hobo(NetCDFWriter):
                 skip_index += 1
         return skip_index + 1
 
-    def write(self, sea_pressure = True):
-        '''Write netCDF files
-        sea_pressure - if true write sea_pressure data, otherwise write air_pressure data'''
-        if sea_pressure == False:
-            self.vstore.pressure_name = "air_pressure"
-            self.vstore.pressure_var['standard_name'] = "air_pressure"
-        self.vstore.pressure_data = self.pressure_data
-        self.vstore.utc_millisecond_data = self.utc_millisecond_data
-        self.vstore.latitude = self.latitude
-        self.vstore.longitude = self.longitude
-        #Tests#
-        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data,0)
-        self.write_netCDF(self.vstore, len(self.pressure_data))
-
 
 class House(NetCDFWriter):
     '''Processes files coming out of the USGS-made sensors'''
     def __init__(self):
         self.timezone_marker = "time zone"
         self.temperature_data = None
-        super(House,self).__init__()
+        super(House, self).__init__()
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 4
         self.date_format_string = '%Y.%m.%d %H:%M:%S '
 
     def read(self):
         '''Load the data from in_filename'''
-        skip_index = self.read_start('^[0-9]{4},[0-9]{4}$',' ')
-        df = pd.read_table(self.in_filename,skiprows=skip_index, header=None,
-                               engine='c', sep=',', names=('a','b'))
-        self.pressure_data = [self.pressure_convert(np.float64(x)) for x in df[df.b.isnull() == False].a]
-        self.temperature_data = [self.temperature_convert(np.float64(x)) for x in df[df.b.isnull() == False].b]
+        skip_index = self.read_start('^[0-9]{4},[0-9]{4}$', ' ')
+        df = pd.read_table(self.in_filename, skiprows=skip_index, header=None,
+                           engine='c', sep=',', names=('a', 'b'))
+        self.pressure_data = [
+            uc.USGS_PROTOTYPE_V_TO_DBAR(np.float64(x))
+            for x in df[df.b.isnull() == False].a]
+        self.temperature_data = [
+            uc.USGS_PROTOTYPE_V_TO_C(np.float64(x))
+            for x in df[df.b.isnull() == False].b]
         with open(self.in_filename, 'r') as wavelog:
             for x in wavelog:
-                if re.match('^[0-9]{4}.[0-9]{2}.[0-9]{2}', x): # second arg has extra space that is unnecessary
+                # second arg has extra space that is unnecessary
+                if re.match('^[0-9]{4}.[0-9]{2}.[0-9]{2}', x):
                     start_ms = uc.datestring_to_ms(x, self.date_format_string)
                     self.utc_millisecond_data = uc.generate_ms(start_ms, len(self.pressure_data), self.frequency)
-                    #                                                     self.date_format_string, self.frequency)
                     break
 
-    def pressure_convert(self, x):
-        '''Convert volts to pascals'''
-        return ((x * (30 / 8184) - 6) + 14.7) / 1.45037738
-
-    def temperature_convert(self, x):
-        # gets volts to farenheit
-        # gets farenheit to celsius
-        return (x * (168 / 8184) - 32) * (5.0/9)
-
     def read_start(self, expression, delimeter):
-        skip_index = 0;
-        with open(self.in_filename,'r') as fileText:
+        skip_index = 0
+        with open(self.in_filename, 'r') as fileText:
             for x in fileText:
                 file_string = x.split(delimeter)[0]
                 if re.match(expression, file_string):
@@ -104,20 +82,6 @@ class House(NetCDFWriter):
                     break
                 skip_index += 1
         return skip_index
-
-    def write(self, sea_pressure = True):
-        '''Write netCDF files
-        sea_pressure - if true write sea_pressure data, otherwise write air_pressure data'''
-        if sea_pressure == False:
-            self.vstore.pressure_name = "air_pressure"
-            self.vstore.pressure_var['standard_name'] = "air_pressure"
-        self.vstore.pressure_data = self.pressure_data
-        self.vstore.utc_millisecond_data = self.utc_millisecond_data
-        self.vstore.latitude = self.latitude
-        self.vstore.longitude = self.longitude
-        #Tests#
-        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data.astype(np.double), 0)
-        self.write_netCDF(self.vstore, len(self.pressure_data))
 
 
 class Leveltroll(NetCDFWriter):
@@ -128,7 +92,7 @@ class Leveltroll(NetCDFWriter):
                                      ("pressure", np.float32)])
         self.record_start_marker = "date and time,seconds"
         self.timezone_marker = "time zone"
-        super(Leveltroll,self).__init__()
+        super(Leveltroll, self).__init__()
         self.date_format_string = "%m/%d/%Y %I:%M:%S %p"
         self.temperature_data = None
 
@@ -136,11 +100,11 @@ class Leveltroll(NetCDFWriter):
         '''load the data from in_filename
         only parse the initial datetime = much faster
         '''
-        f = open(self.in_filename,'rb')
+        f = open(self.in_filename, 'rb')
         self.read_header(f)
         self.read_datetime(f)
         data = np.genfromtxt(f, dtype=self.numpy_dtype, delimiter=',',
-                             usecols=[1,2,3])
+                             usecols=[1, 2, 3])
         f.close()
         long_seconds = data["seconds"]
         print(long_seconds[::-1])
@@ -150,7 +114,7 @@ class Leveltroll(NetCDFWriter):
         self.frequency = 1 / (long_seconds[1] - long_seconds[0])
         print(len(self.pressure_data))
 
-    def read_header(self,f):
+    def read_header(self, f):
         ''' read the header from the level troll ASCII file
         '''
         line = ""
@@ -167,7 +131,7 @@ class Leveltroll(NetCDFWriter):
                             + str(line_count)+'\n')
         self.set_timezone()
 
-    def read_datetime(self,f):
+    def read_datetime(self, f):
         '''read the first datetime and cast
         '''
         dt_fmt = "%m/%d/%Y %I:%M:%S %p "
@@ -177,7 +141,7 @@ class Leveltroll(NetCDFWriter):
         raw = line.strip().split(',')
         dt_str = raw[0]
         try:
-            self.data_start = uc.datestring_to_ms(dt_str,self.date_format_string)
+            self.data_start = uc.datestring_to_ms(dt_str, self.date_format_string)
 #             self.data_start_date = datetime.strftime(self.data_start, "%Y-%m-%dT%H:%M:%SZ")
 #             print('Datetime', self.data_start, self.data_start_date)
         except Exception:
@@ -188,8 +152,8 @@ class Leveltroll(NetCDFWriter):
         '''set the timezone from the timezone string found in the header -
         needed to get the times into UTC
         '''
-        tz_dict = {"central":"US/Central","eastern":"US/Eastern"}
-        for tz_str,tz in tz_dict.items():
+        tz_dict = {"central":"US/Central", "eastern":"US/Eastern"}
+        for tz_str, tz in tz_dict.items():
             if self.timezone_string.lower().startswith(tz_str):
                 self.tzinfo = pytz.timezone(tz)
                 return
@@ -201,27 +165,13 @@ class Leveltroll(NetCDFWriter):
         offset = self.data_start - self.epoch_start
         return offset.total_seconds()
 
-    def write(self, sea_pressure = True):
-        '''Write netCDF files
-        sea_pressure - if true write sea_pressure data, otherwise write air_pressure data'''
-        if sea_pressure == False:
-            self.vstore.pressure_name = "air_pressure"
-            self.vstore.pressure_var['standard_name'] = "air_pressure"
-        self.vstore.pressure_data = self.pressure_data
-        self.vstore.utc_millisecond_data = self.utc_millisecond_data
-        self.vstore.latitude = self.latitude
-        self.vstore.longitude = self.longitude
-        #Tests#
-        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data.astype(np.double),0)
-        self.write_netCDF(self.vstore, len(self.pressure_data))
-
 
 class MeasureSysLogger(NetCDFWriter):
     '''derived class for Measurement Systems cvs files
     '''
     def __init__(self):
         self.timezone_marker = "time zone"
-        super(MeasureSysLogger,self).__init__()
+        super(MeasureSysLogger, self).__init__()
         self.tz_info = pytz.timezone("US/Eastern")
         self.frequency = 4
         self.date_format_string = '%m/%d/%Y %I:%M:%S.%f %p'
@@ -230,26 +180,26 @@ class MeasureSysLogger(NetCDFWriter):
         '''load the data from in_filename
         only parse the initial datetime = much faster
         '''
-        skip_index = self.read_start('^ID$',',')
+        skip_index = self.read_start('^ID$', ',')
         #for skipping lines in case there is calibration header data
-        df = pd.read_table(self.in_filename,skiprows=skip_index + 1, header=None, engine='c', sep=',', usecols=[3,4,5,6])
+        df = pd.read_table(self.in_filename, skiprows=skip_index + 1, header=None, engine='c', sep=',', usecols=[3, 4, 5 ,6])
         self.data_start = uc.datestring_to_ms(df[3][3][1:],
-                                                   self.date_format_string)
+                                              self.date_format_string)
         second_stamp = uc.datestring_to_ms(df[3][4][1:],
-                                                    self.date_format_string)
+                                           self.date_format_string)
         self.frequency = 1000 / (second_stamp - self.data_start)
-        #Since the instrument is not reliably recording data at 4hz we have decided to
-        #interpolate the data to avoid any potential complications in future data analysis
+        # Since the instrument is not reliably recording data at 4hz
+        # we have decided to interpolate the data to avoid any
+        # potential complications in future data analysis
         self.pressure_data = df[5].values * uc.PSI_TO_DBAR
         start_ms = uc.datestring_to_ms('%s' % df[3][0][1:], self.date_format_string)
         self.utc_millisecond_data = uc.generate_ms(start_ms, df.shape[0], self.frequency)
-#         self.pressure_data = np.interp(self.utc_millisecond_data, original_dates, instrument_pressure)
         if re.match('^[0-9]{1,3}.[0-9]+$', str(df[6][0])):
             self.temperature_data = [x for x in df[6]]
 
     def read_start(self, expression, delimeter):
-        skip_index = 0;
-        with open(self.in_filename,'r') as fileText:
+        skip_index = 0
+        with open(self.in_filename, 'r') as fileText:
             for x in fileText:
                 file_string = x.split(delimeter)[0]
                 if re.match(expression, file_string):
@@ -267,11 +217,11 @@ class MeasureSysLogger(NetCDFWriter):
         self.vstore.pressure_data = self.pressure_data
         self.vstore.utc_millisecond_data = self.utc_millisecond_data
         time_resolution = 1000 / (self.frequency * 1000)
-        self.vstore.time_coverage_resolution = ''.join(["P",str(time_resolution),"S"])
+        self.vstore.time_coverage_resolution = ''.join(["P", str(time_resolution), "S"])
         self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
         #Tests#
-        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data,0)
+        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data, 0)
         self.write_netCDF(self.vstore, len(self.pressure_data))
 
 
@@ -289,18 +239,18 @@ class RBRSolo(NetCDFWriter):
         '''load the data from in_filename
         only parse the initial datetime = much faster
         '''
-        skip_index = self.read_start('^[0-9]{2}-[A-Z]{1}[a-z]{2,8}-[0-9]{4}$',' ')
+        skip_index = self.read_start('^[0-9]{2}-[A-Z]{1}[a-z]{2,8}-[0-9]{4}$', ' ')
         #for skipping lines in case there is calibration header data
-        df = pd.read_csv(self.in_filename,skiprows=skip_index, delim_whitespace=True,
-                         header=None, engine='c', usecols=[0,1,2])
+        df = pd.read_csv(self.in_filename, skiprows=skip_index, delim_whitespace=True,
+                         header=None, engine='c', usecols=[0, 1, 2])
         #This gets the date and time since they are in two separate columns
-        self.utc_millisecond_data = uc.generate_ms(('%s %s' % (df[0][0],df[1][0])),
-                                                   df.shape[0] - 1,self.date_format_string, self.frequency)
+        self.utc_millisecond_data = uc.generate_ms(('%s %s' % (df[0][0], df[1][0])),
+                                                   df.shape[0] - 1, self.date_format_string, self.frequency)
         self.pressure_data = [x for x in df[2][:-1]]
 
     def read_start(self, expression, delimeter):
-        skip_index = 0;
-        with open(self.in_filename,'r') as fileText:
+        skip_index = 0
+        with open(self.in_filename, 'r') as fileText:
             for x in fileText:
                 file_string = x.split(delimeter)[0]
                 if re.match(expression, file_string):
@@ -308,20 +258,6 @@ class RBRSolo(NetCDFWriter):
                     break
                 skip_index += 1
         return skip_index
-
-    def write(self, sea_pressure = True):
-        '''Write netCDF files
-        sea_pressure - if true write sea_pressure data, otherwise write air_pressure data'''
-        if sea_pressure == False:
-            self.vstore.pressure_name = "air_pressure"
-            self.vstore.pressure_var['standard_name'] = "air_pressure"
-        self.vstore.pressure_data = self.pressure_data
-        self.vstore.utc_millisecond_data = self.utc_millisecond_data
-        self.vstore.latitude = self.latitude
-        self.vstore.longitude = self.longitude
-        #Tests#
-        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data,0)
-        self.write_netCDF(self.vstore, len(self.pressure_data))
 
 
 class Waveguage(NetCDFWriter):
@@ -352,7 +288,7 @@ class Waveguage(NetCDFWriter):
 
     def make_pressure_array(self, t, chunks):
         def press_entries(t2, t1):
-            seconds = self._ms_time_difference(t2, t1) / 1000
+            seconds = (t2 - t1).total_seconds()
             return seconds * self.frequency
         final = np.zeros(0, dtype=np.float64)
         prev_stamp = None
@@ -395,7 +331,7 @@ class Waveguage(NetCDFWriter):
         last_chunk_ms = 1000 * len(last_chunk) / self.frequency
         total_ms = total_stamp_ms + last_chunk_ms
         first_date = timestamps[0]
-        epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
+        epoch_start = datetime(year=1970, month=1, day=1, tzinfo=pytz.utc)
         offset = self._ms_time_difference(first_date, epoch_start)
         utc_ms_data = np.arange(total_ms, step=(1000 / self.frequency),
                                 dtype='int64')
@@ -442,17 +378,3 @@ class Waveguage(NetCDFWriter):
                           names='p')
         data.p = data.p.apply(lambda x: x.strip())
         return data.p
-
-    def write(self, sea_pressure = True):
-        '''Write netCDF files
-        sea_pressure - if true write sea_pressure data, otherwise write air_pressure data'''
-        if sea_pressure == False:
-            self.vstore.pressure_name = "air_pressure"
-            self.vstore.pressure_var['standard_name'] = "air_pressure"
-        self.vstore.pressure_data = self.pressure_data
-        self.vstore.utc_millisecond_data = self.utc_millisecond_data
-        self.vstore.latitude = self.latitude
-        self.vstore.longitude = self.longitude
-        #Tests#
-        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data,0)
-        self.write_netCDF(self.vstore, len(self.pressure_data))

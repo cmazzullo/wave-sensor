@@ -1,3 +1,4 @@
+import DataTests
 from netCDF4 import Dataset
 import numpy as np
 import pandas as pd
@@ -5,12 +6,8 @@ import os
 import pytz
 from datetime import datetime
 import netCDF4
+from NetCDF_Utils.VarDatastore import DataStore
 
-try:
-    from NetCDF_Utils.VarDatastore import DataStore
-    from NetCDF_Utils.Testing import DataTests
-except:
-    print('Check Packaging')
 
 class NetCDFReader(object):
     """Reads netcdf4 file"""
@@ -202,13 +199,22 @@ class NetCDFWriter(object):
         self.user_data_start_flag = None
         self.vstore = DataStore(1)
         self.vdict = dict()
-        self.data_tests = DataTests()
-
         self.initial_water_depth = None
         self.final_water_depth = None
         self.device_depth = None
         self.deployment_time = None
         self.retrieval_time = None
+
+    def write(self, sea_pressure = True):
+        if sea_pressure == False:
+            self.vstore.pressure_name = "air_pressure"
+            self.vstore.pressure_var['standard_name'] = "air_pressure"
+        self.vstore.pressure_data = self.pressure_data
+        self.vstore.utc_millisecond_data = self.utc_millisecond_data
+        self.vstore.latitude = self.latitude
+        self.vstore.longitude = self.longitude
+        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data.astype(np.double), 0)
+        self.write_netCDF(self.vstore, len(self.pressure_data))
 
     def write_netCDF(self,var_datastore,series_length):
         with Dataset(self.out_filename, 'w', format="NETCDF4_CLASSIC") as ds:

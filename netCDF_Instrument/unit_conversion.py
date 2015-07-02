@@ -20,7 +20,8 @@ PSI_TO_DBAR = 0.68947573
 ATM_TO_DBAR = 10.1325
 PASCAL_TO_DBAR = 0.0001
 
-USGS_PROTOTYPE_VOLTS_TO_DBAR_FUNCTION = lambda x: 2.5274e-3 * x + 5.998439
+USGS_PROTOTYPE_V_TO_DBAR = lambda v: 2.5274e-3 * v + 5.998439
+USGS_PROTOTYPE_V_TO_C = lambda v: 0.0114044 * v - 17.778
 
 EPOCH_START = datetime(year=1970, month=1, day=1, tzinfo=pytz.utc)
 
