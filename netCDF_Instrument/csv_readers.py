@@ -82,7 +82,6 @@ class House(NetCDFWriter):
                 if re.match('^[0-9]{4}.[0-9]{2}.[0-9]{2}', x): # second arg has extra space that is unnecessary
                     start_ms = uc.datestring_to_ms(x, self.date_format_string)
                     self.utc_millisecond_data = uc.generate_ms(start_ms, len(self.pressure_data), self.frequency)
-
                     #                                                     self.date_format_string, self.frequency)
                     break
 
@@ -204,7 +203,6 @@ class Leveltroll(NetCDFWriter):
 
     def write(self, sea_pressure = True):
         '''Write netCDF files
-
         sea_pressure - if true write sea_pressure data, otherwise write air_pressure data'''
         if sea_pressure == False:
             self.vstore.pressure_name = "air_pressure"
@@ -235,7 +233,6 @@ class MeasureSysLogger(NetCDFWriter):
         skip_index = self.read_start('^ID$',',')
         #for skipping lines in case there is calibration header data
         df = pd.read_table(self.in_filename,skiprows=skip_index + 1, header=None, engine='c', sep=',', usecols=[3,4,5,6])
-
         self.data_start = uc.datestring_to_ms(df[3][3][1:],
                                                    self.date_format_string)
         second_stamp = uc.datestring_to_ms(df[3][4][1:],
@@ -244,7 +241,6 @@ class MeasureSysLogger(NetCDFWriter):
         #Since the instrument is not reliably recording data at 4hz we have decided to
         #interpolate the data to avoid any potential complications in future data analysis
         self.pressure_data = df[5].values * uc.PSI_TO_DBAR
-
         start_ms = uc.datestring_to_ms('%s' % df[3][0][1:], self.date_format_string)
         self.utc_millisecond_data = uc.generate_ms(start_ms, df.shape[0], self.frequency)
 #         self.pressure_data = np.interp(self.utc_millisecond_data, original_dates, instrument_pressure)
@@ -264,17 +260,14 @@ class MeasureSysLogger(NetCDFWriter):
 
     def write(self, sea_pressure = True):
         '''Write netCDF files
-
         sea_pressure - if true write sea_pressure data, otherwise write air_pressure data'''
         if sea_pressure == False:
             self.vstore.pressure_name = "air_pressure"
             self.vstore.pressure_var['standard_name'] = "air_pressure"
         self.vstore.pressure_data = self.pressure_data
         self.vstore.utc_millisecond_data = self.utc_millisecond_data
-
         time_resolution = 1000 / (self.frequency * 1000)
         self.vstore.time_coverage_resolution = ''.join(["P",str(time_resolution),"S"])
-
         self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
         #Tests#
@@ -318,7 +311,6 @@ class RBRSolo(NetCDFWriter):
 
     def write(self, sea_pressure = True):
         '''Write netCDF files
-
         sea_pressure - if true write sea_pressure data, otherwise write air_pressure data'''
         if sea_pressure == False:
             self.vstore.pressure_name = "air_pressure"
@@ -431,7 +423,6 @@ class Waveguage(NetCDFWriter):
                     result.append(added)
                     added = ''
             return result
-
         def test2(x):
             return not  (x.startswith('+') or x.startswith('-'))
         c = p.map(test2)
@@ -454,7 +445,6 @@ class Waveguage(NetCDFWriter):
 
     def write(self, sea_pressure = True):
         '''Write netCDF files
-
         sea_pressure - if true write sea_pressure data, otherwise write air_pressure data'''
         if sea_pressure == False:
             self.vstore.pressure_name = "air_pressure"
@@ -465,5 +455,4 @@ class Waveguage(NetCDFWriter):
         self.vstore.longitude = self.longitude
         #Tests#
         self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data,0)
-
         self.write_netCDF(self.vstore, len(self.pressure_data))

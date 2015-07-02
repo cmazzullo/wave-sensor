@@ -58,7 +58,7 @@ class NetCDFReader(object):
             self.depth_data = nc.variables['depth'][:]
         except:
             print('No Depth')
-            
+
         nc.close()
 
     def read_file(self,file_name,pressure_bool = True, series_bool=True, milliseconds_bool=False):
@@ -73,7 +73,7 @@ class NetCDFReader(object):
         times = nc.variables['time']
 
         temperature = None
-        
+
         try:
             self.air_pressure_data = nc.variables['air_pressure'][:]
         except:
@@ -84,7 +84,7 @@ class NetCDFReader(object):
             print('No sea pressure')
 
 
-      
+
         latitude = nc.variables['latitude']
         self.latitude = latitude[:]
         longitude = nc.variables['longitude']
@@ -211,11 +211,10 @@ class NetCDFWriter(object):
         self.retrieval_time = None
 
     def write_netCDF(self,var_datastore,series_length):
-        ds = Dataset(os.path.join(self.out_filename),'w',format="NETCDF4_CLASSIC")
-        time_dimen = ds.createDimension("time",series_length)
-        var_datastore.set_attributes(self.var_dict())
-        var_datastore.send_data(ds)
-        ds.close()
+        with Dataset(self.out_filename, 'w', format="NETCDF4_CLASSIC") as ds:
+            time_dimen = ds.createDimension("time", series_length)
+            var_datastore.set_attributes(self.var_dict())
+            var_datastore.send_data(ds)
 
     def var_dict(self):
         var_dict = dict()
@@ -240,13 +239,13 @@ class NetCDFWriter(object):
                        'retrieval_time': self.retrieval_time,
                        'device_depth': self.device_depth,
                        'salinity' : self.salinity,
-                       'time_coverage_resolution': resolution_string.format(1.0/self.frequency)
+                       'time_coverage_resolution': resolution_string.format(1/self.frequency)
                        }
-                    
+
         var_dict['global_vars_dict'] = global_vars
 
         return var_dict
-    
+
 
 class NetCDFToCSV(NetCDFReader):
 
@@ -261,10 +260,10 @@ class NetCDFToCSV(NetCDFReader):
         test = pd.DataFrame(pd.Series(self.pressure_data,index=self.times))
         test.columns = ['Pressure']
         chunk_size = int((test.shape[0] / 800000) + 1)
-        
+
         for x in np.arange(0,chunk_size):
             data_slice = test[(x*800000):np.min([test.shape[0],(x+1) * 800000])]
-            
+
             data_slice.to_csv(path_or_buf= self.out_file_name.format(x))
 
 if __name__ == '__main__':
