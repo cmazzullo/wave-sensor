@@ -1,5 +1,6 @@
 import numpy as np
 cimport numpy as np
+cimport cython
 
 DTYPE = np.int
 DTYPE2 = np.double
@@ -14,12 +15,20 @@ cdef int measure_min = -1000
 cdef int check_1
 cdef int check_2
 cdef int check_3
-qc = []
+cdef int check_4
 
-# @cython.boundscheck(False)
-def run_tests(np.ndarray[DTYPE2_t, ndim=1] data):
+
+@cython.boundscheck(False)
+def run_tests(np.ndarray[DTYPE2_t, ndim=1] data, int interpolate):
+    qc = []
     length = data.shape[0]
     
+    if interpolate == 0:
+        check_4 = 255
+    else:
+        check_4 = 247
+        
+        
     for x in range(0,length):
         if x > 3 and data[x-4] == data[x-3] and data[x-3] == data[x-2] and data[x-2] == data[x-1] and data[x-1] == data[x]:
             check_1 = 254
@@ -38,7 +47,7 @@ def run_tests(np.ndarray[DTYPE2_t, ndim=1] data):
         else:
             check_3 = 255
             
-        qc.append(bin(check_1 & check_2 & check_3)[2:])
+        qc.append(bin(check_1 & check_2 & check_3 & check_4)[2:])
     return qc
     
     

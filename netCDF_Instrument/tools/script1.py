@@ -4,10 +4,10 @@ from pytz import timezone
 from csv_readers import Leveltroll, MeasureSysLogger, House, Hobo, RBRSolo
 
 INSTRUMENTS = {
-    'LevelTroll': Leveltroll,
-    'RBRSolo': RBRSolo,
-    # 'Wave Guage': Waveguage,
-    'USGS Homebrew': House,
+#     'LevelTroll': Leveltroll,
+#     'RBRSolo': RBRSolo,
+#     'Wave Guage': Waveguage,
+#     'USGS Homebrew': House,
     'Measurement Specialties': MeasureSysLogger,
     'HOBO': Hobo }
 

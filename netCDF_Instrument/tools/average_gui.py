@@ -46,8 +46,11 @@ class AverageGui:
           Per request, most likely used to get 2min space data'''
         
         #read in the netCDF file
-        file_average(self.in_file_name,int(self.Increments.get()), int(self.AveragedPoints.get()),self.methodvar.get())
-        easygui.msgbox('Success processing the data.', 'Success')
+        try:
+            file_average(self.in_file_name,int(self.Increments.get()), int(self.AveragedPoints.get()),self.methodvar.get())
+            easygui.msgbox('Success processing the data.', 'Success')
+        except:
+            easygui.msgbox('Could not average file, check file type', 'Error')
         
        
          
@@ -57,9 +60,9 @@ class AverageGui:
         
 
 
-
-root = Tk.Tk()
-gui = AverageGui(root)
-root.mainloop()
+if __name__ == '__main__':
+    root = Tk.Tk()
+    gui = AverageGui(root)
+    root.mainloop()
 
     

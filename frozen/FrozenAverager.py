@@ -8,61 +8,10 @@ import matplotlib.pyplot as plt
 import matplotlib.backends.backend_tkagg
 
 import PySide
-import tools.Averager
-from tools.Averager import file_average
 import tkinter as Tk
-import tkinter
-from tkinter import filedialog
-from tkinter import ttk
-from tkinter import StringVar
-from tkinter.constants import W
 import easygui
-
-class AverageGui:
-    def __init__(self, root):
-       
-        self.in_file_name = ''
-        self.root = root
-        self.root.title('Pressure Average')
-        self.Label = Tk.Label(self.root, text='Averaged Points: (Boxcar Window Size)')
-        self.Label.pack(anchor=W, pady=2, padx=15)
-        self.AveragedPoints = Tk.Entry(self.root)
-        self.AveragedPoints.pack(anchor=W, pady=2, padx=15)
-        self.Label2 = Tk.Label(self.root, text='Data Increments: (e.g. 4 is once a second, 480 is once every 2 mins)')
-        self.Label2.pack(anchor=W, pady=2, padx=15)
-        self.Increments = Tk.Entry(self.root)
-        self.Increments.pack(anchor=W, pady=2, padx=15)
-        
-        methods = [('Excel CSV', 'excel'),
-                   ('netCDF', 'netcdf'),
-                   ('Excel CSV & netCDF', 'both')]
-
-        self.methodvar = StringVar()
-        self.methodvar.set('excel')
-
-        ttk.Label(root, text='File Format: (Saves in same directory as file)').pack(anchor=W,pady=2, padx=15)
-        for name, kwarg in methods:
-            ttk.Radiobutton(root, text=name, variable=self.methodvar,
-                            value=kwarg).pack(anchor=W,pady=2, padx=15)
-                            
-        self.b1 = Tk.Button(self.root, text='Select File', command=self.select_input)
-        self.b1.pack(anchor=W,pady=2, padx=15)
-
-    def average(self):
-        '''Method to average and slice pressure data files
-          Per request, most likely used to get 2min space data'''
-        
-        #read in the netCDF file
-        file_average(self.in_file_name,int(self.Increments.get()), int(self.AveragedPoints.get()),self.methodvar.get())
-        easygui.msgbox('Success processing the data.', 'Success')
-        
-       
-         
-    def select_input(self):
-        self.in_file_name = filedialog.askopenfilename()
-        self.average()
-        
-
+from tools.average_gui import AverageGui
+    
 
 
 root = Tk.Tk()
