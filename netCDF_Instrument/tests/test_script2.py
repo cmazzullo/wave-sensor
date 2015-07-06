@@ -6,9 +6,8 @@ Script 2 has 4 responsibilities:
   4. Append depth data to the final NC
 """
 import pressure_to_depth as p2d
-from nose.tools import *
-from numpy import *
 import numpy.testing as nptest
+import numpy as np
 import os
 from tools.script2 import make_depth_file
 import NetCDF_Utils.nc as nc
@@ -24,7 +23,7 @@ FILL_VALUE = -1e10
 
 def make_known_pressure(water_interval, air_interval):
     t0 = water_interval[0]
-    p = zeros(water_interval[-1] - water_interval[0] + 1)
+    p = np.zeros(water_interval[-1] - water_interval[0] + 1)
     w1 = 0
     w2 = water_interval[1] - t0
     a1 = air_interval[0] - t0

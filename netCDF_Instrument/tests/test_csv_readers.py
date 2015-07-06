@@ -10,14 +10,14 @@ TODO - RBRSolo support
 
 import numpy.testing as nptest
 from csv_readers import Leveltroll, MeasureSysLogger, House, Hobo, RBRSolo
-from numpy import *
+import numpy as np
 from unit_conversion import PSI_TO_DBAR
 import os.path
 
 TOLERANCE = 1e-3 # we can only expect 3 digits of precision
 
 # this is pulled directly from the CSVs, and is in PSI
-KNOWN_PRESSURE = array([
+KNOWN_PRESSURE = np.array([
     14.735, 14.735, 14.732, 14.731, 14.729, 14.731, 14.730, 14.723, 14.726,
     14.723, 14.723, 14.721, 14.725, 14.726, 14.725, 14.726, 14.726, 14.731,
     14.735, 14.734, 14.740, 14.737, 14.742, 14.742, 14.740, 14.744, 14.748,

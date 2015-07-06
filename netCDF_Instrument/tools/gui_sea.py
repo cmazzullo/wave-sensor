@@ -6,9 +6,9 @@ Created on Mon Aug 11 15:20:35 2014
 @author: cmazzullo
 """
 import tools.script1_gui as core
-from tkinter import *
+import tkinter as tk
 
 if __name__ == '__main__':
-    root = Tk()
+    root = tk.Tk()
     gui = core.Wavegui(root, air_pressure=False)
     root.mainloop()

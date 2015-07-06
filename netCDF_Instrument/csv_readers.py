@@ -1,3 +1,5 @@
+"""Contains classes that read CSV files output by pressure sensors."""
+
 from datetime import datetime
 from NetCDF_Utils.edit_netcdf import NetCDFWriter
 import DataTests
@@ -64,7 +66,9 @@ class House(NetCDFWriter):
                 # second arg has extra space that is unnecessary
                 if re.match('^[0-9]{4}.[0-9]{2}.[0-9]{2}', x):
                     start_ms = uc.datestring_to_ms(x, self.date_format_string)
-                    self.utc_millisecond_data = uc.generate_ms(start_ms, len(self.pressure_data), self.frequency)
+                    self.utc_millisecond_data = uc.generate_ms(start_ms,
+                                                               len(self.pressure_data),
+                                                               self.frequency)
                     break
 
 
@@ -125,8 +129,6 @@ class Leveltroll(NetCDFWriter):
         dt_str = raw[0]
         try:
             self.data_start = uc.datestring_to_ms(dt_str, self.date_format_string)
-#             self.data_start_date = datetime.strftime(self.data_start, "%Y-%m-%dT%H:%M:%SZ")
-#             print('Datetime', self.data_start, self.data_start_date)
         except Exception:
             raise Exception("ERROR - cannot parse first date time stamp: "+str(self.td_str)+" using format: "+dt_fmt+'\n')
         f.seek(reset_point)
@@ -164,7 +166,8 @@ class MeasureSysLogger(NetCDFWriter):
         '''
         skip_index = find_first(self.in_filename, '^ID') - 1
         # for skipping lines in case there is calibration header data
-        df = pd.read_table(self.in_filename, skiprows=skip_index + 1, header=None, engine='c', sep=',', usecols=[3, 4, 5 ,6])
+        df = pd.read_table(self.in_filename, skiprows=skip_index + 1, header=None,
+                           engine='c', sep=',', usecols=[3, 4, 5 ,6])
         self.data_start = uc.datestring_to_ms(df[3][3][1:],
                                               self.date_format_string)
         second_stamp = uc.datestring_to_ms(df[3][4][1:],
@@ -250,7 +253,7 @@ class Waveguage(NetCDFWriter):
         master = [[]]
         i = 0
         for e in data:
-            if (e.startswith('+') or e.startswith('-')):
+            if e.startswith('+') or e.startswith('-'):
                 if len(e) == 7:
                     master[i].append(np.float64(e))
             else:
@@ -312,7 +315,7 @@ class Waveguage(NetCDFWriter):
         """Reads the pressure data from the current file and returns
         it in a numpy array of dtype float64."""
         data = pd.read_csv(self.in_filename, skiprows=0, header=None,
-                          lineterminator=',', sep=',', engine='c',
-                          names='p')
+                           lineterminator=',', sep=',', engine='c',
+                           names='p')
         data.p = data.p.apply(lambda x: x.strip())
         return data.p
