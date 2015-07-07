@@ -19,7 +19,7 @@ class Grapher(NetCDFReader):
         self.file_names = [
             os.path.join("../../data_files","Big5_240dayNewNoise.nc"),
             os.path.join("../../data_files","outts_filtered_boxcar.nc"),
-            os.path.join("../../data_files","outts_filtered_usgs.nc"),
+            os.path.join("../../data_files","outts_filtered_usgs.nc"),]
             # os.path.join("benchmark","RBRsolo2_716.csv.nc"),
             # os.path.join("benchmark","RBRvirtuoso_716.csv.nc"),
             # os.path.join("benchmark","newstuff.nc")]
