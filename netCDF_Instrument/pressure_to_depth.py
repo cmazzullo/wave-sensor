@@ -58,6 +58,14 @@ def k_to_omega(wavenumber, water_d):
     return np.sqrt(wavenumber * GRAVITY * np.tanh(wavenumber * water_d))
 
 
+def omega_to_k(omega, water_d):
+    """Converts angular frequency to wavenumber for water waves"""
+    wavenumber = np.arange(0, 10, .01)
+    deg = 10
+    pressure = np.polyfit(k_to_omega(wavenumber, water_d), wavenumber, deg)
+    return sum(pressure[i] * omega**(deg - i) for i in range(deg + 1))
+
+
 def _omega_to_k(omega, water_d):
     """Converts angular frequency to wavenumber for water waves.
 
@@ -67,7 +75,7 @@ def _omega_to_k(omega, water_d):
     l0 = GRAVITY * 2 * np.pi / omega**2
     return 2 * np.pi * np.tanh((2 * np.pi * water_d / l0)**(3/4))**(-2/3) / l0
 
-omega_to_k = np.vectorize(_omega_to_k)
+_omega_to_k = np.vectorize(_omega_to_k)
 
 
 def pressure_to_depth_lwt(p_dbar, device_d, water_d, tstep, hi_cut='auto'):
