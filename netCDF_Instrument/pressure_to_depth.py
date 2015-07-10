@@ -58,34 +58,32 @@ def k_to_omega(wavenumber, water_d):
     return np.sqrt(wavenumber * GRAVITY * np.tanh(wavenumber * water_d))
 
 
-def omega_to_k(omega, water_d):
-    """Converts angular frequency to wavenumber for water waves"""
-    wavenumber = np.arange(0, 10, .01)
-    deg = 10
-    pressure = np.polyfit(k_to_omega(wavenumber, water_d), wavenumber, deg)
-    return sum(pressure[i] * omega**(deg - i) for i in range(deg + 1))
+def _omega_to_k(omega, water_d):
+    """Converts angular frequency to wavenumber for water waves.
+
+    Approximation to the dispersion relation, Fenton and McKee (1989)."""
+    if omega == 0:
+        return 0 # otherwise 0 frequency would return nan
+    l0 = GRAVITY * 2 * np.pi / omega**2
+    return 2 * np.pi * np.tanh((2 * np.pi * water_d / l0)**(3/4))**(-2/3) / l0
+
+omega_to_k = np.vectorize(_omega_to_k)
 
 
 def pressure_to_depth_lwt(p_dbar, device_d, water_d, tstep, hi_cut='auto'):
-    """Create wave height data from an array of pressure readings.
-
-    WARNING: FFT will truncate the last element of an array if it has
-    an odd number of elements!
-    """
+    """Create wave height data from an array of pressure readings."""
     if hi_cut == 'auto':
         hi_cut = auto_cutoff(water_d)
     water_d = np.average(water_d)
-    p_dbar = trim_to_even(p_dbar)
-    window = np.hamming(len(p_dbar))
-    scaled_p = p_dbar * 1e4 * window
+    trimmed_p = trim_to_even(p_dbar)
+    window = np.hamming(len(trimmed_p))
+    scaled_p = trimmed_p * 1e4 * window
     p_amps = np.fft.rfft(scaled_p)
-    freqs = np.fft.rfftfreq(len(p_dbar), d=tstep)
-    wavenumber = omega_to_k(2 * np.pi * freqs, water_d)
-    d_amps = pressure_to_eta(p_amps, wavenumber, device_d, water_d)
+    freqs = np.fft.rfftfreq(len(trimmed_p), d=tstep)
+    wavenumbers = omega_to_k(2 * np.pi * freqs, water_d)
+    d_amps = pressure_to_eta(p_amps, wavenumbers, device_d, water_d)
     d_amps[np.where(freqs >= hi_cut)] = 0
-    eta = np.fft.irfft(d_amps) # reverse FFT
-    eta = eta / window
-    return eta
+    return np.fft.irfft(d_amps) / window
 
 
 def pressure_to_eta(del_p, wavenumber, device_d, water_d):
