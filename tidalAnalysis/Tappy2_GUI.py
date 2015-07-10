@@ -20,7 +20,8 @@ class TappyGui:
         #gets the tappy_filter method
         methods = [('None', 'none'),
                    ('Transform', 'transform'),
-                   ('USGS', 'usgs')]
+                   ('USGS', 'usgs'),
+                   ('Demerliac', 'demerliac')]
 
         self.methodvar = StringVar()
         self.methodvar.set('none')
@@ -35,6 +36,10 @@ class TappyGui:
         #choose linear trend
         self.linearTrend = BooleanVar()
         Tk.Checkbutton(root, text="Linear Trend", variable = self.linearTrend) \
+        .pack(anchor=W,pady= 2,padx=15)
+        
+        self.rayleigh = BooleanVar()
+        Tk.Checkbutton(root, text="rayleigh", variable = self.rayleigh) \
         .pack(anchor=W,pady= 2,padx=15)
         
         #reads the input file name chosen in file upload
@@ -67,7 +72,8 @@ class TappyGui:
         output_fname = filedialog.asksaveasfilename()
        
         #gets the tappy_filter name if there was a tappy_filter applied and re-applies analysis
-        filter_filename = analysis(self.in_file_name.get(),filter=self.methodvar.get(), output_filename=output_fname, linear_trend=self.linearTrend.get())
+        filter_filename = analysis(self.in_file_name.get(),filter=self.methodvar.get(), output_filename=output_fname, 
+                                   rayleigh=self.rayleigh.get(), linear_trend=self.linearTrend.get())
         if filter_filename != None:
             for x in filter_filename:
                 dotIndex = x.find('.')

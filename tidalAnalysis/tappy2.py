@@ -1186,17 +1186,17 @@ class tappy(Util):
             (cndates, nelevation) = self.missing('fill', tndates, tnelevation)
 
         if self.pad_filters == "minimum":
-            nelevation = pad.minimum(nelevation, (blen, alen))
+            nelevation = pad.__minimum(nelevation, (blen, alen))
         if self.pad_filters == "maximum":
-            nelevation = pad.maximum(nelevation, (blen, alen))
+            nelevation = pad.__maximum(nelevation, (blen, alen))
         if self.pad_filters == "mean":
-            nelevation = pad.mean(nelevation, (blen, alen))
+            nelevation = pad.__mean(nelevation, (blen, alen))
         if self.pad_filters == "median":
-            nelevation = pad.median(nelevation, (blen, alen))
+            nelevation = pad.__median(nelevation, (blen, alen))
         if self.pad_filters == "reflect":
-            nelevation = pad.reflect(nelevation, (blen, alen))
+            nelevation = pad.__reflect(nelevation, (blen, alen))
         if self.pad_filters == "wrap":
-            nelevation = pad.wrap(nelevation, (blen, alen))
+            nelevation = pad.__wrap(nelevation, (blen, alen))
 
         return nelevation, cndates, nslice
 
