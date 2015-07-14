@@ -339,8 +339,6 @@ runs = range(0, 12)
 offset = 0
 fname = tru1
 indices, windows = get_windows(fname, stevens_series, runs, time_offset=offset)
-data = {fname: get_stats(stevens_series, windows, runs)}
-
 wp = pd.Panel(data)
 
 instrument_s = get_instrument_data(fname)
@@ -354,28 +352,28 @@ plot_stevens_over_instrument(instrument_s, fnames, runs, blacklist,
 print(average(wp.minor_xs('instrument_amp') - wp.minor_xs('stevens_amp')))
 
 
-## sldkfj
-offset=0
-indices = array(indices) - offset
-p = get_instrument_pressure(fname)
-depth = get_instrument_data(fname)
-d_static = p2d.hydrostatic_method(p)
-for file_number, idx in zip(runs, indices):
-    s = stevens_series[file_number]
-    stevens_fname = fnames[file_number]
-    if file_number in blacklist:
-        continue
-    t = s.index
-    d = s.values
-    offset = average(depth[idx:idx + t[-1] - t[0]])
-    if file_number==1:
-        plot(t + idx, d + offset, color=sns.color_palette()[2], label='Real depth')
-    else:
-        plot(t + idx, d + offset, color=sns.color_palette()[2])
-plot(depth.index, depth.values, label='FFT (m)')
-plot(d_static.index, d_static.values, label='Hydrostatic (m)')
-legend()
-xlabel('Time (s)')
-ylabel('Depth of Sensor (m)')
-title('Hydrostatic and FFT comparison for 2.5 second waves')
-show()
+# ## sldkfj
+# offset=0
+# indices = array(indices) - offset
+# p = get_instrument_pressure(fname)
+# depth = get_instrument_data(fname)
+# d_static = p2d.hydrostatic_method(p)
+# for file_number, idx in zip(runs, indices):
+#     s = stevens_series[file_number]
+#     stevens_fname = fnames[file_number]
+#     if file_number in blacklist:
+#         continue
+#     t = s.index
+#     d = s.values
+#     offset = average(depth[idx:idx + t[-1] - t[0]])
+#     if file_number==1:
+#         plot(t + idx, d + offset, color=sns.color_palette()[2], label='Real depth')
+#     else:
+#         plot(t + idx, d + offset, color=sns.color_palette()[2])
+# plot(depth.index, depth.values, label='FFT (m)')
+# plot(d_static.index, d_static.values, label='Hydrostatic (m)')
+# legend()
+# xlabel('Time (s)')
+# ylabel('Depth of Sensor (m)')
+# title('Hydrostatic and FFT comparison for 2.5 second waves')
+# show()
