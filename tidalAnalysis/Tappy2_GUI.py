@@ -39,7 +39,7 @@ class TappyGui:
         .pack(anchor=W,pady= 2,padx=15)
         
         self.rayleigh = BooleanVar()
-        Tk.Checkbutton(root, text="rayleigh", variable = self.rayleigh) \
+        Tk.Checkbutton(root, text="Rayleigh", variable = self.rayleigh) \
         .pack(anchor=W,pady= 2,padx=15)
         
         #reads the input file name chosen in file upload

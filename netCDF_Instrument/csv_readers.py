@@ -130,7 +130,10 @@ class Leveltroll(NetCDFWriter):
         try:
             self.data_start = uc.datestring_to_ms(dt_str, self.date_format_string)
         except Exception:
-            raise Exception("ERROR - cannot parse first date time stamp: "+str(self.td_str)+" using format: "+dt_fmt+'\n')
+            try:
+                self.data_start = uc.datestring_to_ms(dt_str, dt_fmt)
+            except Exception:
+                raise Exception("ERROR - cannot parse first date time stamp: "+str(self.td_str)+" using format: "+dt_fmt+'\n')
         f.seek(reset_point)
 
     def set_timezone(self):
