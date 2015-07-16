@@ -55,9 +55,9 @@ class House(NetCDFWriter):
         skip_index = find_first(self.in_filename, '^[0-9]{4},[0-9]{4}$') - 1
         df = pd.read_table(self.in_filename, skiprows=skip_index, header=None,
                            engine='c', sep=',', names=('a', 'b'))
-        self.pressure_data = [
+        self.pressure_data = np.array([
             uc.USGS_PROTOTYPE_V_TO_DBAR(np.float64(x))
-            for x in df[df.b.isnull() == False].a]
+            for x in df[df.b.isnull() == False].a])
         self.temperature_data = [
             uc.USGS_PROTOTYPE_V_TO_C(np.float64(x))
             for x in df[df.b.isnull() == False].b]
@@ -199,12 +199,16 @@ class RBRSolo(NetCDFWriter):
         '''load the data from in_filename
         only parse the initial datetime = much faster
         '''
-        skip_index = find_first(self.in_filename, '^[0-9]{2}-[A-Z]{1}[a-z]{2,8}-[0-9]{4}$')
+        skip_index = find_first(self.in_filename, '^[0-9]{2}-[A-Z]{1}[a-z]{2,8}-[0-9]{4}')
+        print(skip_index)
         df = pd.read_csv(self.in_filename, skiprows=skip_index, delim_whitespace=True,
                          header=None, engine='c', usecols=[0, 1, 2])
-        self.utc_millisecond_data = uc.generate_ms('%s %s' % (df[0][0], df[1][0]), df.shape[0] - 1,
-                                                   self.date_format_string, self.frequency)
-        self.pressure_data = [x for x in df[2][:-1]]
+        
+        self.datestart = uc.datestring_to_ms('%s %s' % (df[0][0], df[1][0]), self.date_format_string)
+        self.utc_millisecond_data = uc.generate_ms(self.datestart, df.shape[0] - 1,
+                                                    self.frequency)
+        self.pressure_data = np.array([x for x in df[2][:-1]])
+        print(self.pressure_data[0], len(self.pressure_data))
 
 
 class Waveguage(NetCDFWriter):

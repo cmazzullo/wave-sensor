@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import netCDF4
 from netCDF4 import Dataset
 import math
+import array_compare
 
 instr_min = []
 instr_max = []
@@ -25,30 +26,30 @@ def WaveDetection(stevensFileName, interp_depth, label):
     sdf.channel1 = np.multiply(.305,np.divide(sdf.channel1,12))
     window_seconds = sdf.timestep[sdf.shape[0] - 1]
     
+    final_start, final_finish = array_compare.array_compare(sdf.channel1.values.astype(np.double),interp_depth.astype(np.double))
     #BRUTE FORCE CHECK OF ALL POINTS IN TIME SERIES SLICE
-    final_min = 999999
-    final_start = 0
-    final_finish = 0
-    start = 0;
-    endrange = sdf.shape[0]
-    
-    while endrange < len(interp_depth):
-        
-        min_array = np.sum(np.square(np.subtract(interp_depth[start:endrange],sdf.channel1)))
-#         min_sum = np.sqrt(min_array/sdf.shape[0])
-        if min_array < final_min:
-            final_min = min_array
-            final_start = start;
-            final_finish = endrange;
-            
-        start += 1
-        endrange += 1
+#     final_min = 999999
+#     final_start = 0
+#     final_finish = 0
+#     start = 0;
+#     endrange = sdf.shape[0]
+#     
+#     while endrange < len(interp_depth):
+#         
+#         min_array = np.sum(np.square(np.subtract(interp_depth[start:endrange],sdf.channel1)))
+# #         min_sum = np.sqrt(min_array/sdf.shape[0])
+#         if min_array < final_min:
+#             final_min = min_array
+#             final_start = start;
+#             final_finish = endrange;
+#             
+#         start += 1
+#         endrange += 1
      
 #     print('From ', final_min, 'Average Distance for ', label, ' :', np.sqrt(final_min/sdf.shape[0]))
     print('Points: ', final_start, final_finish)
-    total_average_distance.append(np.sqrt(final_min/sdf.shape[0]))
+    #total_average_distance.append(np.sqrt(final_min/sdf.shape[0]))
     
-
     
     instr_min.append(np.min(interp_depth[final_start:final_finish]))
     instr_max.append(np.max(interp_depth[final_start:final_finish]))
@@ -61,13 +62,12 @@ def WaveDetection(stevensFileName, interp_depth, label):
     wire_significant  = wire_std_dev * 4
     
     plt.plot(np.arange(final_start,final_finish), sdf.channel1, label = label, alpha=.70)
-    plt.plot(np.arange(final_start,final_finish), interp_depth[final_start:final_finish])
+#     plt.plot(np.arange(final_start,final_finish), interp_depth[final_start:final_finish], label="instr")
     
-    plt.legend()
-    plt.show()
+    
     
 #     plt.plot(np.arange(0,len(interp_pressure)),sea_pressure)
-def get_netCDF(infile_name): 
+def get_netCDF(infile_name, label): 
     ds = Dataset(infile_name)
     time = netCDF4.num2date(ds.variables['time'][:],ds.variables['time'].units)
     depth = ds.variables['depth'][:-1]
@@ -75,34 +75,41 @@ def get_netCDF(infile_name):
     interp_depth = np.interp(np.arange(0,len(depth)/4,.02),np.arange(0,len(depth)/4,.25),depth)
     interp_depth = np.subtract(interp_depth,np.average(interp_depth))
     
-    
-#    plt.plot(np.arange(len(interp_depth)),interp_depth, color="grey")
+    if label == 'RBR':
+        plt.plot(np.arange(len(interp_depth[2000:])),interp_depth[2000:], alpha=.5, label = label)
+    else:
+        plt.plot(np.arange(len(interp_depth)),interp_depth, alpha=.5, label = label)
     return interp_depth
 
 # def fit_sin_wave():
 #     datax = np.sin(np.pi * 2)
     
-    
-    
-    
-    
+
 if __name__ == '__main__':
     
-    interp_depth = get_netCDF('HB_day2_1f.nc')
-       
-   
-    for x in range(15,22):
-        WaveDetection('A5763.0%s' % x,interp_depth,x)
-         
-    df = pd.DataFrame({"Instr_Min": instr_min, 
-                       "Instr_Max": instr_max, 
-                       "Instr_Std_Dev": instr_std_dev, 
-                       "Wire_Min": wire_min,
-                       "Wire_Max": wire_max, 
-                       "Wire_Std_Dev": wire_std_dev,
-                       "Total_Average_Distance": total_average_distance});
-                        
-    df.to_csv(path_or_buf="Metrics.csv")
+    interp_depth1 = get_netCDF('HB1F.nc', 'HB')
+#     interp_depth2 = get_netCDF('Rbr1F.nc', 'RBR')
+#     interp_depth3 = get_netCDF('Level_Depth.nc', 'LT')
+#     interp_depth4 = get_netCDF('MS1F.nc', 'MS')
+#        
+    for x in range(6,10):
+        WaveDetection('A5763.00%s' % x,interp_depth1,x)
+#         
+    for x in range(10,12):
+        WaveDetection('A5763.0%s' % x,interp_depth1,x)
+# #         
+    plt.legend()
+    plt.show()
+#          
+#     df = pd.DataFrame({"Instr_Min": instr_min, 
+#                        "Instr_Max": instr_max, 
+#                        "Instr_Std_Dev": instr_std_dev, 
+#                        "Wire_Min": wire_min,
+#                        "Wire_Max": wire_max, 
+#                        "Wire_Std_Dev": wire_std_dev,
+#                        "Total_Average_Distance": total_average_distance});
+#                         
+#     df.to_csv(path_or_buf="Metrics.csv")
     
      
    
