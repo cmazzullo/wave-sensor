@@ -153,8 +153,8 @@ hobo1 = data_fold + 'Hobo/ncs/StevensDay1Run1G.csv.nc.depth'
 hobo2 = data_fold + 'Hobo/ncs/StevensDay1Run1H.csv.nc.depth'
 tru1 = data_fold + 'TruBlue/ncs/4-20 1100-536PM.csv.nc.depth'
 tru2 = data_fold + 'TruBlue/ncs/4-20 11PM-454PM.csv.nc.depth'
-troll1 = data_fold + 'LevelTROLL/LevelTroll F/Day 1 Run 1_2015-04-20_23-56-20-912.csv.nc.depth'
-troll2 = data_fold + 'LevelTROLL/LevelTroll E/Day 1 run 1_2015-04-20_23-21-29-039.csv.nc.depth'
+troll1 = data_fold + 'LevelTROLL/Day 1 Run 1_2015-04-20_23-56-20-912.csv.nc.depth'
+troll2 = data_fold + 'LevelTROLL/Day 1 run 1_2015-04-20_23-21-29-039.csv.nc.depth'
 house1 = data_fold + 'USGS Prototype/ncs/WaveLog #1 - J Run 1 Day 1.csv.nc.depth'
 house2 = data_fold + 'USGS Prototype/ncs/WaveLog #1 - J Run 1 Day 2.csv.nc.depth'
 house3 = data_fold + 'USGS Prototype/ncs/WaveLog #2 - K Run 1 Day1.csv.nc.depth'
@@ -337,7 +337,7 @@ def get_stats(stevens_series, windows, runs):
 runs = range(12, 41)
 runs = range(0, 12)
 offset = 0
-fname = tru1
+fname = troll1
 indices, windows = get_windows(fname, stevens_series, runs, time_offset=offset)
 wp = pd.Panel(data)
 

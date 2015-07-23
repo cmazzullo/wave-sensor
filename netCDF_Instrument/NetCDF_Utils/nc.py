@@ -106,6 +106,7 @@ def append_depth_qc(fname, sea_qc, air_qc):
 
 # Get variable data
 
+
 def get_water_depth(in_fname):
     """Get the static water depth from the netCDF at fname"""
     initial_depth = get_initial_water_depth(in_fname)
@@ -126,6 +127,7 @@ def get_depth(fname):
 def get_flags(fname):
     """Get the time array from the netCDF at fname"""
     return get_variable_data(fname, 'pressure_qc')
+
 
 def get_time(fname):
     """Get the time array from the netCDF at fname"""

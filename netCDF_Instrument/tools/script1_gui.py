@@ -89,14 +89,14 @@ class Wavegui:
     def process_files(self):
         """Run the csv to netCDF conversion on the selected files."""
         message = ('Working, this may take a few minutes.')
-        
+
         try:
             dialog = MessageDialog(self.parent, message=message,
                                    title='Processing...', buttons=0, wait=False)
             globs = dict(zip(GLOBAL_FIELDS.keys(),
                              self.global_form.export_entries()))
-           
-            
+
+
             for fname, datafile in self.datafiles.items():
                 inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
                 inputs.update(globs)
