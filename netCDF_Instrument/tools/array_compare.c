@@ -708,7 +708,7 @@ typedef npy_longdouble __pyx_t_5numpy_longdouble_t;
  * DTYPE2 = np.double
  * ctypedef np.double_t DTYPE2_t             # <<<<<<<<<<<<<<
  * 
- * 
+ * #OPTIMIZATION FOR C METHOD, NO BOUNDS CHECK IMPROVES PERFORMANCE
  */
 typedef __pyx_t_5numpy_double_t __pyx_t_13array_compare_DTYPE2_t;
 #if CYTHON_CCOMPLEX
@@ -1219,8 +1219,8 @@ static PyObject *__pyx_tuple__6;
 static PyObject *__pyx_tuple__7;
 static PyObject *__pyx_codeobj__8;
 
-/* "array_compare.pyx":11
- * 
+/* "array_compare.pyx":10
+ * #OPTIMIZATION FOR C METHOD, NO BOUNDS CHECK IMPROVES PERFORMANCE
  * @cython.boundscheck(False)
  * def array_compare(np.ndarray[DTYPE2_t, ndim=1] wire_data,             # <<<<<<<<<<<<<<
  *                   np.ndarray[DTYPE2_t, ndim=1] instrument_data):
@@ -1259,11 +1259,11 @@ static PyObject *__pyx_pw_13array_compare_1array_compare(PyObject *__pyx_self, P
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_instrument_data)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("array_compare", 1, 2, 2, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+          __Pyx_RaiseArgtupleInvalid("array_compare", 1, 2, 2, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 10; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "array_compare") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "array_compare") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 10; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -1276,14 +1276,14 @@ static PyObject *__pyx_pw_13array_compare_1array_compare(PyObject *__pyx_self, P
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("array_compare", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("array_compare", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 10; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
   __Pyx_AddTraceback("array_compare.array_compare", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_wire_data), __pyx_ptype_5numpy_ndarray, 1, "wire_data", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_instrument_data), __pyx_ptype_5numpy_ndarray, 1, "instrument_data", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 12; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_wire_data), __pyx_ptype_5numpy_ndarray, 1, "wire_data", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 10; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_instrument_data), __pyx_ptype_5numpy_ndarray, 1, "instrument_data", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_r = __pyx_pf_13array_compare_array_compare(__pyx_self, __pyx_v_wire_data, __pyx_v_instrument_data);
 
   /* function exit code */
@@ -1338,16 +1338,16 @@ static PyObject *__pyx_pf_13array_compare_array_compare(CYTHON_UNUSED PyObject *
   __pyx_pybuffernd_instrument_data.rcbuffer = &__pyx_pybuffer_instrument_data;
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_wire_data.rcbuffer->pybuffer, (PyObject*)__pyx_v_wire_data, &__Pyx_TypeInfo_nn___pyx_t_13array_compare_DTYPE2_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_wire_data.rcbuffer->pybuffer, (PyObject*)__pyx_v_wire_data, &__Pyx_TypeInfo_nn___pyx_t_13array_compare_DTYPE2_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 10; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __pyx_pybuffernd_wire_data.diminfo[0].strides = __pyx_pybuffernd_wire_data.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_wire_data.diminfo[0].shape = __pyx_pybuffernd_wire_data.rcbuffer->pybuffer.shape[0];
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_instrument_data.rcbuffer->pybuffer, (PyObject*)__pyx_v_instrument_data, &__Pyx_TypeInfo_nn___pyx_t_13array_compare_DTYPE2_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_instrument_data.rcbuffer->pybuffer, (PyObject*)__pyx_v_instrument_data, &__Pyx_TypeInfo_nn___pyx_t_13array_compare_DTYPE2_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 10; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __pyx_pybuffernd_instrument_data.diminfo[0].strides = __pyx_pybuffernd_instrument_data.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_instrument_data.diminfo[0].shape = __pyx_pybuffernd_instrument_data.rcbuffer->pybuffer.shape[0];
 
-  /* "array_compare.pyx":14
+  /* "array_compare.pyx":13
  *                   np.ndarray[DTYPE2_t, ndim=1] instrument_data):
  * 
  *     cdef final_min = 9999999             # <<<<<<<<<<<<<<
@@ -1357,7 +1357,7 @@ static PyObject *__pyx_pf_13array_compare_array_compare(CYTHON_UNUSED PyObject *
   __Pyx_INCREF(__pyx_int_9999999);
   __pyx_v_final_min = __pyx_int_9999999;
 
-  /* "array_compare.pyx":15
+  /* "array_compare.pyx":14
  * 
  *     cdef final_min = 9999999
  *     cdef final_start = 0             # <<<<<<<<<<<<<<
@@ -1367,7 +1367,7 @@ static PyObject *__pyx_pf_13array_compare_array_compare(CYTHON_UNUSED PyObject *
   __Pyx_INCREF(__pyx_int_0);
   __pyx_v_final_start = __pyx_int_0;
 
-  /* "array_compare.pyx":16
+  /* "array_compare.pyx":15
  *     cdef final_min = 9999999
  *     cdef final_start = 0
  *     cdef final_finish = 0             # <<<<<<<<<<<<<<
@@ -1377,7 +1377,7 @@ static PyObject *__pyx_pf_13array_compare_array_compare(CYTHON_UNUSED PyObject *
   __Pyx_INCREF(__pyx_int_0);
   __pyx_v_final_finish = __pyx_int_0;
 
-  /* "array_compare.pyx":17
+  /* "array_compare.pyx":16
  *     cdef final_start = 0
  *     cdef final_finish = 0
  *     cdef start = 0             # <<<<<<<<<<<<<<
@@ -1388,8 +1388,8 @@ static PyObject *__pyx_pf_13array_compare_array_compare(CYTHON_UNUSED PyObject *
   __pyx_v_start = __pyx_int_0;
 
   /* "array_compare.pyx":21
- *     cdef interp_length
  * 
+ *     #GET WIRE DATA LENGTH AND INSTRUMENT LENGTH
  *     endrange = len(wire_data)             # <<<<<<<<<<<<<<
  *     interp_length = len(instrument_data)
  * 
@@ -1401,11 +1401,11 @@ static PyObject *__pyx_pf_13array_compare_array_compare(CYTHON_UNUSED PyObject *
   __pyx_t_2 = 0;
 
   /* "array_compare.pyx":22
- * 
+ *     #GET WIRE DATA LENGTH AND INSTRUMENT LENGTH
  *     endrange = len(wire_data)
  *     interp_length = len(instrument_data)             # <<<<<<<<<<<<<<
  * 
- *     while endrange < interp_length:
+ *     #BRUTE FORCE METHOD TO CHECK WHICH PART OF THE INSTRUMENT DATA THE WIRE DATA FITS OVER THE BEST
  */
   __pyx_t_1 = PyObject_Length(((PyObject *)__pyx_v_instrument_data)); if (unlikely(__pyx_t_1 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_2 = PyInt_FromSsize_t(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -1413,52 +1413,52 @@ static PyObject *__pyx_pf_13array_compare_array_compare(CYTHON_UNUSED PyObject *
   __pyx_v_interp_length = __pyx_t_2;
   __pyx_t_2 = 0;
 
-  /* "array_compare.pyx":24
- *     interp_length = len(instrument_data)
+  /* "array_compare.pyx":25
  * 
+ *     #BRUTE FORCE METHOD TO CHECK WHICH PART OF THE INSTRUMENT DATA THE WIRE DATA FITS OVER THE BEST
  *     while endrange < interp_length:             # <<<<<<<<<<<<<<
  *         min_array = np.sqrt(np.divide(np.sum(np.square(np.subtract(instrument_data[start:endrange],wire_data))), endrange - start))
- * #         min_sum = np.sqrt(min_array/sdf.shape[0])
+ *         if min_array < final_min:
  */
   while (1) {
-    __pyx_t_2 = PyObject_RichCompare(__pyx_v_endrange, __pyx_v_interp_length, Py_LT); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 24; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely(__pyx_t_3 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 24; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = PyObject_RichCompare(__pyx_v_endrange, __pyx_v_interp_length, Py_LT); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely(__pyx_t_3 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     if (!__pyx_t_3) break;
 
-    /* "array_compare.pyx":25
- * 
+    /* "array_compare.pyx":26
+ *     #BRUTE FORCE METHOD TO CHECK WHICH PART OF THE INSTRUMENT DATA THE WIRE DATA FITS OVER THE BEST
  *     while endrange < interp_length:
  *         min_array = np.sqrt(np.divide(np.sum(np.square(np.subtract(instrument_data[start:endrange],wire_data))), endrange - start))             # <<<<<<<<<<<<<<
- * #         min_sum = np.sqrt(min_array/sdf.shape[0])
  *         if min_array < final_min:
+ *             final_min = min_array
  */
-    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_sqrt); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_sqrt); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_divide); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_divide); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_7);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_8 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_8 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_8);
-    __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_sum); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_sum); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_9);
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __pyx_t_10 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_10)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_10 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_10)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_10);
-    __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_10, __pyx_n_s_square); if (unlikely(!__pyx_t_11)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_10, __pyx_n_s_square); if (unlikely(!__pyx_t_11)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_11);
     __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-    __pyx_t_12 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_12 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_12);
-    __pyx_t_13 = __Pyx_PyObject_GetAttrStr(__pyx_t_12, __pyx_n_s_subtract); if (unlikely(!__pyx_t_13)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_13 = __Pyx_PyObject_GetAttrStr(__pyx_t_12, __pyx_n_s_subtract); if (unlikely(!__pyx_t_13)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_13);
     __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
-    __pyx_t_12 = __Pyx_PyObject_GetSlice(((PyObject *)__pyx_v_instrument_data), 0, 0, &__pyx_v_start, &__pyx_v_endrange, NULL, 0, 0, 1); if (unlikely(!__pyx_t_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_12 = __Pyx_PyObject_GetSlice(((PyObject *)__pyx_v_instrument_data), 0, 0, &__pyx_v_start, &__pyx_v_endrange, NULL, 0, 0, 1); if (unlikely(!__pyx_t_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_12);
     __pyx_t_14 = NULL;
     __pyx_t_1 = 0;
@@ -1472,7 +1472,7 @@ static PyObject *__pyx_pf_13array_compare_array_compare(CYTHON_UNUSED PyObject *
         __pyx_t_1 = 1;
       }
     }
-    __pyx_t_15 = PyTuple_New(2+__pyx_t_1); if (unlikely(!__pyx_t_15)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_15 = PyTuple_New(2+__pyx_t_1); if (unlikely(!__pyx_t_15)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_15);
     if (__pyx_t_14) {
       __Pyx_GIVEREF(__pyx_t_14); PyTuple_SET_ITEM(__pyx_t_15, 0, __pyx_t_14); __pyx_t_14 = NULL;
@@ -1483,7 +1483,7 @@ static PyObject *__pyx_pf_13array_compare_array_compare(CYTHON_UNUSED PyObject *
     __Pyx_GIVEREF(((PyObject *)__pyx_v_wire_data));
     PyTuple_SET_ITEM(__pyx_t_15, 1+__pyx_t_1, ((PyObject *)__pyx_v_wire_data));
     __pyx_t_12 = 0;
-    __pyx_t_10 = __Pyx_PyObject_Call(__pyx_t_13, __pyx_t_15, NULL); if (unlikely(!__pyx_t_10)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_10 = __Pyx_PyObject_Call(__pyx_t_13, __pyx_t_15, NULL); if (unlikely(!__pyx_t_10)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_10);
     __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
     __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
@@ -1498,17 +1498,17 @@ static PyObject *__pyx_pf_13array_compare_array_compare(CYTHON_UNUSED PyObject *
       }
     }
     if (!__pyx_t_13) {
-      __pyx_t_8 = __Pyx_PyObject_CallOneArg(__pyx_t_11, __pyx_t_10); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_8 = __Pyx_PyObject_CallOneArg(__pyx_t_11, __pyx_t_10); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
       __Pyx_GOTREF(__pyx_t_8);
     } else {
-      __pyx_t_15 = PyTuple_New(1+1); if (unlikely(!__pyx_t_15)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_15 = PyTuple_New(1+1); if (unlikely(!__pyx_t_15)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_15);
       __Pyx_GIVEREF(__pyx_t_13); PyTuple_SET_ITEM(__pyx_t_15, 0, __pyx_t_13); __pyx_t_13 = NULL;
       __Pyx_GIVEREF(__pyx_t_10);
       PyTuple_SET_ITEM(__pyx_t_15, 0+1, __pyx_t_10);
       __pyx_t_10 = 0;
-      __pyx_t_8 = __Pyx_PyObject_Call(__pyx_t_11, __pyx_t_15, NULL); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_8 = __Pyx_PyObject_Call(__pyx_t_11, __pyx_t_15, NULL); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
     }
@@ -1524,22 +1524,22 @@ static PyObject *__pyx_pf_13array_compare_array_compare(CYTHON_UNUSED PyObject *
       }
     }
     if (!__pyx_t_11) {
-      __pyx_t_6 = __Pyx_PyObject_CallOneArg(__pyx_t_9, __pyx_t_8); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_6 = __Pyx_PyObject_CallOneArg(__pyx_t_9, __pyx_t_8); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_GOTREF(__pyx_t_6);
     } else {
-      __pyx_t_15 = PyTuple_New(1+1); if (unlikely(!__pyx_t_15)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_15 = PyTuple_New(1+1); if (unlikely(!__pyx_t_15)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_15);
       __Pyx_GIVEREF(__pyx_t_11); PyTuple_SET_ITEM(__pyx_t_15, 0, __pyx_t_11); __pyx_t_11 = NULL;
       __Pyx_GIVEREF(__pyx_t_8);
       PyTuple_SET_ITEM(__pyx_t_15, 0+1, __pyx_t_8);
       __pyx_t_8 = 0;
-      __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_9, __pyx_t_15, NULL); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_9, __pyx_t_15, NULL); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
     }
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    __pyx_t_9 = PyNumber_Subtract(__pyx_v_endrange, __pyx_v_start); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_9 = PyNumber_Subtract(__pyx_v_endrange, __pyx_v_start); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_9);
     __pyx_t_15 = NULL;
     __pyx_t_1 = 0;
@@ -1553,7 +1553,7 @@ static PyObject *__pyx_pf_13array_compare_array_compare(CYTHON_UNUSED PyObject *
         __pyx_t_1 = 1;
       }
     }
-    __pyx_t_8 = PyTuple_New(2+__pyx_t_1); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_8 = PyTuple_New(2+__pyx_t_1); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_8);
     if (__pyx_t_15) {
       __Pyx_GIVEREF(__pyx_t_15); PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_t_15); __pyx_t_15 = NULL;
@@ -1564,7 +1564,7 @@ static PyObject *__pyx_pf_13array_compare_array_compare(CYTHON_UNUSED PyObject *
     PyTuple_SET_ITEM(__pyx_t_8, 1+__pyx_t_1, __pyx_t_9);
     __pyx_t_6 = 0;
     __pyx_t_9 = 0;
-    __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_t_8, NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_t_8, NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
@@ -1579,17 +1579,17 @@ static PyObject *__pyx_pf_13array_compare_array_compare(CYTHON_UNUSED PyObject *
       }
     }
     if (!__pyx_t_7) {
-      __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_GOTREF(__pyx_t_2);
     } else {
-      __pyx_t_8 = PyTuple_New(1+1); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_8 = PyTuple_New(1+1); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_t_7); __pyx_t_7 = NULL;
       __Pyx_GIVEREF(__pyx_t_4);
       PyTuple_SET_ITEM(__pyx_t_8, 0+1, __pyx_t_4);
       __pyx_t_4 = 0;
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_8, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_8, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     }
@@ -1598,8 +1598,8 @@ static PyObject *__pyx_pf_13array_compare_array_compare(CYTHON_UNUSED PyObject *
     __pyx_t_2 = 0;
 
     /* "array_compare.pyx":27
+ *     while endrange < interp_length:
  *         min_array = np.sqrt(np.divide(np.sum(np.square(np.subtract(instrument_data[start:endrange],wire_data))), endrange - start))
- * #         min_sum = np.sqrt(min_array/sdf.shape[0])
  *         if min_array < final_min:             # <<<<<<<<<<<<<<
  *             final_min = min_array
  *             final_start = start;
@@ -1610,7 +1610,7 @@ static PyObject *__pyx_pf_13array_compare_array_compare(CYTHON_UNUSED PyObject *
     if (__pyx_t_3) {
 
       /* "array_compare.pyx":28
- * #         min_sum = np.sqrt(min_array/sdf.shape[0])
+ *         min_array = np.sqrt(np.divide(np.sum(np.square(np.subtract(instrument_data[start:endrange],wire_data))), endrange - start))
  *         if min_array < final_min:
  *             final_min = min_array             # <<<<<<<<<<<<<<
  *             final_start = start;
@@ -1659,7 +1659,7 @@ static PyObject *__pyx_pf_13array_compare_array_compare(CYTHON_UNUSED PyObject *
  *         start += 1
  *         endrange += 1             # <<<<<<<<<<<<<<
  * 
- *     return final_start, final_finish
+ *     #RETURN THE INDICES AND THE FINAL EUCLIDEAN DISTANCE OF THE INSTRUMENT FROM THE WIRE DATA
  */
     __pyx_t_2 = PyNumber_InPlaceAdd(__pyx_v_endrange, __pyx_int_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
@@ -1667,13 +1667,13 @@ static PyObject *__pyx_pf_13array_compare_array_compare(CYTHON_UNUSED PyObject *
     __pyx_t_2 = 0;
   }
 
-  /* "array_compare.pyx":35
- *         endrange += 1
+  /* "array_compare.pyx":36
  * 
- *     return final_start, final_finish             # <<<<<<<<<<<<<<
+ *     #RETURN THE INDICES AND THE FINAL EUCLIDEAN DISTANCE OF THE INSTRUMENT FROM THE WIRE DATA
+ *     return final_start, final_finish, final_min             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 35; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyTuple_New(3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_INCREF(__pyx_v_final_start);
   __Pyx_GIVEREF(__pyx_v_final_start);
@@ -1681,12 +1681,15 @@ static PyObject *__pyx_pf_13array_compare_array_compare(CYTHON_UNUSED PyObject *
   __Pyx_INCREF(__pyx_v_final_finish);
   __Pyx_GIVEREF(__pyx_v_final_finish);
   PyTuple_SET_ITEM(__pyx_t_2, 1, __pyx_v_final_finish);
+  __Pyx_INCREF(__pyx_v_final_min);
+  __Pyx_GIVEREF(__pyx_v_final_min);
+  PyTuple_SET_ITEM(__pyx_t_2, 2, __pyx_v_final_min);
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "array_compare.pyx":11
- * 
+  /* "array_compare.pyx":10
+ * #OPTIMIZATION FOR C METHOD, NO BOUNDS CHECK IMPROVES PERFORMANCE
  * @cython.boundscheck(False)
  * def array_compare(np.ndarray[DTYPE2_t, ndim=1] wire_data,             # <<<<<<<<<<<<<<
  *                   np.ndarray[DTYPE2_t, ndim=1] instrument_data):
@@ -3871,17 +3874,17 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__6);
   __Pyx_GIVEREF(__pyx_tuple__6);
 
-  /* "array_compare.pyx":11
- * 
+  /* "array_compare.pyx":10
+ * #OPTIMIZATION FOR C METHOD, NO BOUNDS CHECK IMPROVES PERFORMANCE
  * @cython.boundscheck(False)
  * def array_compare(np.ndarray[DTYPE2_t, ndim=1] wire_data,             # <<<<<<<<<<<<<<
  *                   np.ndarray[DTYPE2_t, ndim=1] instrument_data):
  * 
  */
-  __pyx_tuple__7 = PyTuple_Pack(9, __pyx_n_s_wire_data, __pyx_n_s_instrument_data, __pyx_n_s_final_min, __pyx_n_s_final_start, __pyx_n_s_final_finish, __pyx_n_s_start, __pyx_n_s_endrange, __pyx_n_s_interp_length, __pyx_n_s_min_array); if (unlikely(!__pyx_tuple__7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__7 = PyTuple_Pack(9, __pyx_n_s_wire_data, __pyx_n_s_instrument_data, __pyx_n_s_final_min, __pyx_n_s_final_start, __pyx_n_s_final_finish, __pyx_n_s_start, __pyx_n_s_endrange, __pyx_n_s_interp_length, __pyx_n_s_min_array); if (unlikely(!__pyx_tuple__7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 10; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__7);
   __Pyx_GIVEREF(__pyx_tuple__7);
-  __pyx_codeobj__8 = (PyObject*)__Pyx_PyCode_New(2, 0, 9, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__7, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_C_Cython_cython_CMath_array_comp, __pyx_n_s_array_compare, 11, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__8 = (PyObject*)__Pyx_PyCode_New(2, 0, 9, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__7, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_C_Cython_cython_CMath_array_comp, __pyx_n_s_array_compare, 10, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 10; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -4022,16 +4025,16 @@ PyMODINIT_FUNC PyInit_array_compare(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_DTYPE2, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 5; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "array_compare.pyx":11
- * 
+  /* "array_compare.pyx":10
+ * #OPTIMIZATION FOR C METHOD, NO BOUNDS CHECK IMPROVES PERFORMANCE
  * @cython.boundscheck(False)
  * def array_compare(np.ndarray[DTYPE2_t, ndim=1] wire_data,             # <<<<<<<<<<<<<<
  *                   np.ndarray[DTYPE2_t, ndim=1] instrument_data):
  * 
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_13array_compare_1array_compare, NULL, __pyx_n_s_array_compare); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_13array_compare_1array_compare, NULL, __pyx_n_s_array_compare); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 10; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_array_compare, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_array_compare, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 10; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "array_compare.pyx":1
