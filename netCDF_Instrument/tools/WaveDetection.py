@@ -19,13 +19,13 @@ fit_stevens_amplitude = []
 stevens_file_names = ['A5763.006','A5763.007','A5763.008','A5763.009','A5763.010','A5763.011']
 trial_file = stevens_file_names
 
-def WaveDetection(file_name):
+def WaveDetection(file_name, ax):
     '''Gets full wave data from Stevens and extracts a time series of same length
     from the instrument file to find a best fit'''
     initialize()
     
     interp_depth = get_netCDF(file_name)
-    plot_numbers(np.arange(0,len(interp_depth)),interp_depth, 'Ins')
+    plot_numbers(np.arange(0,len(interp_depth)),interp_depth, 'Ins', ax)
     
     for x in range(0,len(stevens_file_names)):
         
@@ -65,17 +65,17 @@ def WaveDetection(file_name):
 #         instr_significant.append(std_dev * 4)
         
         #MAKE PLOT
-        plot_numbers(np.arange(final_start,final_finish), sdf.channel1, x + 3)
+        plot_numbers(np.arange(final_start,final_finish), sdf.channel1, x + 3, ax)
        
-        plt.text(final_start, np.max(sdf.channel1), x + 3)
+        ax.text(final_start, np.max(sdf.channel1), x + 3)
     
     #WRITE EXCEL FILE AND SHOW PLOT
     write_excel_file(''.join(['Metrics', file_name, '.csv']))
-    plt.title('Stevens Test Data over Instrument Data')
-    plt.xlabel('Time in milliseconds')
-    plt.ylabel('Water Level in meters')
-    plt.legend(bbox_to_anchor=(1.10, 1.0))   
-    plt.show()
+#     plt.title('Stevens Test Data over Instrument Data')
+#     plt.xlabel('Time in milliseconds')
+#     plt.ylabel('Water Level in meters')
+#     plt.legend(bbox_to_anchor=(1.10, 1.0))   
+#     plt.show()
     
 def get_netCDF(infile_name): 
     '''Gets netCDF properties and interpolates them over the frequency of Stevens data'''
@@ -142,24 +142,38 @@ def initialize():
     fit_amplitude[:] = []
     fit_stevens_amplitude[:] = []
     
-def plot_numbers(x,y,label):
-    plt.plot(x,y,alpha=.5, label = label)
+def plot_numbers(x,y,label, ax):
+    ax.plot(x,y,alpha=.5, label = label)
 
 # def fit_sin_wave():
 #     datax = np.sin(np.pi * 2)
     
 
 if __name__ == '__main__':
+    fig = plt.figure(figsize=(16,8))
+    ax = fig.add_subplot(111)
+#     ax2 = fig.add_subplot(212)
+#     file_names = ['hydro_hb.nc', 'hydro_rbr.nc', 'hydro_lt.nc','hydro_ms.nc']
+#                   #'leveltest.nc']
+#     
+    interp_depth = get_netCDF('hydro_lt.nc')
+#     interp_depth2 = get_netCDF('hydro_lt.nc')
+    plot_numbers(np.arange(0,len(interp_depth)),interp_depth, 'ins lw',ax)
+#     plot_numbers(np.arange(0,len(interp_depth2)),interp_depth2, 'ins hydro',ax)
+#     WaveDetection('leveltest.nc', ax)
+    WaveDetection('leveltest.nc', ax)
     
-    file_names = ['hydro_hb.nc', 'hydro_rbr.nc', 'hydro_lt.nc','hydro_ms.nc']
-                  #'leveltest.nc']
-    for x in file_names:
-        interp_depth = get_netCDF(x)
-        index = x.find('_')
-        plot_numbers(np.arange(0,len(interp_depth)),interp_depth, x[index + 1:])
-    plt.legend()
+    ax.set_title('Linear Wave Theory vs. Hydrostatic')
+    ax.set_ylabel('Water Level in meters')
+#    ax.set_xlabel('Time in milliseconds') 
+#     ax2.set_title('Hydrostatic Method')
+#     ax2.set_ylabel('Water Level in meters')
+#     ax2.set_xlabel('Time in milliseconds')
+    
+    ax.legend()
+#     ax2.legend()
     plt.show()
-#         WaveDetection(x)
+#        
     
      
    
