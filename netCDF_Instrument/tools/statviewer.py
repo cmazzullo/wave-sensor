@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """View wave statistics using a graphical interface"""
 import numpy as np
 import NetCDF_Utils.nc as nc

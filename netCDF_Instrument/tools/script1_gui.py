@@ -21,7 +21,7 @@ GLOBAL_FIELDS = OrderedDict([
     ('creator_url', ['Your personal url:', ''])])
 LOCAL_FIELDS = OrderedDict([
     ('instrument_name', ['Instrument:', [
-        'Measurement Specialties', 'HOBO', #'RBRSolo', 'USGS Homebrew','LevelTroll'
+        'Measurement Specialties', 'HOBO', 'LevelTroll',#'RBRSolo', 'USGS Homebrew'
         ], True]),
     ('latitude', ['Latitude (decimal degrees):', '', True]),
     ('longitude', ['Longitude (decimal degrees):', '', True]),
