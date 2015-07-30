@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import numpy as np
 import matplotlib
-matplotlib.use('Qt4Agg')
+matplotlib.use('Qt4Agg', warn=False)
 import matplotlib.pyplot as plt
 
 import tkinter as Tk
@@ -63,12 +63,12 @@ class Chopper:
         self.canvas = canvas = self.fig.canvas
         canvas.mpl_connect('button_press_event', on_click)
         plt.draw()
-        Tk.Label(text='Start date (MM/DD/YY HH:MM):').pack()
+        Tk.Label(self.root, text='Start date (MM/DD/YY HH:MM):').pack()
         self.date1 = Tk.StringVar()
-        Tk.Entry(width=30, textvariable=self.date1).pack()
-        Tk.Label(text='End date (MM/DD/YY HH:MM):').pack()
+        self.textEntry = Tk.Entry(self.root, width=30, textvariable=self.date1).pack()
+        Tk.Label(self.root,text='End date (MM/DD/YY HH:MM):').pack()
         self.date2 = Tk.StringVar()
-        Tk.Entry(width=30, textvariable=self.date2).pack()
+        Tk.Entry(self.root,width=30, textvariable=self.date2).pack()
         options=("US/Central", "US/Eastern")
         self.tzstringvar = Tk.StringVar()
         self.tzstringvar.set(options[0])

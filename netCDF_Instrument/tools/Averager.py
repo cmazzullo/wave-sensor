@@ -24,8 +24,6 @@ def file_average(in_file_name, window, increments, method):
             attrDict[x] = ds.getncattr(x)
         ds.close()
         
-        
-         
         time_resolution = .25 * increments
         attrDict['time_coverage_resolution'] = ''.join(["P",str(time_resolution),"S"])
         
@@ -72,7 +70,7 @@ def file_average(in_file_name, window, increments, method):
             new_pressure[:] = rolling_mean.values
             
             #pressure qc
-            new_pressure_qc = new_ds.createVariable("pressure_qc", "i4", ("time",))
+            new_pressure_qc = new_ds.createVariable("pressure_qc", "f8", ("time",))
             set_attributes(new_ds, "pressure_qc", pressure_qc_attr)
             new_pressure_qc[:] = [x for x in pressure_qc]
             
@@ -104,6 +102,7 @@ def get_attributes(ds, name):
     return attr_dict
     
 def set_attributes(ds, name, attr):
+        
         for x in attr:
             ds.variables[name].setncattr(x, attr[x])
             
