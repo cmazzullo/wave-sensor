@@ -45,7 +45,7 @@ def one_percent_wave_height(t, depth):
     return 6.672 * np.sqrt(spec_moment(t, depth, 0))
 
 
-def significant_wave_height(depth):
+def significant_wave_height_standard(depth):
     return 4 * np.std(depth)
 
 
