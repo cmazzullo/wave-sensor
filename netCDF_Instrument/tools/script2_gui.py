@@ -20,8 +20,9 @@ import tools.script1_gui as gc
 
 class Script2gui:
     def __init__(self, root):
-        root.title('Pressure -> Water Height')
-
+        self.root = root
+        root.title('Water Level GUI (Pressure -> Water Level)')
+        self.root.focus_force()
         methods = [('Hydrostatic', 'naive'),
                    ('Linear Wave', 'combo')]
 
@@ -56,6 +57,7 @@ class Script2gui:
             setattr(self, varname, fname)
             if self.sea_fname:
                 self.b3['state'] = 'ENABLED'
+        self.root.focus_force()
 
     def make_button(self, root, text, command, state=None):
         b = ttk.Button(root, text=text, command=command, state=state,

@@ -16,7 +16,8 @@ class AverageGui:
        
         self.in_file_name = ''
         self.root = root
-        self.root.title('Pressure Average')
+        self.root.focus_force()
+        self.root.title('Averager GUI')
         self.Label = Tk.Label(self.root, text='Averaged Points: (Boxcar Window Size)')
         self.Label.pack(anchor=W, pady=2, padx=15)
         self.AveragedPoints = Tk.Entry(self.root)
@@ -57,6 +58,7 @@ class AverageGui:
     def select_input(self):
         self.in_file_name = filedialog.askopenfilename()
         self.average()
+        self.root.focus_force()
         
 
 

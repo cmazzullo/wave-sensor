@@ -23,6 +23,8 @@ class Chopper:
     def __init__(self, root):
         self.fname = ''
         self.root = root
+        self.root.focus_force()
+        self.root.title("Chopper GUI")
         self.b1 = Tk.Button(self.root, text='Select File', command=self.select_input)
         self.b1.pack()
 
@@ -101,6 +103,7 @@ class Chopper:
         print('self.fname = ', self.fname)
         chop_netcdf(self.fname, out_fname, i1, i2)
         plt.close('all')
+        easygui.msgbox("Success chopping file!", "Success")
         self.root.quit()
         self.root.destroy()
 
@@ -109,6 +112,7 @@ class Chopper:
             self.fname = filedialog.askopenfilename()
             self.plot_pressure()
             self.b1.destroy()
+            self.root.focus_force()
         except:
             easygui.msgbox("Could not open file, check file type.", "Error")
             

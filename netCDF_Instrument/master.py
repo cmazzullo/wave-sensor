@@ -18,7 +18,7 @@ class MasterGui:
        
         self.in_file_name = ''
         self.root = root
-        
+        self.root.focus_force()
         #CREATES THE GUI LOGO AT THE BEGINNING
         img = Image.open("wavelab.jpg")
         photo = ImageTk.PhotoImage(img)
@@ -46,7 +46,7 @@ class MasterGui:
         self.Label2.pack(anchor=W,padx = 15,pady = 2)
         self.b6 = Tk.Button(self.root, text='Water Level Graph', command=self.water_level_graph)
         self.b6.pack(anchor=W,padx = 15,pady = 2)
-        self.b7 = Tk.Button(self.root, text='Statistics Viewer', command=self.stat_viewer)
+        self.b7 = Tk.Button(self.root, text='Wave Statistics', command=self.stat_viewer)
         self.b7.pack(anchor=W,padx = 15,pady = 2)
         self.emptyLabel2 = Tk.Label(self.root, text='', font=("Helvetica", 2))
         self.emptyLabel2.pack(anchor=W,padx = 15,pady = 0)
@@ -55,7 +55,7 @@ class MasterGui:
         self.root1 = Tk.Toplevel(self.root)
         gui1 = script1.Wavegui(self.root1, air_pressure=False)
         self.root1.mainloop()
-    
+        
     def air_gui(self):
         self.root2 = Tk.Toplevel(self.root)
         gui2 = script1_air.Wavegui(self.root2)

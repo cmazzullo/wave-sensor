@@ -21,7 +21,7 @@ GLOBAL_FIELDS = OrderedDict([
     ('creator_url', ['Your personal url:', ''])])
 LOCAL_FIELDS = OrderedDict([
     ('instrument_name', ['Instrument:', [
-        'Measurement Specialties', 'HOBO', 'LevelTroll',#'RBRSolo', 'USGS Homebrew'
+        'Measurement Specialties', 'HOBO', #'LevelTroll','RBRSolo', 'USGS Homebrew'
         ], True]),
     ('latitude', ['Latitude (decimal degrees):', '', True]),
     ('longitude', ['Longitude (decimal degrees):', '', True]),
@@ -50,11 +50,11 @@ class Wavegui:
     """ GUI for csv-to-netCDF conversion. """
     def __init__(self, parent):
         self.parent = parent
-        
+        self.parent.focus_force()
         self.local_fields = LOCAL_FIELDS
 #         if not air_pressure:
 #             self.local_fields.update(WATER_ONLY_FIELDS)
-        parent.title("CSV -> NetCDF")
+        parent.title("Air GUI (CSV -> NetCDF)")
         self.air_pressure = True
         self.datafiles = OrderedDict()
         self.book = ttk.Notebook(self.parent)
@@ -84,7 +84,7 @@ class Wavegui:
                         ('Save Entries', datafile.dump),
                         ('Load Entries', datafile.load))).pack()
         self.parent.update()
-
+        self.parent.focus_force()
 
     def process_files(self):
         """Run the csv to netCDF conversion on the selected files."""

@@ -14,6 +14,7 @@ class DepthGui:
         self.in_file_name = ''
         self.root = root
         self.root.title('Water Level vs. Pressure Grapher')
+        self.root.focus_force()
         self.Label = Tk.Label(self.root, text='Averaged Points:')
         self.Label.pack(anchor=W,padx = 15,pady = 2)
         self.AveragedPoints = Tk.Entry(self.root)
