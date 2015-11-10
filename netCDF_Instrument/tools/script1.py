@@ -2,14 +2,15 @@
 import numpy as np
 from pytz import timezone
 from csv_readers import Leveltroll, MeasureSysLogger, House, Hobo, RBRSolo, Waveguage
+from pip._vendor.html5lib import inputstream
 
 INSTRUMENTS = {
     'LevelTroll': Leveltroll,
     'RBRSolo': RBRSolo,
     'Wave Guage': Waveguage,
     'USGS Homebrew': House,
-    'Measurement Specialties': MeasureSysLogger,
-    'HOBO': Hobo }
+    'MS TruBlue 255': MeasureSysLogger,
+    'Onset Hobo U20': Hobo }
 
 def convert_to_netcdf(inputs):
     translated = translate_inputs(inputs)
@@ -19,6 +20,7 @@ def convert_to_netcdf(inputs):
         setattr(instrument, key, translated[key])
     instrument.read()
     instrument.write(sea_pressure=translated['sea_pressure'])
+    return instrument.bad_data
 
 
 DATATYPES = {
@@ -30,6 +32,12 @@ DATATYPES = {
     'tzinfo': timezone,
     'sea_pressure' : bool }
 
+def translate(inputs):
+    translated = translate_inputs(inputs)
+    instrument = INSTRUMENTS[translated['instrument_name']]()
+    instrument.user_data_start_flag = 0
+    for key in translated:
+        setattr(instrument, key, translated[key])
 
 def translate_inputs(inputs):
     translated = dict()

@@ -27,6 +27,7 @@ def make_depth_file(water_fname, air_fname, out_fname, method='combo'):
     """
     device_depth = -1 * nc.get_device_depth(water_fname)
     water_depth = nc.get_water_depth(water_fname)
+    init_orifice_elevation, final_orifice_elvation = nc.get_sensor_orifice_elevation(water_fname)
     timestep = 1 / nc.get_frequency(water_fname)
     sea_pressure = nc.get_pressure(water_fname)
     sea_time = nc.get_time(water_fname)
@@ -41,12 +42,14 @@ def make_depth_file(water_fname, air_fname, out_fname, method='combo'):
         sea_pressure = sea_pressure - air_pressure
         sea_pressure[np.where(air_pressure == nc.FILL_VALUE)] = nc.FILL_VALUE
         
-        air_qc = DataTests.run_tests(air_pressure,1)
+        air_qc, bad_data = DataTests.run_tests(air_pressure,1)
     if method == 'combo':
         depth = p2d.combo_method(sea_time, sea_pressure,
                                  device_depth, water_depth, timestep)
     elif method == 'naive':
-        depth = p2d.hydrostatic_method(sea_pressure)
+        depth = depth = np.linspace(init_orifice_elevation, final_orifice_elvation, len(sea_pressure)) \
+         + p2d.hydrostatic_method(sea_pressure)
+         
     if len(depth) == len(sea_pressure) - 1: # this is questionable
         depth = np.append(depth, np.NaN)
     shutil.copy(water_fname, out_fname)

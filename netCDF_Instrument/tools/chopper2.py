@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
 import numpy as np
 import matplotlib
-matplotlib.use('TkAgg', warn=False)
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+matplotlib.use('Qt4Agg', warn=False)
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.ticker as ticker
 import pytz
 import tkinter as Tk
-from tkinter.constants import W, E, LEFT, RIGHT
+from tkinter.constants import W
 from tkinter import filedialog
 import pandas as pd
 from NetCDF_Utils import nc
 from NetCDF_Utils.nc import chop_netcdf
 from datetime import datetime
-from datetime import timedelta
 from pytz import timezone
 import easygui
 import numpy
@@ -36,99 +34,82 @@ class Chopper:
         self.root = root
         self.root.focus_force()
         self.root.title("Chopper GUI")
-        self.canvas = None
-        self.toolbar = None
-        self.frame = Tk.Frame(root)
         
         #used for spacing
-        self.emptyLabel1 = Tk.Label(self.frame, text='', font=("Helvetica", 2))
-        self.emptyLabel1.pack(anchor=W, padx=15, pady=0)
-        self.plot_event = False
+        self.emptyLabel1 = Tk.Label(self.root, text='', font=("Helvetica", 2))
+        self.emptyLabel1.pack(anchor=W,padx = 15,pady = 0)
         
-        # radio button for sea or air pressure
+        #radio button for sea or air pressure
         methods = [('Sea Pressure', 'sea'),
                    ('Air Pressure', 'air')]
 
         self.methodvar = Tk.StringVar()
         self.methodvar.set('sea')
 
-        self.label1 = Tk.Label(root, text='What type of file would you like to chop?').pack(anchor=W)
+        Tk.Label(root, text='What type of file would you like to chop?').pack(anchor=W)
         for name, kwarg in methods:
             Tk.Radiobutton(root, text=name, variable=self.methodvar,
                             value=kwarg).pack(anchor=W)
         
-        # Date time options
+        #Date time options
         Tk.Label(root, text='Time zone to display dates in:').pack(anchor=W)
-        options = ('GMT',
+        options=('GMT',
+                'US/Alaska',
                 'US/Aleutian',
+                'US/Arizona',
                 'US/Central',
+                'US/East-Indiana',
                 'US/Eastern',
                 'US/Hawaii',
+                'US/Indiana-Starke',
+                'US/Michigan',
                 'US/Mountain',
-                'US/Pacific')
+                'US/Pacific',
+                'US/Pacific-New',
+                'US/Samoa')
         self.tzstringvar = Tk.StringVar()
         self.tzstringvar.set(options[0])
+        Tk.OptionMenu(self.root, self.tzstringvar, *options).pack(anchor=W, pady=2, padx=15)
         
-        self.datePickFrame = Tk.Frame(self.frame)
-        
-        Tk.OptionMenu(self.datePickFrame, self.tzstringvar, *options).pack(side=LEFT, pady=2, padx=15)
-        
-        self.daylightSavings = Tk.BooleanVar()
-        Tk.Checkbutton(self.datePickFrame, text="Daylight Savings", variable=self.daylightSavings).pack(side=RIGHT)
-        self.datePickFrame.pack()
-        
-        # tkinter spacing
-        self.emptyLabel4 = Tk.Label(self.frame, text='', font=("Helvetica", 2))
-        self.emptyLabel4.pack(anchor=W, padx=15, pady=0)
+        #tkinter spacing
+        self.emptyLabel4 = Tk.Label(self.root, text='', font=("Helvetica", 2))
+        self.emptyLabel4.pack(anchor=W,padx = 15,pady = 0)
         
         # select file button
-        self.b1 = Tk.Button(self.frame, text='Select File', command=self.select_input)
+        self.b1 = Tk.Button(self.root, text='Select File', command=self.select_input)
         self.b1.pack(anchor=W, pady=2, padx=15)
         
-        # more spacing, tkinter spacing, this should be remedied some other way
-        self.emptyLabel2 = Tk.Label(self.frame, text='', font=("Helvetica", 2))
-        self.emptyLabel2.pack(anchor=W, padx=15, pady=0)
+        #more spacing, tkinter spacing, this should be remedied some other way
+        self.emptyLabel2 = Tk.Label(self.root, text='', font=("Helvetica", 2))
+        self.emptyLabel2.pack(anchor=W,padx = 15,pady = 0)
         
-        # options
-        Tk.Label(self.frame, text='Define Time Period to Export:').pack(anchor=W, padx=15, pady=2)
+        #options
+        Tk.Label(self.root, text='Define Time Period to Export:').pack(anchor=W, padx=15, pady=2)
         
-        # Start Date
-        Tk.Label(self.frame, text='Start date (mm/dd/YY HH:MM:SS):').pack(anchor=W, pady=2, padx=15)
+        #Start Date
+        Tk.Label(self.root, text='Start date (mm/dd/YY HH:MM:SS):').pack(anchor=W, pady=2, padx=15)
         self.date1 = Tk.StringVar()
-      
-        self.textEntry = Tk.Entry(self.frame, width=30, textvariable=self.date1).pack(anchor=W, pady=2, padx=15)
+        self.textEntry = Tk.Entry(self.root, width=30, textvariable=self.date1).pack(anchor=W, pady=2, padx=15)
         
-        # End Date
-        Tk.Label(self.frame, text='End date (mm/dd/YY HH:MM:SS):').pack(anchor=W, pady=2, padx=15)
+        #End Date
+        Tk.Label(self.root,text='End date (mm/dd/YY HH:MM:SS):').pack(anchor=W, pady=2, padx=15)
         self.date2 = Tk.StringVar()
-        self.textEntry2 = Tk.Entry(self.frame, width=30, textvariable=self.date2).pack(anchor=W, pady=2, padx=15)
+        self.textEntry2 = Tk.Entry(self.root,width=30, textvariable=self.date2).pack(anchor=W, pady=2, padx=15)
         
-        # tkinter spacing
-        self.emptyLabel3 = Tk.Label(self.frame, text='', font=("Helvetica", 2))
-        self.emptyLabel3.pack(anchor=W, padx=15, pady=0)
+        #tkinter spacing
+        self.emptyLabel3 = Tk.Label(self.root, text='', font=("Helvetica", 2))
+        self.emptyLabel3.pack(anchor=W,padx = 15,pady = 0)
         
-        # Export the selected time series
-        self.b = Tk.Button(self.frame, text='Export Selection', command=self.export, state='disabled')
+        #Export the selected time series
+        self.b = Tk.Button(self.root, text='Export Selection', command=self.export, state='disabled')
         self.b.pack(anchor=W, pady=2, padx=15)
-        self.emptyLabel4 = Tk.Label(self.frame, text='', font=("Helvetica", 2))
-        self.emptyLabel4.pack(anchor=W, padx=15, pady=0)
-        
-        self.frame.pack(side=Tk.LEFT)
+        self.emptyLabel4 = Tk.Label(self.root, text='', font=("Helvetica", 2))
+        self.emptyLabel4.pack(anchor=W,padx = 15,pady = 0)
 
     def plot_pressure(self):
         
-        #check to see if there is already a graph if so destroy it
-        if self.canvas != None:
-            self.toolbar.destroy()
-            self.canvas.get_tk_widget().destroy()
-            
-        
         #get date times from netCDF file
         self.t_dates = nc.get_datetimes(self.fname)
-        print(self.daylightSavings.get())
-        if self.daylightSavings.get() == True:
-            delta = timedelta(seconds = 3600)
-            self.t_dates = [x - delta for x in self.t_dates]
          
         #get sea or air pressure depending on the radio button
         if self.methodvar.get() == "sea":
@@ -139,9 +120,9 @@ class Chopper:
         #get quality control data    
         qc = nc.get_flags(self.fname)
         
-        self.fig = fig = plt.figure(figsize=(12,7))
+        self.fig = fig = plt.figure()
         ax = fig.add_subplot(111)
-      
+        
         #title
         ax.set_title('Chop Pressure File\n(Timezone in %s time)' % self.tzstringvar.get())
         
@@ -153,7 +134,7 @@ class Chopper:
         
         #labels, and plot time series
         line = plt.plot(self.time_nums, p, color='blue')
-#         plt.xlabel('Time (s)')
+        plt.xlabel('Time (s)')
         plt.ylabel('Pressure (dBar)')
         
         #all points that were flagged in the qc data are stored in
@@ -180,7 +161,7 @@ class Chopper:
         events = []
  
         def on_click(event):
-           
+             
             #capture events and button pressed
             events.append(event)
             if event.button == 1:
@@ -195,7 +176,6 @@ class Chopper:
             x1 = self.left.get_xdata()[0]
             temp_date = mdates.num2date(x1, tz=pytz.timezone(str(self.tzstringvar.get())))
             datestring = temp_date.strftime('%m/%d/%y %H:%M:%S')
-            self.plot_event = True
             self.date1.set(datestring)
               
             #get the left slice time data, convert matplotlib num to date
@@ -203,7 +183,6 @@ class Chopper:
             x2 = self.right.get_xdata()[0]
             temp_date2 = mdates.num2date(x2, tz=pytz.timezone(str(self.tzstringvar.get())))
             datestring2 = temp_date2.strftime('%m/%d/%y %H:%M:%S')
-            self.plot_event = True
             self.date2.set(datestring2)
              
             xy = [[x1, 0], [x1, 1], [x2, 1], [x2, 0], [x1, 0]]
@@ -211,66 +190,14 @@ class Chopper:
             #draw yellow highlight over selected area in graph
             patch.set_xy(xy)
             patch.figure.canvas.draw()
-            
-        def patch2(sv):
-            if self.plot_event == True:
-                self.plot_event = False
-            else:
-                try:
-                    if sv == 1:
-                        date = self.date1.get()
-                        tz = pytz.timezone(str(self.tzstringvar.get()))
-                        temp_dt = datetime.strptime(date, '%m/%d/%y %H:%M:%S')
-                        temp_dt = tz.localize(temp_dt, is_dst=None).astimezone(pytz.UTC)
-                        x1 = mdates.date2num(temp_dt)
-                        self.left.set_xdata([x1,x1])
-                         
-                        x2 = self.right.get_xdata()[0]
-                         
-                        xy = [[x1, 0], [x1, 1], [x2, 1], [x2, 0], [x1, 0]]
-                  
-                        #draw yellow highlight over selected area in graph
-                        patch.set_xy(xy)
-                        patch.figure.canvas.draw()
-                    else:
-                        x1 = self.left.get_xdata()[0]
-                         
-                        date = self.date2.get()
-                        tz = pytz.timezone(str(self.tzstringvar.get()))
-                        temp_dt = datetime.strptime(date, '%m/%d/%y %H:%M:%S')
-                        temp_dt = tz.localize(temp_dt, is_dst=None).astimezone(pytz.UTC)
-                        x2 = mdates.date2num(temp_dt)
-                        self.right.set_xdata([x2,x2])
-                      
-                        xy = [[x1, 0], [x1, 1], [x2, 1], [x2, 0], [x1, 0]]
-                  
-                        #draw yellow highlight over selected area in graph
-                        patch.set_xy(xy)
-                        patch.figure.canvas.draw()
-                         
-                except:
-                    print('nope')
-  
+ 
+        self.canvas = canvas = self.fig.canvas
          
-          
         #add event listener for clicks on the graph
-#         
-        self.date1.trace("w", lambda name, index, mode, i = 1: patch2(i))
-        self.date2.trace("w", lambda name, index, mode, i = 2: patch2(i))
+        canvas.mpl_connect('button_press_event', on_click)
+        plt.draw()
         
-        
-        self.canvas = FigureCanvasTkAgg(self.fig, master= self.root)
-        
-        
-        self.toolbar = NavigationToolbar2TkAgg( self.canvas, self.root )
-        self.toolbar.update()
-
-        
-        self.canvas.mpl_connect('button_press_event', on_click)
-        self.canvas.show()
-        self.canvas.get_tk_widget().pack(side=Tk.TOP, fill=Tk.BOTH, expand=2)
-        
-       
+        plt.show()
 
 
     def export(self):
@@ -284,7 +211,8 @@ class Chopper:
             out_fname = filedialog.asksaveasfilename()
             if out_fname == '':
                 return
-                     
+            
+                      
             #convert string to date time, then convert to matplotlib number
             tz = pytz.timezone(str(self.tzstringvar.get()))
             temp_dt = datetime.strptime(date1, '%m/%d/%y %H:%M:%S')
@@ -303,12 +231,7 @@ class Chopper:
             print('self.fname = ', self.fname)
             
             #chop out selected time series given the chosen parameters
-            if self.methodvar.get() == "sea":
-                chop_netcdf(self.fname, out_fname, i1, i2, False)
-            else:
-                chop_netcdf(self.fname, out_fname, i1, i2, True)
-            plt.close('all')
-            
+            chop_netcdf(self.fname, out_fname, i1, i2)
             plt.close('all')
             
             #success and close the GUI
@@ -334,8 +257,6 @@ class Chopper:
     def format_date(self,x,arb=None):
         '''Format dates so that they are padded away from the x-axis'''
         tz = timezone(self.tzstringvar.get())
-        
-      
         date_str = mdates.num2date(x,tz=tz).strftime('%b-%d-%Y \n %H:%M')
         return ''.join([' ','\n',date_str])
             

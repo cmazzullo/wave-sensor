@@ -11,6 +11,7 @@ class DataStore(object):
         self.data_start_date = None
         self.data_end_date = None
         self.data_duration = None
+        self.datum = None
         self.pressure_data = None
         self.pressure_qc_data = None
         self.pressure_range = [-1000,1000]
@@ -27,10 +28,15 @@ class DataStore(object):
         self.longitude = 0
         self.longitude_range = [-180,180]
         self.z = 0
-        self.salinity = 35
+        self.salinity = 0
         self.data_grouping = grouping
         self.epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
         self.fill_value = np.float64(-1.0e+10)
+        self.initial_land_surface_elevation = 0
+        self.final_land_surface_elevation = 0
+        self.sensor_orifice_elevation_at_deployment_time = None
+        self.sensor_orifice_elevation_at_retrieval_time = None
+        self.summary = None
         self.instrument_var = { 'long_name': 'Attributes for instrument 1',
                                 'make_model': '',
                                 'serial_number': '',
@@ -62,10 +68,10 @@ class DataStore(object):
                         'short_name': 'longitude',
                         'units': "degrees",
                         'axis': 'X',
-                        'valid_min': self.longitude,
-                        'valid_max': self.longitude,
+                        'valid_min': self.longitude_range[0],
+                        'valid_max': self.longitude_range[1],
                         'ancillary_variables': '',
-                        'comment': "longitude 0 equals prime meridian",
+                        'comment': "longitude 0 = IERS Reference Meridian as used by WGS84 for longitude. East is positive.",
                         'ioos_category': "Location",
                         'add_offset': 0.0,
                         'scale_factor': 1.0,
@@ -77,10 +83,10 @@ class DataStore(object):
                         'short_name': 'latitude',
                         'units': "degrees",
                         'axis': 'Y',
-                        'valid_min': self.latitude,
-                        'valid_max': self.latitude,
+                        'valid_min': self.latitude_range[0],
+                        'valid_max': self.latitude_range[1],
                         'ancillary_variables': '',
-                        'comment': "latitude 0 equals equator",
+                        'comment': "latitude 0 equals equator. North is positive.",
                         'ioos_category': "Location",
                         'add_offset': 0.0,
                         'scale_factor': 1.0,
@@ -90,7 +96,8 @@ class DataStore(object):
                         'long_name': "altitude of sensor",
                         'standard_name': "altitude",
                         'short_name': 'altitude',
-                        'units': "degrees",
+                        'units': "meters",
+                        'datum': self.datum,
                         'axis': 'Z',
                         'valid_min': self.z_range[0],
                         'valid_max': self.z_range[1],
@@ -102,7 +109,7 @@ class DataStore(object):
                         'compression': "not used at this time",
                       }
         self.z_var_qc = {
-                                  'flag_masks': '11111111 11111110 11111101 11111011 11110111',
+                                'flag_masks': '11111111 11111110 11111101 11111011 11110111',
                                 'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, invalid_rate_of_change, interpolated_data",
                                 'comment': '1 signifies the value passed the test while a 0 flags a failed test, leading 1 is a placeholder'
                                 }
@@ -115,17 +122,21 @@ class DataStore(object):
                              'scale_factor': np.float32(1.0),
                              'add_offset': np.float32(0.0),
                              'compression': "not used at this time",
-                             'min': self.pressure_range[0],
-                             'max': self.pressure_range[1],
+                             'valid_min': self.pressure_range[0],
+                             'valid_max': self.pressure_range[1],
                              'ancillary_variables': '',
                              'coordinates': "time latitude longitude altitude",
                              'ioos_category': "Pressure",
                              'comment': "",
+                             'instrument_manufacturer': "",
+                             'instrument_make': "",
+                             'instrument_model': "",
+                             'instrument_serial_number': ""
                              }
         self.pressure_var_qc = {
                                  'flag_masks': '11111111 11111110 11111101 11111011 11110111',
                                 'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, invalid_rate_of_change, interpolated_data",
-                                 'comment': '1 signifies the value passed the test while a 0 flags a failed test, leading 1 is a placeholder'
+                                 'comment': '1 signifies the value passed the test while a 0 flags a failed test, leading 1 is a placeholder,\n stuck sensor test (last_five_vals_identical) is temporarily turned off and thus its corresponding bit is always one'
                                 }
         self.temp_var= {
                              'long_name': "sensor temperature record",
@@ -136,8 +147,8 @@ class DataStore(object):
                              'scale_factor': np.float32(1.0),
                              'add_offset': np.float32(0.0),
                              'compression': "not used at this time",
-                             'min': self.temperature_range[0],
-                             'max': self.temperature_range[1],
+                             'valid_min': self.temperature_range[0],
+                             'valid_max': self.temperature_range[1],
                              'ancillary_variables': '',
                              'coordinates': "time latitude longitude altitude",
                              'ioos_category': "Temperature",
@@ -159,6 +170,7 @@ class DataStore(object):
                                  "creator_url": "gui url",
                                  "date_created": datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ"),
                                  "date_modified": datetime.strftime(datetime.now(tz=pytz.utc), "%Y-%m-%dT%H:%M:%SZ"),
+                                
                                  "geospatial_lat_min": self.latitude_range[0],
                                  "geospatial_lat_max": self.latitude_range[1],
                                  "geospatial_lon_min": self.longitude_range[0],
@@ -170,10 +182,14 @@ class DataStore(object):
                                  "geospatial_vertical_min": self.z,
                                  "geospatial_vertical_max": self.z,
                                  "geospatial_vertical_units": "meters",
+                                 "geospatial_vertical_reference": self.datum,
+                                 "geospatial_vertical_reference_comment": "",
                                  "geospatial_vertical_resolution": "point",
                                  "geospatial_vertical_positive": "up",
                                  "history": "not used at this time",
                                  "id": "not used at this time",
+                                 "initial_land_surface_elevation": self.initial_land_surface_elevation,
+                                 "final_land_surface_elevation": self.final_land_surface_elevation,
                                  "institution": "USGS",
                                  "keywords": "not used at this time",
                                  "keywords_vocabulary": "not used at this time",
@@ -186,19 +202,22 @@ class DataStore(object):
                                  "publisher_email": "deferred with intention to implement",
                                  "publisher_name": "deferred with intention to implement",
                                  "publisher_url": "deferred with intention to implement",
-                                 "readme": "file created by "+ "gui creator " +str(datetime.now()),
+                                 "readme": "File created by Wavelab Tool Suite version 1.0",
+                                 "salinity": self.salinity,
                                  "salinity_ppm": self.salinity,
                                  "sea_name": "gui sea name",
+                                 "sensor_orifice_elevation_at_deployment_time": self.sensor_orifice_elevation_at_deployment_time,
+                                 "sensor_orifice_elevation_at_retrieval_time": self.sensor_orifice_elevation_at_retrieval_time,
                                  #add another variable to work with Marie's system will follow up with her
                                  "standard_name_vocabulary": "CF-1.6",
-                                 "summary": "This is data collected by a pressure instrument used for extrapolating information regarding weather patterns",
-                                 "time_coverage_start": "utilitiy coverage start",
+                                 "summary": "",
+                                 "time_coverage_start": "utility coverage start",
                                  "time_coverage_end": "utility coverage end",
                                  "time_coverage_duration": "utility coverage duration",
                                  "time_coverage_resolution": "P0.25S",
                                  # "time_of_deployment": None,
                                  # "time_of_retrieval": None,
-                                 "time_zone": "UTC",
+                                 "time_zone": "GMT",
 #                                  "title": 'Measure of pressure at %s degrees latitude, %s degrees longitude' \
 #                                  ' from the date range of %s to %s' % (self.latitude, self.longitude,self.creator_name, \
 #                                                                        self.data_start_date, self.data_end_date),
@@ -252,6 +271,7 @@ class DataStore(object):
             z = ds.createVariable("altitude", "f8",("time",),
                                   fill_value=self.fill_value)
         for x in self.z_var:
+            print(self.z_var[x], x)
             z.setncattr(x,self.z_var[x])
         z[:] = self.z_data
 

@@ -48,7 +48,7 @@ class AverageGui:
         
         #read in the netCDF file
         try:
-            file_average(self.in_file_name,int(self.Increments.get()), int(self.AveragedPoints.get()),self.methodvar.get())
+            file_average(self.in_file_name, int(self.AveragedPoints.get()), int(self.Increments.get()), self.methodvar.get())
             easygui.msgbox('Success processing the data.', 'Success')
         except:
             easygui.msgbox('Could not average file, check file type', 'Error')

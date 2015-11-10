@@ -21,7 +21,6 @@ cdef int check_4
 @cython.boundscheck(False)
 def run_tests(np.ndarray[DTYPE2_t, ndim=1] data, int interpolate):
     qc = []
-    bad_data = False
     length = data.shape[0]
     
     if interpolate == 0:
@@ -39,20 +38,18 @@ def run_tests(np.ndarray[DTYPE2_t, ndim=1] data, int interpolate):
         
         if data[x] > measure_max or data[x] < measure_min:
             check_2 = 253
-            bad_data = True
         else:
             check_2 = 255
             
         if x > 0 and (data[x] - data[x-1] > 10
             or data[x] - data[x-1] < -10):
             print('Minus', data[x] - data[x-1])
-            bad_data = True
             check_3 = 251
         else:
             check_3 = 255
             
         qc.append(bin(check_1 & check_2 & check_3 & check_4)[2:])
-    return (qc, bad_data)
+    return qc
     
     
     

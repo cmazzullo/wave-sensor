@@ -8,15 +8,18 @@ Provides methods to convert water pressure into water depth.
 """
 
 import numpy as np
-from NetCDF_Utils.nc import FILL_VALUE
 
 # Constants
 GRAVITY = 9.8  # (m / s**2)
 WATER_DENSITY = 1030  # density of seawater (kg / m**3)
+FILL_VALUE = -1e10
 
 
 def combo_method(time, pressure, device_d, water_d, tstep):
     """Convert pressure series into depth series using fft method."""
+    
+    #this creates a split for each fill value since the fourier functions
+    #handle fill values gracefully
     split_idx = (pressure == FILL_VALUE)
     idx = np.where(split_idx[1:] ^ split_idx[:-1])[0] + 1
     dchunks = []
@@ -37,6 +40,7 @@ def combo_method(time, pressure, device_d, water_d, tstep):
 
 def hydrostatic_method(pressure):
     """Return the depth corresponding to a hydrostatic pressure."""
+    
     return (pressure *  1e4) / (WATER_DENSITY * GRAVITY)
 
 

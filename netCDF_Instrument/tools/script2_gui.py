@@ -39,7 +39,7 @@ class Script2gui:
         self.sea_var.set('File containing water pressure...')
         self.air_fname = ''
         self.air_var = StringVar()
-        self.air_var.set('File containing air pressure (optional)...')
+        self.air_var.set('File containing air pressure...')
         self.make_fileselect(root, 'Water file:',
                              self.sea_var, 'sea_fname')
         self.make_fileselect(root, 'Air file:',
@@ -55,7 +55,7 @@ class Script2gui:
         if fname != '':
             stringvar.set(fname)
             setattr(self, varname, fname)
-            if self.sea_fname:
+            if self.sea_fname and self.air_fname:
                 self.b3['state'] = 'ENABLED'
         self.root.focus_force()
 

@@ -7,6 +7,7 @@ import pytz
 from datetime import datetime
 import netCDF4
 from NetCDF_Utils.VarDatastore import DataStore
+import unit_conversion
 
 
 class NetCDFReader(object):
@@ -195,7 +196,7 @@ class NetCDFWriter(object):
         self.creator_name = ""
         self.creator_email = ""
         self.creator_url = ""
-        self.sea_name = "The Red Sea"
+        self.sea_name = ""
         self.user_data_start_flag = None
         self.vstore = DataStore(1)
         self.vdict = dict()
@@ -204,23 +205,67 @@ class NetCDFWriter(object):
         self.device_depth = None
         self.deployment_time = None
         self.retrieval_time = None
+        self.bad_data = False
+        self.initial_land_surface_elevation = 0
+        self.final_land_surface_elevation = 0
+        self.device_depth = None
+        self.device_depth2 = None
+        self.datum = None
+        self.summary = None
+        self.stn_station_number = None
+        self.stn_instrument_id = None
+        self.daylightSavings = False
+        self.instrument_name = None
+        self.instrument_serial = None
 
     def write(self, sea_pressure=True):
+        '''Writing a netCDF from the fields entered in either sea or air gui'''
+        
+        #Assign variables according to the GUI used (air or sea)
         if sea_pressure == False:
             self.vstore.pressure_name = "air_pressure"
             self.vstore.pressure_var['standard_name'] = "air_pressure"
+            self.summary = "These data were collected by an unvented pressure logger deployed in the air"
+        else:
+            self.vstore.pressure_name = "sea_pressure"
+            self.vstore.pressure_var['standard_name'] = "sea_pressure"
+            self.summary = "These data were collected by an unvented pressure logger deployed in the sea" 
+           
+        #Get Instrument Data
+        self.instrument_info(self.instrument_name,self.vstore.pressure_var) 
+        
+        # Assign pressure, time, lat. lon, and time resolution
         self.vstore.pressure_data = self.pressure_data
         self.vstore.utc_millisecond_data = self.utc_millisecond_data
         self.vstore.latitude = self.latitude
         self.vstore.longitude = self.longitude
         self.vstore.time_coverage_resolution = ''.join(["P", str(1 / self.frequency), "S"])
-        self.vstore.pressure_qc_data = DataTests.run_tests(self.pressure_data.astype(np.double), 0)
+        
+        #perform data test and assign qc data flags
+        self.vstore.pressure_qc_data, self.bad_data = DataTests.run_tests(self.pressure_data.astype(np.double), 0)
+        
+        #write the netCDF file using the vstore dictionary
         self.write_netCDF(self.vstore, len(self.pressure_data))
+        
+    def instrument_info(self,inst, vstore):
+        '''Instrument info data based on selected instrument'''
+        
+        if inst == "Onset Hobo U20":
+            vstore["instrument_manufacturer"] = "Onset"
+            vstore["instrument_make"] = "Hobo"
+            vstore["instrument_model"] = "U20"
+            vstore["instrument_serial_number"] = self.instrument_serial
+        else:
+            vstore["instrument_manufacturer"] = "Measurement Specialties"
+            vstore["instrument_make"] = "TruBlue"
+            vstore["instrument_model"] = "255"
+            vstore["instrument_serial_number"] = self.instrument_serial
 
     def write_netCDF(self,var_datastore,series_length):
         with Dataset(self.out_filename, 'w', format="NETCDF4_CLASSIC") as ds:
             time_dimen = ds.createDimension("time", series_length)
             var_datastore.set_attributes(self.var_dict())
+            var_datastore.z_var['datum'] = self.datum
             var_datastore.send_data(ds)
 
     def var_dict(self):
@@ -233,6 +278,7 @@ class NetCDFWriter(object):
         global_vars = {'creator_name': self.creator_name,
                        'creator_email': self.creator_email,
                        'creator_url': self.creator_url,
+                       'geospatial_vertical_reference': self.datum,
                        'geospatial_lat_min': self.latitude,
                        'geospatial_lat_max': self.latitude,
                        'geospatial_lon_min': self.longitude,
@@ -241,12 +287,20 @@ class NetCDFWriter(object):
                        'geospatial_vertical_max': self.z,
                        'sea_name': self.sea_name,
                        'initial_water_depth': self.initial_water_depth,
+                       'initial_land_surface_elevation': float(self.initial_land_surface_elevation) / unit_conversion.METER_TO_FEET,
+                       'final_land_surface_elevation': float(self.final_land_surface_elevation) / unit_conversion.METER_TO_FEET,
                        'final_water_depth': self.final_water_depth,
                        'deployment_time': self.deployment_time,
                        'retrieval_time': self.retrieval_time,
                        'device_depth': self.device_depth,
                        'salinity' : self.salinity,
-                       'time_coverage_resolution': resolution_string.format(1/self.frequency)
+                       'salinity_ppm': self.salinity,
+                       'sensor_orifice_elevation_at_deployment_time' : float(self.device_depth) / unit_conversion.METER_TO_FEET,
+                       'sensor_orifice_elevation_at_retrieval_time' : float(self.device_depth2) / unit_conversion.METER_TO_FEET,
+                       'time_coverage_resolution': resolution_string.format(1/self.frequency),
+                       'summary': self.summary,
+                       'stn_station_number': self.stn_station_number,
+                       'stn_instrument_id': self.stn_instrument_id
                        }
 
         var_dict['global_vars_dict'] = global_vars

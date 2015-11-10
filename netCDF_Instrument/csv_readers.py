@@ -29,16 +29,32 @@ class Hobo(NetCDFWriter):
         '''load the data from in_filename
         only parse the initial datetime = much faster
         '''
+        self.get_serial()
         skip_index = find_first(self.in_filename, '"#"')
         df = pd.read_table(self.in_filename, skiprows=skip_index, header=None,
                            engine='c', sep=',', usecols=(1, 2))
         df = df.dropna()
-        first_stamp = uc.datestring_to_ms(df.values[0][0], self.date_format_string)
-        second_stamp = uc.datestring_to_ms(df.values[1][0], self.date_format_string)
+        first_stamp = uc.datestring_to_ms(df.values[0][0], self.date_format_string, self.tz_info)
+        second_stamp = uc.datestring_to_ms(df.values[1][0], self.date_format_string, self.tz_info)
         self.frequency = 1000 / (second_stamp - first_stamp)
-        start_ms = uc.datestring_to_ms(df[1][0], self.date_format_string)
+        start_ms = uc.datestring_to_ms(df[1][0], self.date_format_string, self.tz_info)
         self.utc_millisecond_data = uc.generate_ms(start_ms, df.shape[0], self.frequency)
+        
+        if self.daylightSavings == True:
+            self.utc_millisecond_data = [x - 3600000 for x in self.utc_millisecond_data]
+        
         self.pressure_data = df[2].values * uc.PSI_TO_DBAR
+        
+    def get_serial(self):
+        self.instrument_serial = "not found"
+        with open(self.in_filename, 'r') as text:
+            for i, line in enumerate(text):
+                if line.find('End Of File') > -1:
+                    beginIndex = line.rfind(':') + 2
+                    endIndex = line.rfind(')')
+                    self.instrument_serial = \
+                    line[beginIndex:endIndex]
+        
 
 
 class House(NetCDFWriter):
@@ -167,23 +183,37 @@ class MeasureSysLogger(NetCDFWriter):
         '''load the data from in_filename
         only parse the initial datetime = much faster
         '''
+        self.get_serial()
         skip_index = find_first(self.in_filename, '^ID') - 1
         # for skipping lines in case there is calibration header data
         df = pd.read_table(self.in_filename, skiprows=skip_index + 1, header=None,
                            engine='c', sep=',', usecols=[3, 4, 5 ,6])
         self.data_start = uc.datestring_to_ms(df[3][3][1:],
-                                              self.date_format_string)
+                                              self.date_format_string, self.tz_info)
         second_stamp = uc.datestring_to_ms(df[3][4][1:],
-                                           self.date_format_string)
+                                           self.date_format_string, self.tz_info)
         self.frequency = 1000 / (second_stamp - self.data_start)
-        # Since the instrument is not reliably recording data at 4hz
-        # we have decided to interpolate the data to avoid any
-        # potential complications in future data analysis
+        
+        
         self.pressure_data = df[5].values * uc.PSI_TO_DBAR
-        start_ms = uc.datestring_to_ms('%s' % df[3][0][1:], self.date_format_string)
+        start_ms = uc.datestring_to_ms('%s' % df[3][0][1:], self.date_format_string, self.tz_info)
+        
         self.utc_millisecond_data = uc.generate_ms(start_ms, df.shape[0], self.frequency)
+        
+        if self.daylightSavings == True:
+            self.utc_millisecond_data = [x - 3600000 for x in self.utc_millisecond_data]
+            
         if re.match('^[0-9]{1,3}.[0-9]+$', str(df[6][0])):
             self.temperature_data = [x for x in df[6]]
+            
+    def get_serial(self):
+        self.instrument_serial = "not found"
+        with open(self.in_filename, 'r') as text:
+            for i, line in enumerate(text):
+                if line.find('Transducer Serial') > -1:
+                    match = re.search("[0-9]{7}", line)
+                    self.instrument_serial = match.group(0)
+        
 
 
 class RBRSolo(NetCDFWriter):

@@ -12,27 +12,43 @@ import os
 from collections import OrderedDict
 from tools.script1 import INSTRUMENTS, convert_to_netcdf
 import json
+from pip._vendor.html5lib import inputstream
+import re
 
 GLOBAL_HISTFILE = 'history.json'
-LOCAL_HISTFILE = 'history2.json'
+LOCAL_HISTFILE = 'history2_sea.json'
 GLOBAL_FIELDS = OrderedDict([
     ('creator_name', ['Your full name:', '']),
     ('creator_email', ['Your email address:', '']),
     ('creator_url', ['Your personal url:', ''])])
 LOCAL_FIELDS = OrderedDict([
     ('instrument_name', ['Instrument:', [
-        'Measurement Specialties', 'HOBO', #'LevelTroll','RBRSolo', 'USGS Homebrew'
+        'MS TruBlue 255', 'Onset Hobo U20', #'LevelTroll','RBRSolo', 'USGS Homebrew'
         ], True]),
+    ('stn_station_number', ['STN Station Number:', '']),
+    ('stn_instrument_id', ['STN Instrument Id:', '']),
     ('latitude', ['Latitude (decimal degrees):', '', True]),
     ('longitude', ['Longitude (decimal degrees):', '', True]),
-    ('tzinfo', ['Timezone:', ['US/Central', 'US/Eastern'], True])])
+    ('tzinfo', ['Time zone the instrument recorded time in:', ['GMT',
+                'US/Aleutian',
+                'US/Central',
+                'US/Eastern',
+                'US/Hawaii',
+                'US/Mountain',
+                'US/Pacific'], True]),
+    ('daylightSavings', ['Daylight Savings',False]),
+    ('datum', ['Datum:', ['NAVD88',
+                            'NGVD29',
+                            'Above Ground Level',
+                            'Local Control Point'], True])])
 WATER_ONLY_FIELDS = OrderedDict([
     ('salinity', ['Salinity:', [
         'Salt Water (> 30 ppt)', 'Brackish Water (.5 - 30 ppt)',
         'Fresh Water (< .5 ppt)'], False]),
-    ('initial_water_depth', ['Initial water depth (meters):', '', False]),
-    ('final_water_depth', ['Final water depth (meters):', '', False]),
-    ('device_depth', ['Depth of device (meters):', '', False]),
+    ('initial_land_surface_elevation', ['Initial land surface elevation (feet):', '', False]),
+    ('final_land_surface_elevation', ['Final land surface elevation (feet):', '', False]),
+    ('device_depth', ['Sensor orifice elevation at deployment time(feet):', '', False]),
+    ('device_depth2', ['Sensor orifice elevation at retrieval time(feet):', '', False]),
     ('deployment_time', ['Deployment time (YYYYMMDD HHMM):', '', False]),
     ('retrieval_time', ['Retrieval time (YYYYMMDD HHMM):', '', False]),
     ('sea_name', ['Sea Name:', [
@@ -63,8 +79,11 @@ class Wavegui:
         self.global_form = Form(self.parent, list(GLOBAL_FIELDS.values()),
                                 GLOBAL_HISTFILE)
         self.global_form.grid(row=2, column=0)
+        self.summary = "These data were collected by an unvented pressure logger deployed in the water."
         add = lambda: [self.add_file(fname)
                        for fname in askopenfilename(multiple=True)]
+        self.error_message = ""
+        
         buttons = [
             ("Add File(s)", add),
             ("Save Globals", self.global_form.dump),
@@ -91,35 +110,108 @@ class Wavegui:
         """Run the csv to netCDF conversion on the selected files."""
         message = ('Working, this may take a few minutes.')
 
-        try:
-            dialog = MessageDialog(self.parent, message=message,
-                                   title='Processing...', buttons=0, wait=False)
-            globs = dict(zip(GLOBAL_FIELDS.keys(),
-                             self.global_form.export_entries()))
+#         try:
+        dialog = MessageDialog(self.parent, message=message,
+                               title='Processing...', buttons=0, wait=False)
+        globs = dict(zip(GLOBAL_FIELDS.keys(),
+                         self.global_form.export_entries()))
+        bad_data = None
 
-
-            for fname, datafile in self.datafiles.items():
-                inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
-                inputs.update(globs)
-                inputs['sea_pressure'] = not self.air_pressure
-                inputs['in_filename'] = fname
-                inputs['out_filename'] = fname + '.nc'
-                convert_to_netcdf(inputs)
+        for fname, datafile in self.datafiles.items():
+            inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
+            inputs.update(globs)
+            inputs['sea_pressure'] = not self.air_pressure
+            inputs['in_filename'] = fname
+            inputs['out_filename'] = fname + '.nc'
+            inputs['initial_water_depth'] = 1.98
+            inputs['final_water_depth'] = 1.98
+            
+            process_files = self.validate_entries(inputs)
+            
+            if process_files == True:
+                bad_data = convert_to_netcdf(inputs)
                 self.remove_file(fname)
-            dialog.destroy()
-            MessageDialog(self.parent, message="Success! Files saved.",
-                          title='Success!')
-        except:
-            dialog.destroy()
-            MessageDialog(self.parent, message="Could not process files, please check file type.",
-                          title='Error')
-
+                dialog.destroy()
+                if bad_data == True:
+                    MessageDialog(self.parent, message="There were some bad data points in the file, please cut them using chopper\n and/or" \
+                                  " use the \"Hydrostatic\" method in the Water Level GUI",
+                              title='Data Issues!')
+                else:
+                    MessageDialog(self.parent, message="There were no bad data points in the file",
+                              title='No Data Issues!')
+            
+                MessageDialog(self.parent, message="Success! Files saved.",
+                              title='Success!') 
+            else:
+                dialog.destroy()
+                MessageDialog(self.parent, message= self.error_message,
+                              title='Error')
+            
+            self.error_message = ''
+                
+        
+        
+#         except:
+#             dialog.destroy()
+#             MessageDialog(self.parent, message="Could not process files, please check file type.",
+#                           title='Error')
+    
+    def validate_entries(self, inputs):
+        '''Check if the GUI entries are filled out and in the proper format'''
+        
+        ignore = [
+                  'in_filename',
+                  'tzinfo', 
+                  'sea_name',
+                  'sea_pressure',
+                  'salinity',
+                  'out_filename',
+                  'datum',
+                  'instrument_name'
+                  ]
+        
+        message_names = {
+        "creator_name": "Full Name",
+        "creator_email": "Email Address",
+        "creator_url": "Personal Url",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
+        "stn_station_number": "STN Station Number",
+        "stn_instrument_id": "STN Instrument Id",
+        "initial_land_surface_elevation": "Initial Land Surface Elevation",
+        "final_land_surface_elevation": "Final Land Surface Elevation",
+        "device_depth": "Sensor Orifice Elevation at Deployment Time",
+        "device_depth2": "Sensor Orifice Elevation at Retrieval Time",
+        "deployment_time": "Deployment Time",
+        "retrieval_time": "Retrieval Time"
+         }
+        
+        #Iterate through all of the dictionary inputs, check if blank or check proper ret/deploy time format
+        for x in sorted(inputs):
+            if x not in ignore:
+                if inputs[x] != None:
+                    if x == 'deployment_time' or x == 'retrieval_time':
+                       
+                        if re.fullmatch('^[0-9]{8}\s[0-9]{4}$', str(inputs[x])) == None:
+                            self.error_message += "%s input invalid \n" % message_names[x]
+                    else:
+                        if inputs[x] == '':
+                            self.error_message += "%s input invalid \n" % message_names[x]
+                else:
+                    self.error_message += "%s input invalid \n" % message_names[x]
+                    
+        if self.error_message != '':
+            return False
+        else:
+            return True
+        
     def remove_file(self, fname):
         """Remove the current file's tab from the window."""
         self.book.forget('current')
         self.datafiles.pop(fname)
 
-
+#what do you want me to do?  I'll never understand
+#please stop bullying me
 class Form(tk.Frame):
     """A widget that contains form fields that users can fill"""
     def __init__(self, root, fields, histfile):
@@ -132,13 +224,22 @@ class Form(tk.Frame):
 
     def make_entry_row(self, field, row):
         """Create an Entry based on a field and return its StringVar."""
-        label = tk.Label(self, text=field[0], width=30, anchor='w')
+        label = tk.Label(self, text=field[0], width=40, anchor='w')
         label.grid(row=row, column=0, sticky='W')
-        content = tk.StringVar()
+        
         value = field[1]
+         
+        if isinstance(value, bool):
+            content = tk.BooleanVar()
+        else:
+            content = tk.StringVar()
+            
         if isinstance(value, str):
             content.set(value)
-            widget = tk.Entry(self, textvariable=content, width=30)
+            widget = tk.Entry(self, textvariable=content, width=40)
+        elif isinstance(value, bool):
+            content.set(value)
+            widget = tk.Checkbutton(self, variable=content, width=40)
         else:
             content.set(value[0])
             widget = tk.OptionMenu(self, content, *value)

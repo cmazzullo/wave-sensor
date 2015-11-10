@@ -2,25 +2,29 @@
 A few convenience methods for quickly extracting/changing data in
 netCDFs
 """
-import numpy as np
 import os
 from datetime import datetime
 from netCDF4 import Dataset
+from netCDF4 import num2date
 # import netCDF4_utils, netcdftime # these make cx_freeze work
 import pytz
-from bitarray import bitarray as bit
 # Constant
 
 FILL_VALUE = -1e10
 
 # Utility methods
 
-def chop_netcdf(fname, out_fname, begin, end):
+def chop_netcdf(fname, out_fname, begin, end, air_pressure = False):
     """Truncate the data in a netCDF file between two indices"""
     if os.path.exists(out_fname):
         os.remove(out_fname)
     length = end - begin
-    p = get_pressure(fname)[begin:end]
+    
+    if air_pressure == False:
+        p = get_pressure(fname)[begin:end]
+    else:
+        p = get_air_pressure(fname)[begin:end]
+        
     t = get_time(fname)[begin:end]
     flags = get_flags(fname)[begin:end]
     alt = get_variable_data(fname, 'altitude')
@@ -35,15 +39,26 @@ def chop_netcdf(fname, out_fname, begin, end):
     # copy variables
     for key in d.variables:
         name = key
-        # datatype = d.variables[key].datatype
-        datatype = np.dtype('float64')
+        datatype = d.variables[key].datatype 
+        print(name, datatype)     
+#         datatype = np.dtype('float64')
         dim = d.variables[key].dimensions
-        var = output.createVariable(name, datatype, dim, fill_value=FILL_VALUE)
+        
+        if datatype == "int32":
+            var = output.createVariable(name, datatype, dim)
+        else:
+            var = output.createVariable(name, datatype, dim, fill_value=FILL_VALUE)
+        
         for att in d.variables[key].ncattrs():
             if att != '_FillValue':
                 setattr(var, att, d.variables[key].__dict__[att])
     output.variables['time'][:] = t
-    output.variables['sea_water_pressure'][:] = p
+    
+    if air_pressure == False:
+        output.variables['sea_water_pressure'][:] = p
+    else:
+        output.variables['air_pressure'][:] = p
+    
     output.variables['pressure_qc'][:] = flags
     output.variables['altitude'][:] = alt
     output.variables['longitude'][:] = long
@@ -56,8 +71,16 @@ def parse_time(fname, time_name):
     timezone_str = get_global_attribute(fname, 'time_zone')
     timezone = pytz.timezone(timezone_str)
     time_str = get_global_attribute(fname, time_name)
-    fmt = '%Y%m%d %H%M'
-    time = timezone.localize(datetime.strptime(time_str, fmt))
+    
+    fmt_1 = '%Y%m%d %H%M'
+    fmt_2 = '%Y%m%d %H:%M'
+    print(time_str)
+    
+    try:
+        time = timezone.localize(datetime.strptime(time_str, fmt_1))
+    except:
+        time = timezone.localize(datetime.strptime(time_str, fmt_2))
+        
     epoch_start = datetime(year=1970, month=1, day=1, tzinfo=pytz.utc)
     time_ms = (time - epoch_start).total_seconds() * 1000
     return time_ms
@@ -91,7 +114,7 @@ def append_depth_qc(fname, sea_qc, air_qc):
     flag_meanings =  "no_bad_data last_five_vals_identical, outside_valid_range, invalid_rate_of_change, interpolated_data"
 
     if air_qc != None:
-        air_qc = [int(x,2) for x in air_qc]
+        air_qc = [int(str(x),2) for x in air_qc]
         sea_qc = [int(str(x),2) for x in sea_qc]
 
         depth_qc = [bin(air_qc[x] & sea_qc[x])[2:] for x in range(0,len(sea_qc))]
@@ -133,11 +156,18 @@ def get_time(fname):
     """Get the time array from the netCDF at fname"""
     return get_variable_data(fname, 'time')
 
+def get_datetimes(fname):
+    '''Gets the time array and then converts them to date times'''
+    time = None
+    with Dataset(fname) as nc_file:
+        time = num2date(nc_file.variables['time'][:],nc_file.variables['time'].units)
+    
+    return time
+
 
 def get_air_pressure(fname):
     """Get the air pressure array from the netCDF at fname"""
     return get_variable_data(fname, 'air_pressure')
-
 
 def get_pressure(fname):
     """Get the water pressure array from the netCDF at fname"""
@@ -145,6 +175,12 @@ def get_pressure(fname):
 
 def get_pressure_qc(fname):
     return get_variable_data(fname, 'pressure_qc')
+
+def get_air_pressure_qc(fname):
+    return get_variable_data(fname, 'air_qc')
+
+def get_depth_qc(fname):
+    return get_variable_data(fname, 'depth_qc')
 
 # Get global data
 
@@ -168,6 +204,15 @@ def get_deployment_time(fname):
     """Get the deployment time from the netCDF at fname"""
     return parse_time(fname, 'deployment_time')
 
+def get_geospatial_vertical_reference(fname):
+    """Get the goespatial vertical reference (datum) from the netCDF at fname"""
+    return get_global_attribute(fname, 'geospatial_vertical_reference')
+
+def get_sensor_orifice_elevation(fname):
+    """Get the initial and final sensor orifice elevations from the netCDF at fname"""
+    initial = get_global_attribute(fname, 'sensor_orifice_elevation_at_deployment_time')
+    final = get_global_attribute(fname, 'sensor_orifice_elevation_at_retrieval_time')
+    return (initial, final)
 
 def get_retrieval_time(fname):
     """Get the retrieval time from the netCDF at fname"""

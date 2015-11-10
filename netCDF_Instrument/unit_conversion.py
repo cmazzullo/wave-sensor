@@ -19,6 +19,7 @@ def pressure_convert(x):
 PSI_TO_DBAR = 0.68947573
 ATM_TO_DBAR = 10.1325
 PASCAL_TO_DBAR = 0.0001
+METER_TO_FEET = 3.28084
 
 USGS_PROTOTYPE_V_TO_DBAR = lambda v: 2.5274e-3 * v + 5.998439
 USGS_PROTOTYPE_V_TO_C = lambda v: 0.0114044 * v - 17.778
@@ -35,9 +36,13 @@ def get_time_duration(ms_difference):
     return data_duration_time
 
 
-def datestring_to_ms(datestring, datestring_fmt):
+def datestring_to_ms(datestring, datestring_fmt, tz = None):
     """Convert a string containing a formatted date to UTC milliseconds."""
-    date = pytz.utc.localize(datetime.strptime(datestring, datestring_fmt))
+    if tz == None:
+        tz = "UTC"
+    time_zone = pytz.timezone(str(tz))
+    date = time_zone.localize(datetime.strptime(datestring, datestring_fmt))
+    date = date.astimezone(pytz.UTC)
     return date_to_ms(date)
 
 
@@ -57,7 +62,14 @@ def generate_ms(start_ms, series_length, freq):
     return np.arange(start_ms, stop_ms, timestep, dtype='int64')
 
 
-def convert_ms_to_datestring(ms, tzinfo):
+def convert_ms_to_datestring(ms, tzinfo, script = None):
+        '''Used when you want a date time string'''
         date = datetime.fromtimestamp(ms / 1000, tzinfo)
-        final_date = date.strftime('%Y-%m-%dT%H:%M:%SZ')
+        
+        if script == None:
+            final_date = date.strftime('%Y-%m-%dT%H:%M:%SZ')
+        else:
+            final_date = date.strftime('%m/%d/%y %H:%M')
         return final_date
+    
+

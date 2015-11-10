@@ -7,8 +7,6 @@ import tools.average_gui as average
 import tools.depth_grapher_gui as depth_grapher
 
 import tkinter as Tk
-from tkinter import filedialog
-from tkinter import ttk
 from tkinter import messagebox
 from tkinter.constants import W
 from PIL import Image, ImageTk
@@ -27,7 +25,7 @@ class MasterGui:
         self.image = photo
         self.panel.pack()
         
-        self.root.title('Wave Lab Tool Suite')
+        self.root.title('Wavelab Tool Suite')
         self.Label = Tk.Label(self.root, text='Core Programs:')
         self.Label.pack(anchor=W,padx = 15,pady = 2)
         self.b1 = Tk.Button(self.root, text='Sea GUI', command=self.sea_gui)

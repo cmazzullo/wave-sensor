@@ -14,6 +14,7 @@ import matplotlib.ticker as ticker
 import matplotlib.dates as mdates
 import pytz
 import unit_conversion as uc
+import easygui
 
 def format_date(x,arb=None):
     '''Format dates so that they are padded away from the x-axis'''
@@ -103,69 +104,57 @@ class StatsViewer:
         self.root.focus_force()
 
     def display(self):
-        t = nc.get_time(self.filename) / 1000
-        d = nc.get_depth(self.filename)
-        tstep = t[1] - t[0]
-        
-        #STATISTICS FUNCTION AVAILABLE FOR PLOTTING
-        periodfunc = lambda depth: stats.significant_wave_period(depth, tstep)
-        sigfunc = stats.significant_wave_height_standard
-        t10func = lambda depth: stats.ten_percent_wave_height(t, depth)
-        t1func = lambda depth: stats.one_percent_wave_height(t, depth)
-        rms_func = lambda depth: stats.rms_wave_height(t, depth)
-        median_func = lambda depth: stats.median_wave_height(t, depth)
-        maximum_func = lambda depth: stats.maximum_wave_height(t, depth)
-        average_func = lambda depth: stats.average_wave_height(t, depth)
-        average_z_func = lambda depth: stats.average_zero_crossing_period(t, depth)
-        mean_func = lambda depth: stats.mean_wave_period(t, depth)
-        crest_func = lambda depth: stats.crest_wave_period(t, depth)
-        peak_wave_func = lambda depth: stats.peak_wave_period(t, depth)
-        
-        funcs = {'H1/3': (sigfunc, 'H 1/3 (m)'), # contains functions and labels
-                 'T1/3': (periodfunc, 'T 1/3 (s)'),
-                 'T 10%': (t10func, 'T 10%'),
-                 'T 1%': (t1func, 'T 1%'),
-                 'RMS' : (rms_func, 'RMS'),
-                 'Median': (median_func, 'Median'),
-                 'Maximum': (maximum_func, 'Maximum'),
-                 'Average': (average_func, 'Average'),
-                 'Average Z Cross': (average_z_func, 'Average Z Cross'),
-                 'Mean Wave Period': (mean_func, 'Mean Wave Period'),
-                 'Crest': (crest_func, 'Crest'),
-                 'Peak Wave': (peak_wave_func, 'Peak')}
-        
-        size = self.sizes[self.chunk_size.get()] * float(self.number.get())
         try:
-            tchunks = stats.split_into_chunks(t, tstep, size)
-            dchunks = stats.split_into_chunks(d, tstep, size)
-        except ValueError:
-            tchunks = [t]
-            dchunks = [d]
-        t_stat = [np.average(tchunk) for tchunk in tchunks]
-        # t_stat = [uc.convert_ms_to_datestring(t, pytz.utc) for t in t_stat]
-        func = funcs[self.stat.get()][0]
-        label = funcs[self.stat.get()][1]
-        d_stat = [func(dchunk) for dchunk in dchunks]
-        plot_stats(t, d, t_stat, d_stat, label)
-        plt.show()
-        
-        def make_fileselect(self, root, labeltext, stringvar, varname):
-            command = lambda: self.select_file(varname, stringvar)
-            frame = make_frame(root)
-            l = tk.Label(frame, justify=LEFT, text=labeltext, width=10)
-            l.grid(row=0, column=0, sticky=W)
-            b = self.make_button(frame, 'Browse', command)
-            b.grid(row=0, column=2, sticky=W)
-            e = tk.Label(frame, textvariable=stringvar, justify=LEFT,
-                          width=32)
-            e.grid(row=0, column=1, sticky=(W, E))
-            frame.pack(anchor=W, fill=BOTH)
+            t = nc.get_time(self.filename) / 1000
+            d = nc.get_depth(self.filename)
+            tstep = t[1] - t[0]
             
-        def make_frame(frame, header=None):
-            """Make a frame with uniform padding."""
-            return tk.Frame(frame, padding="3 3 5 5")
+            #STATISTICS FUNCTION AVAILABLE FOR PLOTTING
+            periodfunc = lambda depth: stats.significant_wave_period(depth, tstep)
+            sigfunc = stats.significant_wave_height_standard
+            t10func = lambda depth: stats.ten_percent_wave_height(t, depth)
+            t1func = lambda depth: stats.one_percent_wave_height(t, depth)
+            rms_func = lambda depth: stats.rms_wave_height(t, depth)
+            median_func = lambda depth: stats.median_wave_height(t, depth)
+            maximum_func = lambda depth: stats.maximum_wave_height(t, depth)
+            average_func = lambda depth: stats.average_wave_height(t, depth)
+            average_z_func = lambda depth: stats.average_zero_crossing_period(t, depth)
+            mean_func = lambda depth: stats.mean_wave_period(t, depth)
+            crest_func = lambda depth: stats.crest_wave_period(t, depth)
+            peak_wave_func = lambda depth: stats.peak_wave_period(t, depth)
+            
+            funcs = {'H1/3': (sigfunc, 'H 1/3 (m)'), # contains functions and labels
+                     'T1/3': (periodfunc, 'T 1/3 (s)'),
+                     'T 10%': (t10func, 'T 10%'),
+                     'T 1%': (t1func, 'T 1%'),
+                     'RMS' : (rms_func, 'RMS'),
+                     'Median': (median_func, 'Median'),
+                     'Maximum': (maximum_func, 'Maximum'),
+                     'Average': (average_func, 'Average'),
+                     'Average Z Cross': (average_z_func, 'Average Z Cross'),
+                     'Mean Wave Period': (mean_func, 'Mean Wave Period'),
+                     'Crest': (crest_func, 'Crest'),
+                     'Peak Wave': (peak_wave_func, 'Peak')}
+            
+            size = self.sizes[self.chunk_size.get()] * float(self.number.get())
+            try:
+                tchunks = stats.split_into_chunks(t, tstep, size)
+                dchunks = stats.split_into_chunks(d, tstep, size)
+            except ValueError:
+                tchunks = [t]
+                dchunks = [d]
+            t_stat = [np.average(tchunk) for tchunk in tchunks]
+            # t_stat = [uc.convert_ms_to_datestring(t, pytz.utc) for t in t_stat]
+            func = funcs[self.stat.get()][0]
+            label = funcs[self.stat.get()][1]
+            d_stat = [func(dchunk) for dchunk in dchunks]
+            plot_stats(t, d, t_stat, d_stat, label)
+            plt.show()
+        except:
+            easygui.msgbox('Could not plot file, please check the file type', 'Error')
+        
 
-
-root = tk.Tk()
-StatsViewer(root)
-root.mainloop()
+if __name__ == '__main__':
+    root = tk.Tk()
+    StatsViewer(root)
+    root.mainloop()
