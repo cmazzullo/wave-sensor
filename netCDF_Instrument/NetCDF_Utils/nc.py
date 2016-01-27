@@ -6,6 +6,7 @@ import os
 from datetime import datetime
 from netCDF4 import Dataset
 from netCDF4 import num2date
+import uuid
 # import netCDF4_utils, netcdftime # these make cx_freeze work
 import pytz
 # Constant
@@ -36,12 +37,14 @@ def chop_netcdf(fname, out_fname, begin, end, air_pressure = False):
     # copy globals
     for att in d.ncattrs():
         setattr(output, att, d.__dict__[att])
+    
+    og_uuid = get_global_attribute(fname, 'uuid') 
+    setattr(output, 'uuid', str(uuid.uuid4()))
     # copy variables
     for key in d.variables:
         name = key
         datatype = d.variables[key].datatype 
-        print(name, datatype)     
-#         datatype = np.dtype('float64')
+        
         dim = d.variables[key].dimensions
         
         if datatype == "int32":
@@ -52,10 +55,17 @@ def chop_netcdf(fname, out_fname, begin, end, air_pressure = False):
         for att in d.variables[key].ncattrs():
             if att != '_FillValue':
                 setattr(var, att, d.variables[key].__dict__[att])
+                
+        #add uuid of previous netCDF file to pressure variable
+        if name == 'sea_pressure':
+            setattr(var, 'sea_uuid', og_uuid)
+        if name == 'air_pressure':
+            setattr(var, 'air_uuid', og_uuid)
+            
     output.variables['time'][:] = t
     
     if air_pressure == False:
-        output.variables['sea_water_pressure'][:] = p
+        output.variables['sea_pressure'][:] = p
     else:
         output.variables['air_pressure'][:] = p
     
@@ -63,6 +73,69 @@ def chop_netcdf(fname, out_fname, begin, end, air_pressure = False):
     output.variables['altitude'][:] = alt
     output.variables['longitude'][:] = long
     output.variables['latitude'][:] = lat
+    d.close()
+    output.close()
+    
+def custom_copy(fname, out_fname, begin,end, mode="storm_surge", step = 1):
+    if os.path.exists(out_fname):
+        os.remove(out_fname)
+      
+    t = get_time(fname)[begin:end:step]
+    
+    flags = get_flags(fname)[begin:end:step]
+    alt = get_variable_data(fname, 'altitude')
+    lat = get_variable_data(fname, 'latitude')
+    long = get_variable_data(fname, 'longitude')
+    d = Dataset(fname)
+    output = Dataset(out_fname, 'w', format='NETCDF4_CLASSIC')
+    output.createDimension('time', len(t))
+    print('length of time dimension', len(t))
+    # copy globals
+    for att in d.ncattrs():
+        setattr(output, att, d.__dict__[att])
+    
+    sea_uuid = get_global_attribute(fname, 'uuid') 
+    setattr(output, 'uuid', str(uuid.uuid4()))   
+    
+    # copy variables
+    for key in d.variables:
+        
+        #skip adding pressure qc if the mode is storm surge
+        if mode == 'storm_surge' and key == 'pressure_qc':
+            continue
+        
+        name = key
+        datatype = d.variables[key].datatype 
+          
+#         datatype = np.dtype('float64')
+        if name == 'sea_pressure':
+            dim = d.variables['latitude'].dimensions
+        else:
+            dim = d.variables[key].dimensions
+        
+        if datatype == "int32":
+            var = output.createVariable(name, datatype, dim)
+        else:
+            var = output.createVariable(name, datatype, dim, fill_value=FILL_VALUE)
+        
+        for att in d.variables[key].ncattrs():
+            if att != '_FillValue':
+                setattr(var, att, d.variables[key].__dict__[att])
+                
+        if name == 'sea_pressure':
+            setattr(var, 'sea_uuid', sea_uuid)
+            
+    output.variables['time'][:] = t
+    
+    if mode != 'storm_surge':
+        output.variables['pressure_qc'][:] = flags
+        p = get_pressure(fname)[begin:end]
+        output.variables['sea_pressure'][:] = p
+        
+    output.variables['altitude'][:] = alt
+    output.variables['longitude'][:] = long
+    output.variables['latitude'][:] = lat
+    output.variables['sea_pressure'][:] = 0
     d.close()
     output.close()
 
@@ -87,12 +160,12 @@ def parse_time(fname, time_name):
 
 # Append new variables
 
-def append_air_pressure(fname, pressure):
+def append_air_pressure(fname, pressure, air_fname = None):
     """Insert air pressure array into the netCDF file fname"""
     name = 'air_pressure'
     long_name = 'air pressure record'
     append_variable(fname, name, pressure, comment='',
-                     long_name=long_name)
+                     long_name=long_name, og_fname=air_fname)
 
 
 def append_depth(fname, depth):
@@ -104,7 +177,7 @@ def append_depth(fname, depth):
     append_variable(fname, name, depth, comment=comment,
                      long_name=name)
 
-def append_depth_qc(fname, sea_qc, air_qc):
+def append_depth_qc(fname, sea_qc, air_qc, mode="normal"):
     """Insert depth qc array"""
     depth_name = 'depth_qc'
     air_name = "air_qc"
@@ -118,8 +191,11 @@ def append_depth_qc(fname, sea_qc, air_qc):
         sea_qc = [int(str(x),2) for x in sea_qc]
 
         depth_qc = [bin(air_qc[x] & sea_qc[x])[2:] for x in range(0,len(sea_qc))]
+        
+        
         append_variable(fname, air_name, [bin(x)[2:] for x in air_qc], comment=air_comment, long_name=air_name,
-                        flag_masks = flag_masks, flag_meanings= flag_meanings)
+                            flag_masks = flag_masks, flag_meanings= flag_meanings)
+            
         append_variable(fname, depth_name, depth_qc, comment=depth_comment, long_name=depth_name,
                          flag_masks = flag_masks, flag_meanings= flag_meanings)
     else:
@@ -158,8 +234,9 @@ def get_time(fname):
 
 def get_datetimes(fname):
     '''Gets the time array and then converts them to date times'''
-    time = None
+    time = []
     with Dataset(fname) as nc_file:
+        
         time = num2date(nc_file.variables['time'][:],nc_file.variables['time'].units)
     
     return time
@@ -171,8 +248,12 @@ def get_air_pressure(fname):
 
 def get_pressure(fname):
     """Get the water pressure array from the netCDF at fname"""
-    return get_variable_data(fname, 'sea_water_pressure')
-
+    
+    try:
+        return get_variable_data(fname, 'sea_pressure')
+    except:
+        return get_variable_data(fname, 'sea_water_pressure')
+    
 def get_pressure_qc(fname):
     return get_variable_data(fname, 'pressure_qc')
 
@@ -214,6 +295,12 @@ def get_sensor_orifice_elevation(fname):
     final = get_global_attribute(fname, 'sensor_orifice_elevation_at_retrieval_time')
     return (initial, final)
 
+def get_land_surface_elevation(fname):
+    """Get the initial and final land surface elevation from the necCDF at fname"""
+    initial = get_global_attribute(fname, 'initial_land_surface_elevation')
+    final = get_global_attribute(fname, 'final_land_surface_elevation')
+    return (initial, final)
+
 def get_retrieval_time(fname):
     """Get the retrieval time from the netCDF at fname"""
     return parse_time(fname, 'retrieval_time')
@@ -230,6 +317,13 @@ def get_variable_data(fname, variable_name):
         var = nc_file.variables[variable_name]
         var_data = var[:]
         return var_data
+    
+def get_variable_attr(fname, variable_name, attr):
+    """Get the values of a variable from a netCDF file."""
+    with Dataset(fname) as nc_file:
+        var = nc_file.variables[variable_name]
+        var_data = var[:]
+        return var_data
 
 # Backend
 
@@ -238,10 +332,20 @@ def get_global_attribute(fname, name):
     with Dataset(fname) as nc_file:
         attr = getattr(nc_file, name)
         return attr
-
-
+    
+def set_global_attribute(fname, name, value):
+    """Get the value of a global attibute from a netCDF file."""
+    with Dataset(fname, 'a') as nc_file:
+        setattr(nc_file, name, value)
+        
+def set_var_attribute(fname, var_name, name, value):
+    """Get the value of a global attibute from a netCDF file."""
+    with Dataset(fname, 'a') as nc_file:
+        var = nc_file.variables[var_name]
+        setattr(var, name, value)
+        
 def append_variable(fname, standard_name, data, comment='',
-                     long_name='', flag_masks = None, flag_meanings = None):
+                     long_name='', flag_masks = None, flag_meanings = None, og_fname = None):
     """Append a new variable to an existing netCDF."""
     with Dataset(fname, 'a', format='NETCDF4_CLASSIC') as nc_file:
         pvar = nc_file.createVariable(standard_name, 'f8', ('time',))
@@ -266,4 +370,35 @@ def append_variable(fname, standard_name, data, comment='',
             pvar.units = 'decibars'
             pvar.nodc_name = 'PRESSURE'
         pvar.compression = 'not used at this time'
+        
+        #get instrument data if appending air pressure
+        if standard_name == 'air_pressure':
+            instr_dict = get_instrument_data(og_fname, 'air_pressure')
+            pvar.instrument_manufacturer = instr_dict['instrument_manufacturer']
+            pvar.instrument_make = instr_dict['instrument_make']
+            pvar.instrument_model = instr_dict['instrument_model']
+            pvar.instrument_serial_number = instr_dict['instrument_serial_number']
+            
+            print('length of air data', len(data))
+            
         pvar[:] = data
+        
+def get_instrument_data(fname, variable_name):
+    """Get the values of a variable from a netCDF file."""
+    with Dataset(fname) as nc_file:
+        var = nc_file.variables[variable_name]
+        attr_dict = {
+        'instrument_manufacturer': getattr(var,'instrument_manufacturer'),
+        'instrument_make': getattr(var,'instrument_make'),
+        'instrument_model': getattr(var,'instrument_model'),
+        'instrument_serial_number': getattr(var, 'instrument_serial_number')
+        }
+        return attr_dict;
+    
+def set_instrument_data(fname, variable_name, instr_dict):
+    with Dataset(fname,'a', format='NETCDF4_CLASSIC') as nc_file:
+        var = nc_file.variables[variable_name]
+        for x in instr_dict:
+            print(x, instr_dict[x])
+            setattr(var, x, instr_dict[x])
+            

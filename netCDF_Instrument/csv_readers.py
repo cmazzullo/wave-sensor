@@ -24,24 +24,46 @@ class Hobo(NetCDFWriter):
         self.timezone_marker = "time zone"
         super().__init__()
         self.date_format_string = '%m/%d/%y %I:%M:%S %p'
+        self.date_format_string2 = '%m/%d/%Y %H:%M'
 
     def read(self):
         '''load the data from in_filename
         only parse the initial datetime = much faster
         '''
         self.get_serial()
+        
+        second = False
         skip_index = find_first(self.in_filename, '"#"')
+        if skip_index == None:
+            skip_index = find_first(self.in_filename, '#')
+            second = True
+        
+        print(second)
         df = pd.read_table(self.in_filename, skiprows=skip_index, header=None,
                            engine='c', sep=',', usecols=(1, 2))
         df = df.dropna()
-        first_stamp = uc.datestring_to_ms(df.values[0][0], self.date_format_string, self.tz_info)
-        second_stamp = uc.datestring_to_ms(df.values[1][0], self.date_format_string, self.tz_info)
+        
+        try:
+            first_stamp = uc.datestring_to_ms(df.values[0][0], self.date_format_string, self.tz_info, self.daylightSavings)
+            second_stamp = uc.datestring_to_ms(df.values[1][0], self.date_format_string, self.tz_info, self.daylightSavings)
+        except:
+            first_stamp = uc.datestring_to_ms(df.values[0][0], self.date_format_string2, self.tz_info, self.daylightSavings)
+            second_stamp = uc.datestring_to_ms(df.values[1][0], self.date_format_string2, self.tz_info, self.daylightSavings)
+            
+        print('tstamps: ', first_stamp, second_stamp, self.tz_info)
+            
         self.frequency = 1000 / (second_stamp - first_stamp)
-        start_ms = uc.datestring_to_ms(df[1][0], self.date_format_string, self.tz_info)
+        
+        
+        try:
+            start_ms = uc.datestring_to_ms(df[1][0], self.date_format_string, self.tz_info, self.daylightSavings)
+        except:
+            start_ms = uc.datestring_to_ms(df[1][0], self.date_format_string2, self.tz_info, self.daylightSavings)
+            
         self.utc_millisecond_data = uc.generate_ms(start_ms, df.shape[0], self.frequency)
         
-        if self.daylightSavings == True:
-            self.utc_millisecond_data = [x - 3600000 for x in self.utc_millisecond_data]
+#         if self.daylightSavings == True:
+#             self.utc_millisecond_data = [x - 3600000 for x in self.utc_millisecond_data]
         
         self.pressure_data = df[2].values * uc.PSI_TO_DBAR
         
@@ -49,11 +71,10 @@ class Hobo(NetCDFWriter):
         self.instrument_serial = "not found"
         with open(self.in_filename, 'r') as text:
             for i, line in enumerate(text):
-                if line.find('End Of File') > -1:
-                    beginIndex = line.rfind(':') + 2
-                    endIndex = line.rfind(')')
-                    self.instrument_serial = \
-                    line[beginIndex:endIndex]
+                if re.search('[0-9]{6}', line):
+                    match = re.search('[0-9]{6}', line)
+                    self.instrument_serial = match.group(0)
+                    break
         
 
 
@@ -178,6 +199,7 @@ class MeasureSysLogger(NetCDFWriter):
         super(MeasureSysLogger, self).__init__()
         self.frequency = 4
         self.date_format_string = '%m/%d/%Y %I:%M:%S.%f %p'
+        self.date_format_string2 = '%m/%d/%Y %H:%M:%S.%f'
 
     def read(self):
         '''load the data from in_filename
@@ -188,20 +210,33 @@ class MeasureSysLogger(NetCDFWriter):
         # for skipping lines in case there is calibration header data
         df = pd.read_table(self.in_filename, skiprows=skip_index + 1, header=None,
                            engine='c', sep=',', usecols=[3, 4, 5 ,6])
-        self.data_start = uc.datestring_to_ms(df[3][3][1:],
-                                              self.date_format_string, self.tz_info)
-        second_stamp = uc.datestring_to_ms(df[3][4][1:],
-                                           self.date_format_string, self.tz_info)
-        self.frequency = 1000 / (second_stamp - self.data_start)
         
+        try:
+            self.data_start = uc.datestring_to_ms(df[3][3][1:],
+                                                  self.date_format_string, self.tz_info, self.daylightSavings)
+            second_stamp = uc.datestring_to_ms(df[3][4][1:],
+                                               self.date_format_string, self.tz_info, self.daylightSavings)
+            self.frequency = 1000 / (second_stamp - self.data_start)
+            
+            
+            self.pressure_data = df[5].values * uc.PSI_TO_DBAR
+            start_ms = uc.datestring_to_ms('%s' % df[3][0][1:], self.date_format_string, self.tz_info, self.daylightSavings)
         
-        self.pressure_data = df[5].values * uc.PSI_TO_DBAR
-        start_ms = uc.datestring_to_ms('%s' % df[3][0][1:], self.date_format_string, self.tz_info)
-        
+        except:
+            self.data_start = uc.datestring_to_ms(df[3][3][1:],
+                                                  self.date_format_string2, self.tz_info, self.daylightSavings)
+            second_stamp = uc.datestring_to_ms(df[3][4][1:],
+                                               self.date_format_string2, self.tz_info, self.daylightSavings)
+            self.frequency = 1000 / (second_stamp - self.data_start)
+            
+            
+            self.pressure_data = df[5].values * uc.PSI_TO_DBAR
+            start_ms = uc.datestring_to_ms('%s' % df[3][0][1:], self.date_format_string2, self.tz_info, self.daylightSavings)
+            
         self.utc_millisecond_data = uc.generate_ms(start_ms, df.shape[0], self.frequency)
         
-        if self.daylightSavings == True:
-            self.utc_millisecond_data = [x - 3600000 for x in self.utc_millisecond_data]
+#         if self.daylightSavings == True:
+#             self.utc_millisecond_data = [x - 3600000 for x in self.utc_millisecond_data]
             
         if re.match('^[0-9]{1,3}.[0-9]+$', str(df[6][0])):
             self.temperature_data = [x for x in df[6]]
@@ -213,6 +248,7 @@ class MeasureSysLogger(NetCDFWriter):
                 if line.find('Transducer Serial') > -1:
                     match = re.search("[0-9]{7}", line)
                     self.instrument_serial = match.group(0)
+                    break
         
 
 

@@ -43,20 +43,20 @@ def tidal_answer(constituents, series_length, time_delta, add_noise = False, noi
                     rand_inverse = -1
                 
                 rand_int = float( random.randint(0,noise_level * 100.0)/100.0 * rand_inverse )
-                print rand_int
+#                 print rand_int
                 
                 wl_point += rand_int
          
         water_level.append(wl_point)
             
     print(len(water_level), len(time_data))
-    return pd.Series(water_level, index=time_data)
+    return (water_level, time_data)
 
 
 def create_test_data(consituent_data):
     
     for x in constituent_data:
-        time_series = tidal_answer(x['data'],x['series_length'], x['t_delta'], x['noise'], x['noise_level'])
+        depth_data, time_data = tidal_answer(x['data'],x['series_length'], x['t_delta'], x['noise'], x['noise_level'])
         
      #   print(time_series.length, x['series_length'])
         
@@ -66,12 +66,13 @@ def create_test_data(consituent_data):
         depth = nc.createVariable("depth","f8",("time",))
         time = nc.createVariable("time","f8",("time"))
         time.setncattr('units', "milliseconds since " + epoch_start.strftime("%Y-%m-%d %H:%M:%S"))
-        timeArray = [x for x in time_series.index]
+#         timeArray = [x for x in time_series.index]
        
-        depth[:] = time_series.values
-        time[:] = time_series.index 
-        plt.plot(time_series.index,time_series.values)
-        plt.show()
+        depth[:] = depth_data
+      
+        time[:] = time_data
+#         plt.plot(time_series.index,time_series.values)
+#         plt.show()
         nc.close()
 
 def M2S2N2_plot():
@@ -235,7 +236,7 @@ def DepthPlot():
 # Static Variables
 # series_length = 130
 #DepthPlot()
-t_delta = .1
+t_delta = .00006944444444
 # 
 constituent_data = [];
 # 
@@ -244,15 +245,15 @@ constituent_data = [];
 # constituents.append(constituent("M2",12.4206012,1,0))
 # constituent_data.append({"data": constituents, "series_length": series_length + 2, "t_delta": t_delta, "name": "M2_Only13.nc"})
  
-series_length = 7200
+series_length = 10000000
 # M2 only, amplitude 1.0
-constituents = []
-constituents.append(constituent("M2",12.4206012,2,0))
-constituent_data.append({"data": constituents, "series_length": series_length  * 8, "t_delta": t_delta, "name": "M2_Only_2AmpNoise.nc",
-                         "noise": True, "noise_level": 2})
-
-constituent_data.append({"data": constituents, "series_length": series_length  * 8, "t_delta": t_delta, "name": "M2_Only_2AmpClean.nc",
-                         "noise": False, "noise_level": 2})
+# constituents = []
+# constituents.append(constituent("M2",12.4206012,2,0))
+# constituent_data.append({"data": constituents, "series_length": series_length  * 8, "t_delta": t_delta, "name": "M2_Only_2AmpNoise.nc",
+#                          "noise": True, "noise_level": 2})
+# 
+# constituent_data.append({"data": constituents, "series_length": series_length  * 8, "t_delta": t_delta, "name": "M2_Only_2AmpClean.nc",
+#                          "noise": False, "noise_level": 2})
 # # 
 # # N2 only, amplitude 1.0
 # constituents = []
@@ -274,11 +275,59 @@ constituent_data.append({"data": constituents, "series_length": series_length  *
 # constituents.append(constituent("K1",23.93447213,1,0))
 # constituent_data.append({"data": constituents, "series_length": series_length + 1, "t_delta": t_delta, "name": "K1_Only.nc"})
 # 
-# # M2 & S2, amplitudes 1.0 for each, no phase difference
+# M2 & S2, amplitudes 1.0 for each, no phase difference
 # constituents = []
 # constituents.append(constituent("M2",12.4206012,1,0))
 # constituents.append(constituent("S2",12.0,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length + 1, "t_delta": t_delta, "name": "M2_S2.nc"})
+# constituents.append(constituent("wave1",.0002777777777,1,0))
+# constituents.append(constituent("wave2",.0005555555554,2,0))
+# constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, "name": "M2_S2_plus.nc",
+#                          "noise": False, "noise_level": 0})
+
+# constituents = []
+# constituents.append(constituent("M2",12.4206012,1,0))
+# constituents.append(constituent("S2",12.0,1,0))
+# constituents.append(constituent("wave1",.0002777777777,4,0))
+# constituents.append(constituent("wave2",.0005555555554,1,0))
+# constituents.append(constituent("wave3",.00416666666664,3,0))
+# constituents.append(constituent("wave4",.00555555555554,3,0))
+# constituents.append(constituent("wave5",.00833333333332,3,0))
+# constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, "name": "M2_S2_plus2.nc",
+#                          "noise": False, "noise_level": 0})
+
+constituents = []
+constituents.append(constituent("M2",12.4206012,1,0))
+constituents.append(constituent("S2",12.0,1,0))
+constituents.append(constituent("wave5",.00833333333332,3,0))
+constituents.append(constituent("wave6",.01111111111108,4,0))
+constituents.append(constituent("wave7",.02222222222216,4,0))
+constituents.append(constituent("wave8",.02666666666665,4,0))
+constituents.append(constituent("wave9",.07999999999995,4,0))
+constituents.append(constituent("wave10",.15999999999995,4,0))
+constituents.append(constituent("wave11",.31999999999999,4,0))
+constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, "name": "M2_S2_plus4.nc",
+                         "noise": False, "noise_level": 0})
+
+# constituents = []
+# constituents.append(constituent("M2",12.4206012,1,0))
+# constituents.append(constituent("S2",12.0,1,0))
+# constituents.append(constituent("wave1",.0002777777777,4,0))
+# constituents.append(constituent("wave2",.0005555555554,1,0))
+# constituents.append(constituent("wave3",.00416666666664,3,0))
+# constituents.append(constituent("wave4",.00555555555554,3,0))
+# constituents.append(constituent("wave5",.00833333333332,3,0))
+# constituents.append(constituent("wave6",.01111111111108,4,0))
+# constituents.append(constituent("wave7",.02222222222216,4,0))
+# constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, "name": "M2_S2_plus3Noise.nc",
+#                          "noise": True, "noise_level": 1})
+
+# constituents = []
+# constituents.append(constituent("M2",12.4206012,1,0))
+# constituents.append(constituent("S2",12.0,1,0))
+# constituents.append(constituent("wave1",.0002777777777,1,0))
+# constituents.append(constituent("wave2",.0005555555554,2,0))
+# constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, "name": "M2_S2_plus.nc",
+#                          "noise": False, "noise_level": 0})
 # 
 # # M2 & N2, amplitudes 1.0 for each, no phase difference
 # constituents = []

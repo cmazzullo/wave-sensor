@@ -5,8 +5,8 @@ def file_average(in_file_name, window, increments, method):
     
         #Get netCDF info      
         ds = Dataset(in_file_name,'r')
-        sea_pressure = ds.variables['sea_water_pressure'][:]
-        sea_pressure_attr = get_attributes(ds, "sea_water_pressure")
+        sea_pressure = ds.variables['sea_pressure'][:]
+        sea_pressure_attr = get_attributes(ds, "sea_pressure")
         pressure_qc = ds.variables['pressure_qc'][:]
         pressure_qc_attr = get_attributes(ds, "pressure_qc")
         time = ds.variables["time"][:]
@@ -69,8 +69,8 @@ def file_average(in_file_name, window, increments, method):
             new_time[:] = [x for x in rolling_mean.index]
            
             #sea pressure
-            new_pressure = new_ds.createVariable("sea_water_pressure","f8", ("time",))
-            set_attributes(new_ds, "sea_water_pressure", sea_pressure_attr)
+            new_pressure = new_ds.createVariable("sea_pressure","f8", ("time",))
+            set_attributes(new_ds, "sea_pressure", sea_pressure_attr)
             new_pressure[:] = rolling_mean.values
             
             #pressure qc

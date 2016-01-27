@@ -35,7 +35,63 @@ class DepthGui:
         
         self.daylightSavings = Tk.BooleanVar()
         Tk.Checkbutton(self.datePickFrame, text="Daylight Savings", variable=self.daylightSavings).pack(side=RIGHT)
-        self.datePickFrame.pack()
+        self.datePickFrame.pack(anchor=W)
+        
+        #tkinter spacing
+        self.emptyLabel4 = Tk.Label(self.root, text='', font=("Helvetica", 2))
+        self.emptyLabel4.pack(anchor=W,padx = 15,pady = 0)
+        
+        self.BaroPickLabel = Tk.Label(self.root, text='Barometric Pressure Y Axis Limits: (optional)')
+        self.BaroPickLabel.pack(anchor=W,padx = 15,pady = 0)
+        
+        self.baroPickFrame = Tk.Frame(root)
+        self.bLowerLabel = Tk.Label(self.baroPickFrame, text="lower:").pack(side=LEFT, pady=10, padx=2)
+        self.baroYlim1 = Tk.Entry(self.baroPickFrame, width=5)
+        self.baroYlim1.pack(side=LEFT, pady=2, padx=15)
+        self.baroYlim2 = Tk.Entry(self.baroPickFrame, width=5)
+        self.baroYlim2.pack(side=RIGHT, pady=2, padx=15)
+        self.bUpperLabel = Tk.Label(self.baroPickFrame, text="upper:").pack(side=RIGHT, pady=10, padx=2)
+        self.baroPickFrame.pack(anchor=W, padx = 15)
+        
+        #tkinter spacing
+        self.emptyLabel4 = Tk.Label(self.root, text='', font=("Helvetica", 2))
+        self.emptyLabel4.pack(anchor=W,padx = 15,pady = 0)
+        
+        self.WaterLevelLabel = Tk.Label(self.root, text='Water Level Y Axis Limits: (optional)')
+        self.WaterLevelLabel.pack(anchor=W,padx = 15,pady = 0)
+        
+        self.wlPickFrame = Tk.Frame(root)
+        self.wlLowerLabel = Tk.Label(self.wlPickFrame, text="lower:").pack(side=LEFT, pady=10, padx=2)
+        self.wlYlim1 = Tk.Entry(self.wlPickFrame, width=5)
+        self.wlYlim1.pack(side=LEFT, pady=2, padx=15)
+        self.wlYlim2 = Tk.Entry(self.wlPickFrame, width=5)
+        self.wlYlim2.pack(side=RIGHT, pady=2, padx=15)
+        self.wlUpperLabel = Tk.Label(self.wlPickFrame, text="upper:").pack(side=RIGHT, pady=10, padx=2)
+        self.wlPickFrame.pack(anchor=W, padx = 15)
+        
+        #tkinter spacing
+        self.emptyLabel4 = Tk.Label(self.root, text='', font=("Helvetica", 2))
+        self.emptyLabel4.pack(anchor=W,padx = 15,pady = 0)
+        
+        self.GraphExtraLabel = Tk.Label(self.root, text='Extra Graph Header: (optional)')
+        self.GraphExtraLabel.pack(anchor=W,padx = 15,pady = 2)
+        
+        self.ExtraEntry = Tk.Entry(self.root)
+        self.ExtraEntry.pack(anchor=W,padx = 15,pady = 2)
+        
+        #tkinter spacing
+        self.emptyLabel4 = Tk.Label(self.root, text='', font=("Helvetica", 2))
+        self.emptyLabel4.pack(anchor=W,padx = 15,pady = 0)
+        
+        self.GraphGridLabel = Tk.Label(self.root, text='Graph Grid Lines:')
+        self.GraphGridLabel.pack(anchor=W,padx = 15,pady = 2)
+        
+        grid_options=('Barometric Pressure',
+                'Water Level')
+        self.gridstringvar = Tk.StringVar()
+        self.gridstringvar.set(grid_options[0])
+        
+        Tk.OptionMenu(self.root, self.gridstringvar, *grid_options).pack(anchor=W, pady=2, padx=15)
         
         #tkinter spacing
         self.emptyLabel4 = Tk.Label(self.root, text='', font=("Helvetica", 2))
@@ -54,11 +110,27 @@ class DepthGui:
     def select_input(self):
         self.in_file_name = filedialog.askopenfilename()
         
+        baroYLims = []
         try:
-            make_depth_graph(int(self.AveragedPoints.get()), self.in_file_name, \
-                                 self.tzstringvar.get(), self.daylightSavings.get())
+            baroYLims.append(float(self.baroYlim1.get()))
+            baroYLims.append(float(self.baroYlim2.get()))
         except:
-            easygui.msgbox('Could not plot file, check file type', 'Error')
+            baroYLims = None
+        
+        wlYLims = []
+        try:
+            wlYLims.append(float(self.wlYlim1.get()))
+            wlYLims.append(float(self.wlYlim2.get()))
+        except:
+            wlYLims = None
+        
+#         try:
+        make_depth_graph(int(self.AveragedPoints.get()), self.in_file_name, \
+                                 self.tzstringvar.get(), self.daylightSavings.get(),
+                                 self.gridstringvar.get(), self.ExtraEntry.get(),
+                                 baroYLims, wlYLims)
+#         except:
+#             easygui.msgbox('Could not plot file, check file type', 'Error')
 
 class Variable:
     """

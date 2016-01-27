@@ -2,7 +2,6 @@
 import numpy as np
 from pytz import timezone
 from csv_readers import Leveltroll, MeasureSysLogger, House, Hobo, RBRSolo, Waveguage
-from pip._vendor.html5lib import inputstream
 
 INSTRUMENTS = {
     'LevelTroll': Leveltroll,

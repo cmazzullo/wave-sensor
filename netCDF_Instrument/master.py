@@ -1,10 +1,11 @@
 import tools.chopper as chopper
-import tools.statviewer as statviewer
+#import tools.statviewer as statviewer
 import tools.script1_gui as script1
 import tools.script1_air_gui as script1_air
-import tools.script2_gui as script2
-import tools.average_gui as average
-import tools.depth_grapher_gui as depth_grapher
+# import tools.script2_gui as script2
+# import tools.average_gui as average
+# import tools.depth_grapher_gui as depth_grapher
+import tools.storm_surge_gui as storm_gui
 
 import tkinter as Tk
 from tkinter import messagebox
@@ -34,18 +35,18 @@ class MasterGui:
         self.b2.pack(anchor=W,padx = 15,pady = 2)
         self.b3 = Tk.Button(self.root, text='Chopper', command=self.chopper)
         self.b3.pack(anchor=W,padx = 15,pady = 2)
-        self.b4 = Tk.Button(self.root, text='Averager', command=self.averager)
-        self.b4.pack(anchor=W,padx = 15,pady = 2)
-        self.b5 = Tk.Button(self.root, text='Water Level GUI', command=self.water_level)
+#         self.b4 = Tk.Button(self.root, text='Averager', command=self.averager)
+#         self.b4.pack(anchor=W,padx = 15,pady = 2)
+        self.b5 = Tk.Button(self.root, text='Storm Surge GUI', command=self.storm_surge)
         self.b5.pack(anchor=W,padx = 15,pady = 2)
-        self.emptyLabel = Tk.Label(self.root, text='', font=("Helvetica", 2))
-        self.emptyLabel.pack(anchor=W,padx = 15,pady = 0)
-        self.Label2 = Tk.Label(self.root, text='Graphing Utilities:')
-        self.Label2.pack(anchor=W,padx = 15,pady = 2)
-        self.b6 = Tk.Button(self.root, text='Water Level Graph', command=self.water_level_graph)
-        self.b6.pack(anchor=W,padx = 15,pady = 2)
-        self.b7 = Tk.Button(self.root, text='Wave Statistics', command=self.stat_viewer)
-        self.b7.pack(anchor=W,padx = 15,pady = 2)
+#         self.emptyLabel = Tk.Label(self.root, text='', font=("Helvetica", 2))
+#         self.emptyLabel.pack(anchor=W,padx = 15,pady = 0)
+#         self.Label2 = Tk.Label(self.root, text='Graphing Utilities:')
+#         self.Label2.pack(anchor=W,padx = 15,pady = 2)
+#         self.b6 = Tk.Button(self.root, text='Water Level Graph', command=self.water_level_graph)
+#         self.b6.pack(anchor=W,padx = 15,pady = 2)
+#         self.b7 = Tk.Button(self.root, text='Wave Statistics', command=self.stat_viewer)
+#         self.b7.pack(anchor=W,padx = 15,pady = 2)
         self.emptyLabel2 = Tk.Label(self.root, text='', font=("Helvetica", 2))
         self.emptyLabel2.pack(anchor=W,padx = 15,pady = 0)
         
@@ -64,25 +65,30 @@ class MasterGui:
         gui3 = chopper.Chopper(self.root3)
         self.root3.mainloop()
     
-    def averager(self):
-        self.root4 = Tk.Toplevel(self.root)
-        gui4 = average.AverageGui(self.root4)
-        self.root4.mainloop()
-    
-    def water_level(self):
-        self.root5 = Tk.Toplevel(self.root)
-        gui5 = script2.Script2gui(self.root5)
-        self.root5.mainloop()
-    
-    def water_level_graph(self):
-        self.root6 = Tk.Toplevel(self.root)
-        gui6 = depth_grapher.DepthGui(self.root6)
-        self.root6.mainloop()
+#     def averager(self):
+#         self.root4 = Tk.Toplevel(self.root)
+#         gui4 = average.AverageGui(self.root4)
+#         self.root4.mainloop()
+#     
+#     def water_level(self):
+#         self.root5 = Tk.Toplevel(self.root)
+#         gui5 = script2.Script2gui(self.root5)
+#         self.root5.mainloop()
+#     
+#     def water_level_graph(self):
+#         self.root6 = Tk.Toplevel(self.root)
+#         gui6 = depth_grapher.DepthGui(self.root6)
+#         self.root6.mainloop()
         
-    def stat_viewer(self):
-        self.root7 = Tk.Toplevel(self.root)
-        gui7 = statviewer.StatsViewer(self.root7)
-        self.root7.mainloop()
+#     def stat_viewer(self):
+#         self.root7 = Tk.Toplevel(self.root)
+#         gui7 = statviewer.StatsViewer(self.root7)
+#         self.root7.mainloop()
+
+    def storm_surge(self):
+        self.root8 = Tk.Toplevel(self.root)
+        gui8 = storm_gui.StormSurgeGui(self.root8)
+        self.root8.mainloop()
         
 def on_closing():
         if messagebox.askokcancel("Quit", "Do you want to quit?"):

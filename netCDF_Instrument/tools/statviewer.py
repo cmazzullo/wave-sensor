@@ -3,7 +3,7 @@
 import numpy as np
 import NetCDF_Utils.nc as nc
 import tkinter as tk
-from tkinter.constants import W, E, LEFT, BOTH
+from tkinter.constants import W, E, LEFT, BOTH, RIGHT
 from tkinter.filedialog import askopenfilename
 import matplotlib
 matplotlib.use('TkAgg', warn=False)
@@ -15,22 +15,11 @@ import matplotlib.dates as mdates
 import pytz
 import unit_conversion as uc
 import easygui
+from datetime import timedelta
 
-def format_date(x,arb=None):
-    '''Format dates so that they are padded away from the x-axis'''
-    date_str = mdates.num2date(x).strftime('%I:%M %p \n %b-%d-%Y')
-    return ''.join([' ','\n',date_str])
 
-def plot_stats(time, depth, stat_time, stat, ylabel):
-    fig, ax1 = plt.subplots()
-    # ax1.xaxis.set_major_formatter(ticker.FuncFormatter(format_date))
-    ax1.plot(time, depth, label='Depth')
-    ax1.set_xlabel('time (s)')
-    ax1.set_ylabel('depth (m)', color='b')
-    ax2 = ax1.twinx()
-    ax2.plot(stat_time, stat, 'ro-')
-    ax2.set_ylabel(ylabel, color='r')
-    plt.tight_layout()
+
+
 
 
 class StatsViewer:
@@ -49,7 +38,30 @@ class StatsViewer:
         self.emptyLabel2 = tk.Label(self.root, text='', font=("Helvetica", 2))
         self.emptyLabel2.pack(anchor=W,padx = 15,pady = 0)
         
-        self.b1 = tk.Label(self.root, text='Options:').pack(anchor=W, pady=2, padx=15)
+        self.b1 = tk.Label(self.root, text='Options').pack(anchor=W, pady=2, padx=15)
+        
+        self.TzLabel = tk.Label(self.root, text='Time zone to display dates in:')
+        self.TzLabel.pack(anchor=W,padx = 15,pady = 2)
+        options=('GMT',
+                'US/Aleutian',
+                'US/Central',
+                'US/Eastern',
+                'US/Hawaii',
+                'US/Mountain',
+                'US/Pacific')
+        self.tzstringvar = tk.StringVar()
+        self.tzstringvar.set(options[0])
+        
+        self.datePickFrame = tk.Frame(root)
+        
+        tk.OptionMenu(self.datePickFrame, self.tzstringvar, *options).pack(side=LEFT, pady=2, padx=15)
+        
+        self.daylightSavings = tk.BooleanVar()
+        tk.Checkbutton(self.datePickFrame, text="Daylight Savings", variable=self.daylightSavings).pack(side=RIGHT)
+        self.datePickFrame.pack()
+        
+       
+        self.statLabel = tk.Label(self.root, text='Statistic and time increment:').pack(anchor=W, pady=2, padx=15)
         self.stat = tk.StringVar()
         self.stat.set('H1/3')
         
@@ -106,7 +118,12 @@ class StatsViewer:
     def display(self):
         try:
             t = nc.get_time(self.filename) / 1000
-            d = nc.get_depth(self.filename)
+
+            #get datum
+            datum = nc.get_geospatial_vertical_reference(self.filename)
+#             times =  nc.get_datetimes(self.file_name)
+            
+            d = nc.get_depth(self.filename) * uc.METER_TO_FEET
             tstep = t[1] - t[0]
             
             #STATISTICS FUNCTION AVAILABLE FOR PLOTTING
@@ -123,8 +140,8 @@ class StatsViewer:
             crest_func = lambda depth: stats.crest_wave_period(t, depth)
             peak_wave_func = lambda depth: stats.peak_wave_period(t, depth)
             
-            funcs = {'H1/3': (sigfunc, 'H 1/3 (m)'), # contains functions and labels
-                     'T1/3': (periodfunc, 'T 1/3 (s)'),
+            funcs = {'H1/3': (sigfunc, 'H 1/3 (feet)'), # contains functions and labels
+                     'T1/3': (periodfunc, 'T 1/3 (seconds)'),
                      'T 10%': (t10func, 'T 10%'),
                      'T 1%': (t1func, 'T 1%'),
                      'RMS' : (rms_func, 'RMS'),
@@ -148,10 +165,44 @@ class StatsViewer:
             func = funcs[self.stat.get()][0]
             label = funcs[self.stat.get()][1]
             d_stat = [func(dchunk) for dchunk in dchunks]
-            plot_stats(t, d, t_stat, d_stat, label)
+            
+            #The first x axis time conversion
+            t = [uc.convert_ms_to_date(x * 1000, pytz.UTC) for x in t]
+            t = uc.adjust_from_gmt(t, self.tzstringvar.get(), self.daylightSavings.get())
+            t = [mdates.date2num(x) for x in t]
+            
+            #The second x axis time conversion
+            t_stat = [uc.convert_ms_to_date(x * 1000, pytz.UTC) for x in t_stat]
+            t_stat = uc.adjust_from_gmt(t_stat, self.tzstringvar.get(), self.daylightSavings.get())
+            t_stat = [mdates.date2num(x) for x in t_stat]
+            
+            self.plot_stats(t, d, t_stat, d_stat, label, datum)
             plt.show()
         except:
             easygui.msgbox('Could not plot file, please check the file type', 'Error')
+
+    def plot_stats(self,time, depth, stat_time, stat, ylabel, datum):
+    
+        #plotting options for the depth axis
+        fig, ax1 = plt.subplots()
+        ax1.set_title('Wave Statistics for Water Elevation')
+        ax1.xaxis.set_major_formatter(ticker.FuncFormatter(self.format_date))
+        ax1.plot(time, depth, label='Depth')
+        #ax1.set_xlabel('time (s)')
+        ax1.set_ylabel('Water Elevation in Feet above Datum (%s)' % datum, color='b')
+        
+        #Plotting options for the stat axis
+        ax2 = ax1.twinx()
+        ax2.xaxis.set_major_formatter(ticker.FuncFormatter(self.format_date))
+        ax2.plot(stat_time, stat, 'ro-')
+        ax2.set_ylabel(ylabel, color='r')
+        plt.tight_layout()
+        
+    def format_date(self,x,arb=None):
+        '''Format dates so that they are padded away from the x-axis'''
+      
+        date_str = mdates.num2date(x).strftime('%b-%d-%Y \n %H:%M')
+        return ''.join([' ','\n',date_str])
         
 
 if __name__ == '__main__':

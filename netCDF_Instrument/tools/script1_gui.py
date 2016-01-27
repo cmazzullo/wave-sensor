@@ -12,8 +12,8 @@ import os
 from collections import OrderedDict
 from tools.script1 import INSTRUMENTS, convert_to_netcdf
 import json
-from pip._vendor.html5lib import inputstream
 import re
+from PIL.ImageTk import tkinter
 
 GLOBAL_HISTFILE = 'history.json'
 LOCAL_HISTFILE = 'history2_sea.json'
@@ -29,7 +29,7 @@ LOCAL_FIELDS = OrderedDict([
     ('stn_instrument_id', ['STN Instrument Id:', '']),
     ('latitude', ['Latitude (decimal degrees):', '', True]),
     ('longitude', ['Longitude (decimal degrees):', '', True]),
-    ('tzinfo', ['Time zone the instrument recorded time in:', ['GMT',
+    ('tz_info', ['Time zone the instrument recorded time in:', ['GMT',
                 'US/Aleutian',
                 'US/Central',
                 'US/Eastern',
@@ -61,6 +61,7 @@ WATER_ONLY_FIELDS = OrderedDict([
         'SE Atlantic (limit-20 W)', 'SE Pacific (limit-140 W)',
         'SW Atlantic (limit-20 W)', 'SW Pacific (limit-147 E to 140 W)'],
                   False])])
+
 
 class Wavegui:
     """ GUI for csv-to-netCDF conversion. """
@@ -110,51 +111,49 @@ class Wavegui:
         """Run the csv to netCDF conversion on the selected files."""
         message = ('Working, this may take a few minutes.')
 
-#         try:
-        dialog = MessageDialog(self.parent, message=message,
-                               title='Processing...', buttons=0, wait=False)
-        globs = dict(zip(GLOBAL_FIELDS.keys(),
-                         self.global_form.export_entries()))
-        bad_data = None
-
-        for fname, datafile in self.datafiles.items():
-            inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
-            inputs.update(globs)
-            inputs['sea_pressure'] = not self.air_pressure
-            inputs['in_filename'] = fname
-            inputs['out_filename'] = fname + '.nc'
-            inputs['initial_water_depth'] = 1.98
-            inputs['final_water_depth'] = 1.98
-            
-            process_files = self.validate_entries(inputs)
-            
-            if process_files == True:
-                bad_data = convert_to_netcdf(inputs)
-                self.remove_file(fname)
-                dialog.destroy()
-                if bad_data == True:
-                    MessageDialog(self.parent, message="There were some bad data points in the file, please cut them using chopper\n and/or" \
-                                  " use the \"Hydrostatic\" method in the Water Level GUI",
-                              title='Data Issues!')
-                else:
-                    MessageDialog(self.parent, message="There were no bad data points in the file",
-                              title='No Data Issues!')
-            
-                MessageDialog(self.parent, message="Success! Files saved.",
-                              title='Success!') 
-            else:
-                dialog.destroy()
-                MessageDialog(self.parent, message= self.error_message,
-                              title='Error')
-            
-            self.error_message = ''
+        try:
+            dialog = MessageDialog(self.parent, message=message,
+                                   title='Processing...', buttons=0, wait=False)
+            globs = dict(zip(GLOBAL_FIELDS.keys(),
+                             self.global_form.export_entries()))
+            bad_data = None
+    
+            for fname, datafile in self.datafiles.items():
+                inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
+                inputs.update(globs)
+                inputs['sea_pressure'] = not self.air_pressure
+                inputs['in_filename'] = fname
+                inputs['out_filename'] = fname + '.nc'
+                inputs['initial_water_depth'] = 1.98
+                inputs['final_water_depth'] = 1.98
                 
-        
-        
-#         except:
-#             dialog.destroy()
-#             MessageDialog(self.parent, message="Could not process files, please check file type.",
-#                           title='Error')
+                process_files = self.validate_entries(inputs)
+                
+                if process_files == True:
+                    bad_data = convert_to_netcdf(inputs)
+                    self.remove_file(fname)
+                    dialog.destroy()
+                    if bad_data == True:
+                        MessageDialog(self.parent, message="There were some bad data points in the file, please cut them using chopper\n and/or" \
+                                      " use the \"Hydrostatic\" method in the Water Level GUI",
+                                  title='Data Issues!')
+                    else:
+                        MessageDialog(self.parent, message="There were no bad data points in the file",
+                                  title='No Data Issues!')
+                
+                    MessageDialog(self.parent, message="Success! Files saved.",
+                                  title='Success!') 
+                else:
+                    dialog.destroy()
+                    MessageDialog(self.parent, message= self.error_message,
+                                  title='Error')
+                
+                self.error_message = ''
+                    
+        except:
+            dialog.destroy()
+            MessageDialog(self.parent, message="Could not process files, please check file type.",
+                          title='Error')
     
     def validate_entries(self, inputs):
         '''Check if the GUI entries are filled out and in the proper format'''
@@ -210,8 +209,7 @@ class Wavegui:
         self.book.forget('current')
         self.datafiles.pop(fname)
 
-#what do you want me to do?  I'll never understand
-#please stop bullying me
+    
 class Form(tk.Frame):
     """A widget that contains form fields that users can fill"""
     def __init__(self, root, fields, histfile):
@@ -219,8 +217,24 @@ class Form(tk.Frame):
         tk.Frame.__init__(self, root)
         self.root = root
         self.histfile = histfile
+       
         self.entries = [self.make_entry_row(field, row)
                         for row, field in enumerate(fields)]
+        
+        self.menu = tk.Menu(root, tearoff=0)
+        self.menu.add_command(label="Cut")
+        self.menu.add_command(label="Copy")
+        self.menu.add_command(label="Paste")
+        
+    def show_menu(self,e):
+        w = e.widget
+        self.menu.entryconfigure("Cut",
+        command=lambda: w.event_generate("<<Cut>>"))
+        self.menu.entryconfigure("Copy",
+        command=lambda: w.event_generate("<<Copy>>"))
+        self.menu.entryconfigure("Paste",
+        command=lambda: w.event_generate("<<Paste>>"))
+        self.menu.tk.call("tk_popup", self.menu, e.x_root, e.y_root)
 
     def make_entry_row(self, field, row):
         """Create an Entry based on a field and return its StringVar."""
@@ -237,6 +251,7 @@ class Form(tk.Frame):
         if isinstance(value, str):
             content.set(value)
             widget = tk.Entry(self, textvariable=content, width=40)
+            widget.bind_class("Entry", "<Button-3><ButtonRelease-3>", self.show_menu)
         elif isinstance(value, bool):
             content.set(value)
             widget = tk.Checkbutton(self, variable=content, width=40)
@@ -245,6 +260,8 @@ class Form(tk.Frame):
             widget = tk.OptionMenu(self, content, *value)
         widget.grid(row=row, column=1, sticky=('W', 'E'))
         return content
+    
+    
 
     def export_entries(self):
         """Export the user's input as a list of strings."""

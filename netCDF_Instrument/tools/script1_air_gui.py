@@ -28,7 +28,7 @@ LOCAL_FIELDS = OrderedDict([
     ('stn_instrument_id', ['STN Instrument Id:', '']),
     ('latitude', ['Latitude (decimal degrees):', '', True]),
     ('longitude', ['Longitude (decimal degrees):', '', True]),
-    ('tzinfo', ['Time zone the instrument recorded time in:', ['GMT',
+    ('tz_info', ['Time zone the instrument recorded time in:', ['GMT',
                             'US/Alaska',
                             'US/Aleutian',
                             'US/Arizona',
@@ -97,39 +97,39 @@ class Wavegui:
         """Run the csv to netCDF conversion on the selected files."""
         message = ('Working, this may take a few minutes.')
 
-        #try:
-        dialog = MessageDialog(self.parent, message=message,
-                               title='Processing...', buttons=0, wait=False)
-        globs = dict(zip(GLOBAL_FIELDS.keys(),
-                         self.global_form.export_entries()))
-
-
-        for fname, datafile in self.datafiles.items():
-            inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
-            inputs.update(globs)
-            inputs['sea_pressure'] = not self.air_pressure
-            inputs['in_filename'] = fname
-            inputs['out_filename'] = fname + '.nc'
-            
-            process_files = self.validate_entries(inputs)
-        
-            if process_files == True:
-                convert_to_netcdf(inputs)
-                self.remove_file(fname)
-                dialog.destroy()
-                MessageDialog(self.parent, message="Success! Files saved.",
-                      title='Success!')
-            else:
-                dialog.destroy()
-                MessageDialog(self.parent, message= self.error_message,
-                          title='Error')
+        try:
+            dialog = MessageDialog(self.parent, message=message,
+                                   title='Processing...', buttons=0, wait=False)
+            globs = dict(zip(GLOBAL_FIELDS.keys(),
+                             self.global_form.export_entries()))
+    
+    
+            for fname, datafile in self.datafiles.items():
+                inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
+                inputs.update(globs)
+                inputs['sea_pressure'] = not self.air_pressure
+                inputs['in_filename'] = fname
+                inputs['out_filename'] = fname + '.nc'
                 
-            self.error_message = ''
-        
-#         except:
-#             dialog.destroy()
-#             MessageDialog(self.parent, message="Could not process files, please check file type.",
-#                           title='Error')
+                process_files = self.validate_entries(inputs)
+            
+                if process_files == True:
+                    convert_to_netcdf(inputs)
+                    self.remove_file(fname)
+                    dialog.destroy()
+                    MessageDialog(self.parent, message="Success! Files saved.",
+                          title='Success!')
+                else:
+                    dialog.destroy()
+                    MessageDialog(self.parent, message= self.error_message,
+                              title='Error')
+                    
+                self.error_message = ''
+            
+        except:
+            dialog.destroy()
+            MessageDialog(self.parent, message="Could not process files, please check file type.",
+                          title='Error')
     
     def validate_entries(self, inputs):
         '''Check if the GUI entries are filled out and in the proper format'''
@@ -193,9 +193,22 @@ class Form(tk.Frame):
         self.histfile = histfile
         self.entries = [self.make_entry_row(field, row)
                         for row, field in enumerate(fields)]
+        self.menu = tk.Menu(root, tearoff=0)
+        self.menu.add_command(label="Cut")
+        self.menu.add_command(label="Copy")
+        self.menu.add_command(label="Paste")
+        
+    def show_menu(self,e):
+        w = e.widget
+        self.menu.entryconfigure("Cut",
+        command=lambda: w.event_generate("<<Cut>>"))
+        self.menu.entryconfigure("Copy",
+        command=lambda: w.event_generate("<<Copy>>"))
+        self.menu.entryconfigure("Paste",
+        command=lambda: w.event_generate("<<Paste>>"))
+        self.menu.tk.call("tk_popup", self.menu, e.x_root, e.y_root)
 
     def make_entry_row(self, field, row):
-       
         """Create an Entry based on a field and return its StringVar."""
         label = tk.Label(self, text=field[0], width=40, anchor='w')
         label.grid(row=row, column=0, sticky='W')
@@ -210,6 +223,7 @@ class Form(tk.Frame):
         if isinstance(value, str):
             content.set(value)
             widget = tk.Entry(self, textvariable=content, width=40)
+            widget.bind_class("Entry", "<Button-3><ButtonRelease-3>", self.show_menu)
         elif isinstance(value, bool):
             content.set(value)
             widget = tk.Checkbutton(self, variable=content, width=40)

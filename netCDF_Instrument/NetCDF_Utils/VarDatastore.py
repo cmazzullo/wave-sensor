@@ -14,7 +14,7 @@ class DataStore(object):
         self.datum = None
         self.pressure_data = None
         self.pressure_qc_data = None
-        self.pressure_range = [-1000,1000]
+        self.pressure_range = [0,50]
         self.pressure_name = None
         self.temperature_data = None
         self.temperature_qc_data = None

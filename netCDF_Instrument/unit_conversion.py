@@ -9,6 +9,7 @@ Also contains functions to convert dates to UTC seconds and milliseconds.
 import numpy as np
 import pytz
 from datetime import datetime
+from datetime import timedelta
 
 
 def pressure_convert(x):
@@ -36,12 +37,14 @@ def get_time_duration(ms_difference):
     return data_duration_time
 
 
-def datestring_to_ms(datestring, datestring_fmt, tz = None):
+def datestring_to_ms(datestring, datestring_fmt, tz = None, dst = None):
     """Convert a string containing a formatted date to UTC milliseconds."""
     if tz == None:
-        tz = "UTC"
-    time_zone = pytz.timezone(str(tz))
-    date = time_zone.localize(datetime.strptime(datestring, datestring_fmt))
+        tz = "GMT"
+    time_zone = pytz.timezone("GMT")
+    dt = datetime.strptime(datestring, datestring_fmt)
+    dt = adjust_to_gmt(dt, tz, dst)
+    date = time_zone.localize(dt)
     date = date.astimezone(pytz.UTC)
     return date_to_ms(date)
 
@@ -71,5 +74,55 @@ def convert_ms_to_datestring(ms, tzinfo, script = None):
         else:
             final_date = date.strftime('%m/%d/%y %H:%M')
         return final_date
+    
+def convert_ms_to_date(ms, tzinfo, script = None):
+        '''Used when you want a date time string'''
+        return datetime.fromtimestamp(ms / 1000, tzinfo)
+    
+def adjust_to_gmt(datetime, tzinfo, dst):
+    if tzinfo == 'US/Eastern':
+        delta = timedelta(seconds = 18000)
+        datetime = datetime + delta
+    elif tzinfo == "US/Central":
+        delta = timedelta(seconds = 21600)
+        datetime = datetime + delta
+    elif tzinfo == "US/Mountain":
+        delta = timedelta(seconds = 25200)
+        datetime = datetime + delta
+    elif tzinfo == "US/Pacific":
+        delta = timedelta(seconds = 28800)
+        datetime = datetime + delta
+    elif tzinfo == "US/Aleutian" or tzinfo == "US/Hawaii":
+        delta = timedelta(seconds = 36000)
+        datetime = datetime + delta
+        
+    if dst:
+        delta = timedelta(seconds=3600)
+        datetime = datetime - delta
+        
+    return datetime
+    
+def adjust_from_gmt(datetimes, tzinfo, dst):
+    if tzinfo == 'US/Eastern':
+        delta = timedelta(seconds = 18000)
+        datetimes = [x - delta for x in datetimes]
+    elif tzinfo == "US/Central":
+        delta = timedelta(seconds = 21600)
+        datetimes = [x - delta for x in datetimes]
+    elif tzinfo == "US/Mountain":
+        delta = timedelta(seconds = 25200)
+        datetimes = [x - delta for x in datetimes]
+    elif tzinfo == "US/Pacific":
+        delta = timedelta(seconds = 28800)
+        datetimes = [x - delta for x in datetimes]
+    elif tzinfo == "US/Aleutian" or tzinfo == "US/Hawaii":
+        delta = timedelta(seconds = 36000)
+        datetimes = [x - delta for x in datetimes]
+        
+    if dst:
+        delta = timedelta(seconds=3600)
+        datetimes = [x + delta for x in datetimes]
+        
+    return datetimes
     
 

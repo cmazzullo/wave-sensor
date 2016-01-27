@@ -8,6 +8,7 @@ Provides methods to convert water pressure into water depth.
 """
 
 import numpy as np
+from scipy import signal
 
 # Constants
 GRAVITY = 9.8  # (m / s**2)
@@ -103,3 +104,16 @@ def _coefficient(wavenumber, device_d, water_d):
         raise ValueError("Device depth > water depth.")
     return WATER_DENSITY * GRAVITY * (np.cosh(wavenumber * (water_d + device_d)) /
                                       np.cosh(wavenumber * water_d))
+    
+def lowpass_filter(data):
+    '''Performs a butterworth filter of order 4 with a 10 min cutoff'''
+    fs = 4 
+    cutoff = .0166666665
+    
+    lowcut = cutoff / (.5 * fs)
+        
+    b, a = signal.butter(4, [lowcut], btype='lowpass')
+
+    filtered_data = signal.filtfilt(b, a, data)
+   
+    return filtered_data

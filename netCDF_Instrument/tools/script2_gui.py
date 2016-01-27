@@ -23,11 +23,11 @@ class Script2gui:
         self.root = root
         root.title('Water Level GUI (Pressure -> Water Level)')
         self.root.focus_force()
-        methods = [('Hydrostatic', 'naive'),
-                   ('Linear Wave', 'combo')]
+        methods = [('Hydrostatic', 'naive')]#,
+                #('Linear Wave', 'combo')]
 
         self.methodvar = StringVar()
-        self.methodvar.set('combo')
+        self.methodvar.set('naive')
 
         ttk.Label(root, text='Depth calculation:').pack(anchor=W)
         for name, kwarg in methods:
@@ -80,41 +80,41 @@ class Script2gui:
         output_fname = filedialog.asksaveasfilename()
         method = self.methodvar.get()
         
-#         try:
-        sea_t = nc.get_time(self.sea_fname)
-        print('self.air_fname = ', self.air_fname)
-        if self.air_fname != '':
-            air_t = nc.get_time(self.air_fname)
-            if (air_t[-1] < sea_t[0]) or (air_t[0] > sea_t[-1]):
-                message = ("Air pressure and water pressure files don't "
-                           "cover the same time period!\nPlease choose "
-                           "other files.")
-                gc.MessageDialog(root, message=message, title='Error!')
-                return
-            elif (air_t[0] > sea_t[0] or air_t[-1] < sea_t[-1]):
-                message = ("The air pressure file doesn't span the "
-                "entire time period covered by the water pressure "
-                "file.\nThe period not covered by both files will be "
-                "set to the fill value:%d" % nc.FILL_VALUE)
-                gc.MessageDialog(root, message=message, title='Warning')
-
-        #check to see if time coverage resolution is small enough to perform combo
-        timestep = 1 / nc.get_frequency(self.sea_fname)
-        print(method, timestep)
-        if method =="combo" and timestep > .5:
-            method = "naive"
-            message = "Time resolution too large to run Linear Wave method.  Will run hydrostatic..."
-            gc.MessageDialog(root, message=message,
-                         title='Success!')
-         
-        print(method)   
-        script2.make_depth_file(self.sea_fname, self.air_fname,
-                                output_fname, method=method)
-        gc.MessageDialog(root, message="Success! Files saved.",
-                         title='Success!')
-#         except:
-#             gc.MessageDialog(root, message="Could not process file/s, please check file type.",
-#                              title='Error')
+        try:
+            sea_t = nc.get_time(self.sea_fname)
+            print('self.air_fname = ', self.air_fname)
+            if self.air_fname != '':
+                air_t = nc.get_time(self.air_fname)
+                if (air_t[-1] < sea_t[0]) or (air_t[0] > sea_t[-1]):
+                    message = ("Air pressure and water pressure files don't "
+                               "cover the same time period!\nPlease choose "
+                               "other files.")
+                    gc.MessageDialog(root, message=message, title='Error!')
+                    return
+                elif (air_t[0] > sea_t[0] or air_t[-1] < sea_t[-1]):
+                    message = ("The air pressure file doesn't span the "
+                    "entire time period covered by the water pressure "
+                    "file.\nThe period not covered by both files will be "
+                    "set to the fill value:%d" % nc.FILL_VALUE)
+                    gc.MessageDialog(root, message=message, title='Warning')
+    
+            #check to see if time coverage resolution is small enough to perform combo
+            timestep = 1 / nc.get_frequency(self.sea_fname)
+            print(method, timestep)
+            if method =="combo" and timestep > .5:
+                method = "naive"
+                message = "Time resolution too large to run Linear Wave method.  Will run hydrostatic..."
+                gc.MessageDialog(root, message=message,
+                             title='Success!')
+             
+            print(method)   
+            script2.make_depth_file(self.sea_fname, self.air_fname,
+                                    output_fname, method=method)
+            gc.MessageDialog(root, message="Success! Files saved.",
+                             title='Success!')
+        except:
+            gc.MessageDialog(root, message="Could not process file/s, please check file type.",
+                             title='Error')
 
 def make_frame(frame, header=None):
     """Make a frame with uniform padding."""

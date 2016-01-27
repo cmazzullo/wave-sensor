@@ -181,7 +181,7 @@ class NetCDFWriter(object):
         self.epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
         self.data_start = None
         self.timezone_string = None
-        self.tz_info = pytz.timezone('US/Eastern')
+#         self.tz_info = pytz.timezone('US/Eastern')
         self.date_format_string = None
         self.frequency = None
         self.valid_pressure_units = ["psi","pascals","atm"]
@@ -226,11 +226,13 @@ class NetCDFWriter(object):
             self.vstore.pressure_name = "air_pressure"
             self.vstore.pressure_var['standard_name'] = "air_pressure"
             self.summary = "These data were collected by an unvented pressure logger deployed in the air"
+            self.vstore.pressure_range = [0,20]
         else:
             self.vstore.pressure_name = "sea_pressure"
             self.vstore.pressure_var['standard_name'] = "sea_pressure"
             self.summary = "These data were collected by an unvented pressure logger deployed in the sea" 
-           
+            self.vstore.pressure_range = [0,50]
+            
         #Get Instrument Data
         self.instrument_info(self.instrument_name,self.vstore.pressure_var) 
         
@@ -242,7 +244,10 @@ class NetCDFWriter(object):
         self.vstore.time_coverage_resolution = ''.join(["P", str(1 / self.frequency), "S"])
         
         #perform data test and assign qc data flags
-        self.vstore.pressure_qc_data, self.bad_data = DataTests.run_tests(self.pressure_data.astype(np.double), 0)
+        if sea_pressure == False:
+            self.vstore.pressure_qc_data, self.bad_data = DataTests.run_tests(self.pressure_data.astype(np.double), 0,1)
+        else:
+            self.vstore.pressure_qc_data, self.bad_data = DataTests.run_tests(self.pressure_data.astype(np.double), 0,0)
         
         #write the netCDF file using the vstore dictionary
         self.write_netCDF(self.vstore, len(self.pressure_data))
