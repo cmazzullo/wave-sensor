@@ -11,6 +11,7 @@ import tkinter as Tk
 from tkinter import messagebox
 from tkinter.constants import W
 from PIL import Image, ImageTk
+import sys
 
 class MasterGui:
     def __init__(self, root):
@@ -90,16 +91,16 @@ class MasterGui:
         gui8 = storm_gui.StormSurgeGui(self.root8)
         self.root8.mainloop()
         
-def on_closing():
+    def on_closing(self):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
-            root.destroy()
+            self.root.destroy()
         
 if __name__ == '__main__':  
     
                      
     root = Tk.Tk()
     gui = MasterGui(root)
-    root.protocol("WM_DELETE_WINDOW", on_closing)
+    root.protocol("WM_DELETE_WINDOW", gui.on_closing)
     root.mainloop()
     
     

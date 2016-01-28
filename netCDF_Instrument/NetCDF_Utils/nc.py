@@ -6,6 +6,7 @@ import os
 from datetime import datetime
 from netCDF4 import Dataset
 from netCDF4 import num2date
+import netCDF4.utils
 import uuid
 # import netCDF4_utils, netcdftime # these make cx_freeze work
 import pytz

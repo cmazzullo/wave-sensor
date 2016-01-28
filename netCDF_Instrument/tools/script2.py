@@ -19,6 +19,9 @@ import NetCDF_Utils.nc as nc
 # import DataTests
 import uuid
 import pandas as pd
+import unit_conversion
+import pytz
+
 
 
 def make_depth_file(water_fname, air_fname, out_fname, method='combo', purpose='storm_surge', csv = False, step = 1):
@@ -113,8 +116,18 @@ def make_depth_file(water_fname, air_fname, out_fname, method='combo', purpose='
     nc.append_depth(out_fname, depth[::step])
     
     if csv == True:
-        excelFile = pd.DataFrame({'Time': sea_time[begin:end:step], 'AirPressure': air_pressure[::step], \
-                                  'WaterLevel': depth[::step]})
+        
+        format_time = [unit_conversion.convert_ms_to_datestring(x, pytz.UTC, script = 'csv') \
+                       for x in sea_time[begin:end:step]]
+        
+        format_air_pressure = air_pressure * unit_conversion.DBAR_TO_INCHES_OF_MERCURY
+        
+        format_depth = depth * unit_conversion.METER_TO_FEET
+        
+        excelFile = pd.DataFrame({'Time': format_time, 
+                                  'Air Pressure in Inches of Hg': format_air_pressure[::step],
+                                  'Water Level in Feet': format_depth[::step]})
+        
         #append file name to new excel file
         last_index = out_fname.find('.')
         out_fname = out_fname[0:last_index]
@@ -130,7 +143,11 @@ def make_depth_file(water_fname, air_fname, out_fname, method='combo', purpose='
         else:
             out_file_name = out_fname
             
-        excelFile.to_csv(path_or_buf=out_file_name)
+        excelFile.to_csv(path_or_buf=out_file_name, columns=['Time',
+                                                             'Water Level in Feet',
+                                                             'Air Pressure in Inches of Hg'])
+        
+
 
 
 if __name__ == '__main__':

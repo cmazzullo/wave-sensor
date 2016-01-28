@@ -12,8 +12,43 @@ from cx_Freeze import setup, Executable
 # #         'copy_dependent_files': True
 #      
 # }
-sys.path.append('C:\\Users\\Gregory\\Documents\\GitHub\\wave-sensor\\netCDF_Instrument')
-build_exe_options = {"path": sys.path}
+sys.path.append('C:\\Users\\chogg\\Documents\\GitHub\\wave-sensor\\netCDF_Instrument')
+
+
+include_files = [
+                 ('C:\\Python34\\Lib\\site-packages\\scipy\\special\\_ufuncs.pyd','_ufuncs.pyd'),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\libifcoremd.dll','libifcoremd.dll'),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\libmmd.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\libifportmd.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\libimalloc.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\libiomp5md.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\libiompstubs5md.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_avx.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_avx2.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_avx512.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_core.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_intel_thread.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_p4m.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_p4m3.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_sequential.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_tbb_thread.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_vml_avx.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_vml_avx2.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_vml_avx512.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_vml_cmpt.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_vml_ia.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_vml_p4.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_vml_p4m.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_vml_p4m2.dll',''),
+                 ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_vml_p4m3.dll','')
+                
+                 ]
+build_exe_options = {
+                    'path': sys.path, 
+                    'packages': ["tkinter", "matplotlib"],
+                    'include_files':include_files,
+#                     'copy_dependent_files': True
+                     }
 
 executables = [
                  Executable('FrozenMaster.py', base = "Win32GUI"),
@@ -24,6 +59,9 @@ executables = [
 #                Executable('FrozenChopper.py', base = "Win32GUI"),
 #                Executable('FrozenDepthGraph.py', base = "Win32GUI")
 ]
+
+
+
 
 setup(name='advanced_cx_Freeze_sample',
       version='0.1',

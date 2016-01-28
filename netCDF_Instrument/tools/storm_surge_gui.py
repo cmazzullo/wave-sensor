@@ -10,6 +10,7 @@ import os
 from tools.depth_grapher import make_depth_graph
 
 
+
 class StormSurgeGui:
     def __init__(self, root):
         
@@ -125,16 +126,16 @@ class StormSurgeGui:
         self.emptyLabel4 = Label(self.graphOptions, text='', font=("Helvetica", 2))
         self.emptyLabel4.pack(anchor=W,padx = 15,pady = 0)
         
-        #variables and drop down for grid line option
-        self.GraphGridLabel = Label(self.graphOptions, text='Graph Grid Lines:')
-        self.GraphGridLabel.pack(anchor=W,padx = 15,pady = 2)
-        
-        grid_options=('Barometric Pressure',
-                'Water Level')
-        self.gridstringvar = StringVar()
-        self.gridstringvar.set(grid_options[0])
-        
-        OptionMenu(self.graphOptions, self.gridstringvar, *grid_options).pack(anchor=W, pady=2, padx=15)
+#         #variables and drop down for grid line option
+#         self.GraphGridLabel = Label(self.graphOptions, text='Graph Grid Lines:')
+#         self.GraphGridLabel.pack(anchor=W,padx = 15,pady = 2)
+#         
+#         grid_options=('Barometric Pressure',
+#                 'Water Level')
+#         self.gridstringvar = StringVar()
+#         self.gridstringvar.set(grid_options[0])
+#         
+#         OptionMenu(self.graphOptions, self.gridstringvar, *grid_options).pack(anchor=W, pady=2, padx=15)
         
         #tkinter spacing
         self.emptyLabel4 = Label(self.graphOptions, text='', font=("Helvetica", 2))
@@ -229,65 +230,66 @@ class StormSurgeGui:
     #         dialog = gc.MessageDialog(root, message='Working, this may take up to 60 seconds.',
     #                                title='Processing...', buttons=0, wait=False)
                    
-            try:
+#             try:
                 
                     #Get the sea time and air time and determine if there is overlap
-                sea_t = nc.get_time(self.sea_fname)
-                if self.air_fname != '':
-                    air_t = nc.get_time(self.air_fname)
-                    if (air_t[-1] < sea_t[0]) or (air_t[0] > sea_t[-1]):
-                        message = ("Air pressure and water pressure files don't "
-                                   "cover the same time period!\nPlease choose "
-                                   "other files.")
-                        gc.MessageDialog(root, message=message, title='Error!')
-                        return
-                    elif (air_t[0] > sea_t[0] or air_t[-1] < sea_t[-1]):
-                        message = ("The air pressure file doesn't span the "
-                        "entire time period covered by the water pressure "
-                        "file.\nThe period not covered by both files will be "
-                        "chopped")
-                        gc.MessageDialog(root, message=message, title='Warning')
+            sea_t = nc.get_time(self.sea_fname)
+            if self.air_fname != '':
+                air_t = nc.get_time(self.air_fname)
+                if (air_t[-1] < sea_t[0]) or (air_t[0] > sea_t[-1]):
+                    message = ("Air pressure and water pressure files don't "
+                               "cover the same time period!\nPlease choose "
+                               "other files.")
+                    gc.MessageDialog(root, message=message, title='Error!')
+                    return
+                elif (air_t[0] > sea_t[0] or air_t[-1] < sea_t[-1]):
+                    message = ("The air pressure file doesn't span the "
+                    "entire time period covered by the water pressure "
+                    "file.\nThe period not covered by both files will be "
+                    "chopped")
+                    gc.MessageDialog(root, message=message, title='Warning')
+            
+            #This creates the depth file/s for storage or use in the graph
+            script2.make_depth_file(self.sea_fname, self.air_fname,
+                                    output_fname, method='naive', csv= self.csvOutput.get(), step= 4)
+            
+           
+            #If graph output is selected get parameters and display graph
+            if self.graphOutput.get():
+                baroYLims = []
+                try:
+                    baroYLims.append(float(self.baroYlim1.get()))
+                    baroYLims.append(float(self.baroYlim2.get()))
+                except:
+                    baroYLims = None
                 
-                #This creates the depth file/s for storage or use in the graph
-                script2.make_depth_file(self.sea_fname, self.air_fname,
-                                        output_fname, method='naive', csv= self.csvOutput.get(), step= 4)
+                wlYLims = []
+                try:
+                    wlYLims.append(float(self.wlYlim1.get()))
+                    wlYLims.append(float(self.wlYlim2.get()))
+                except:
+                    wlYLims = None
                 
+                
+                make_depth_graph(0, output_fname, \
+                                         self.tzstringvar.get(), self.daylightSavings.get(),
+                                         'water_level', self.ExtraEntry.get(),
+                                         baroYLims, wlYLims, plot_fname)
                
-                #If graph output is selected get parameters and display graph
-                if self.graphOutput.get():
-                    baroYLims = []
-                    try:
-                        baroYLims.append(float(self.baroYlim1.get()))
-                        baroYLims.append(float(self.baroYlim2.get()))
-                    except:
-                        baroYLims = None
-                    
-                    wlYLims = []
-                    try:
-                        wlYLims.append(float(self.wlYlim1.get()))
-                        wlYLims.append(float(self.wlYlim2.get()))
-                    except:
-                        wlYLims = None
-                    
-                    make_depth_graph(0, output_fname, \
-                                             self.tzstringvar.get(), self.daylightSavings.get(),
-                                             self.gridstringvar.get(), self.ExtraEntry.get(),
-                                             baroYLims, wlYLims, plot_fname)
-                   
-                    
-                #if netCDF output is not selected delete the netCDF file created
-                if self.netOutput.get() == False:
-                    if os.path.exists(output_fname):
-                        os.remove(output_fname)
                 
-                     
-                gc.MessageDialog(root, message="Success! Files processed.",
-                                 title='Success!')
+            #if netCDF output is not selected delete the netCDF file created
+            if self.netOutput.get() == False:
+                if os.path.exists(output_fname):
+                    os.remove(output_fname)
+            
+            
+            gc.MessageDialog(root, message="Success! Files processed.",
+                             title='Success!')
                     
-            except:
-      
-                gc.MessageDialog(root, message="Could not process file/s, please check file type.",
-                                 title='Error')
+#             except:
+#       
+#                 gc.MessageDialog(root, message="Could not process file/s, please check file type.",
+#                                  title='Error')
         else:
             self.root.focus_force()
 
@@ -295,3 +297,8 @@ def make_frame(frame, header=None):
     """Make a frame with uniform padding."""
     return ttk.Frame(frame, padding="3 3 5 5")
 
+ 
+if __name__ == '__main__':
+    root = Tk()
+    gui = StormSurgeGui(root)
+    root.mainloop()

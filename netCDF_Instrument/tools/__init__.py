@@ -21,4 +21,8 @@
 # ax2.plot([1,2,3,4],[1,1,1,1], color='r', alpha=0.5)
 # ax.plot([1,2,3,4],[2,2,2,2], color='b', alpha=0.5)
 # 
-
+# 
+# exc_type, exc_value, exc_traceback = sys.exc_info()
+# 
+#             message = repr(traceback.format_exception(exc_type, exc_value,
+#                                           exc_traceback))

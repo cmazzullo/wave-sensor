@@ -8,18 +8,20 @@ import matplotlib.dates as mdates
 import matplotlib.ticker as ticker
 import pytz
 import tkinter as Tk
-from tkinter.constants import W, E, LEFT, RIGHT
+from tkinter.constants import W, LEFT, RIGHT
 from tkinter import filedialog
-import pandas as pd
+# import pandas as pd
 from NetCDF_Utils import nc
 from NetCDF_Utils.nc import chop_netcdf
 from datetime import datetime
-from datetime import timedelta
-from pytz import timezone
+# from datetime import timedelta
+# from pytz import timezone
 import easygui
 import numpy
 import unit_conversion as uc
-import mpl_toolkits.axes_grid1 as host_plt
+# import traceback
+# import sys
+
 
 def find_index(array, value):
     
@@ -117,8 +119,6 @@ class Chopper:
         
         self.frame.pack(side=Tk.LEFT)
         
-#         FigureCanvasTkAgg.
-
     def plot_pressure(self):
         
         #check to see if there is already a graph if so destroy it
@@ -127,7 +127,7 @@ class Chopper:
             self.canvas.get_tk_widget().destroy()
             
         font = {'family' : 'Bitstream Vera Sans',
-            'size'   : 12}
+            'size'   : 11}
 
         matplotlib.rc('font', **font)
         plt.rcParams['figure.figsize'] = (12,7)
@@ -137,18 +137,16 @@ class Chopper:
         self.t_dates = nc.get_time(self.fname)
         
         
+        
         self.first_date = uc.convert_ms_to_date(self.t_dates[0], pytz.UTC)
         self.last_date = uc.convert_ms_to_date(self.t_dates[-1], pytz.UTC)
         self.new_dates = uc.adjust_from_gmt([self.first_date,self.last_date], \
                                           self.tzstringvar.get(),self.daylightSavings.get())
          
+      
         self.first_date = mdates.date2num(self.new_dates[0])
         self.last_date = mdates.date2num(self.new_dates[1])
         
-        print(self.daylightSavings.get())
-#         if self.daylightSavings.get() == True:
-#             delta = timedelta(seconds = 3600)
-#             self.t_dates = [x - delta for x in self.t_dates]
          
         #get sea or air pressure depending on the radio button
         if self.methodvar.get() == "sea":
@@ -156,42 +154,40 @@ class Chopper:
         else:
             p = nc.get_air_pressure(self.fname)
           
-        print("pressure retrieved")  
+        
         #get quality control data    
-        qc = nc.get_flags(self.fname)
+#         qc = nc.get_flags(self.fname)
         
         self.fig = fig = plt.figure(figsize=(12,7))
-        ax = fig.add_subplot(111)
+
+        self.ax = fig.add_subplot(111)
         
-        self.ax = ax
-       
         #title
-        ax.set_title('Chop Pressure File\n(Timezone in %s time)' % self.tzstringvar.get())
+        self.ax.set_title('Chop Pressure File\n(Timezone in %s time)' % self.tzstringvar.get())
         
         #x axis formatter for dates (function format_date() below)
-        ax.xaxis.set_major_formatter(ticker.FuncFormatter(self.format_date))
+        self.ax.xaxis.set_major_formatter(ticker.FuncFormatter(self.format_date))
         
         #converts dates to numbers for matplotlib to consume
-        
         self.time_nums = np.linspace(self.first_date, self.last_date, len(self.t_dates))
-        
         
         #labels, and plot time series
         self.line = self.ax.plot(self.time_nums, p, color='blue')
+
 #         plt.xlabel('Time (s)')
         plt.ylabel('Pressure (dBar)')
         
         #all points that were flagged in the qc data are stored in
         #bad_points and bad_times to draw a red x in the graph
-        data = {'Pressure': pd.Series(p,index=self.time_nums),
-                'PressureQC': pd.Series(qc, index=self.time_nums)}
-        df = pd.DataFrame(data)
-        
-        df.Pressure[(df['PressureQC'] == 11111111) | (df['PressureQC'] == 1111011)
-                | (df['PressureQC'] == 11111110) | (df['PressureQC'] == 11110110)] = np.NaN;
-        
-        
-        self.redx = self.ax.plot(df.index, df.Pressure, 'rx')
+#         data = {'Pressure': pd.Series(p,index=self.time_nums),
+#                 'PressureQC': pd.Series(qc, index=self.time_nums)}
+#         df = pd.DataFrame(data)
+#            
+#         df.Pressure[(df['PressureQC'] == 11111111) | (df['PressureQC'] == 1111011)
+#                 | (df['PressureQC'] == 11111110) | (df['PressureQC'] == 11110110)] = np.NaN;
+#           
+#           
+#         self.redx = self.ax.plot(df.index, df.Pressure, 'rx')
         
         #saves state for reloading
         
@@ -219,6 +215,7 @@ class Chopper:
         
         
         events = []
+
  
         def on_click(event):
             
@@ -294,7 +291,7 @@ class Chopper:
                        
                         
                 except:
-                    print('nope')
+                    print('No event occurred')
   
          
           
@@ -310,14 +307,13 @@ class Chopper:
         self.toolbar.update()
       
         self.canvas.mpl_connect('button_press_event', on_click)
+        
+       
         self.canvas.show()
+        
         self.canvas.get_tk_widget().pack(side=Tk.TOP, fill=Tk.BOTH, expand=2)
         
         
-        
-       
-
-
     def export(self):
         #exception handling for the export process
 #         try:
@@ -344,24 +340,19 @@ class Chopper:
             i1 = find_index(self.time_nums, t1)
             i2 = find_index(self.time_nums, t2)
             
-            #just a print statement
-            print('self.fname = ', self.fname)
-            
             #chop out selected time series given the chosen parameters
             if self.methodvar.get() == "sea":
                 chop_netcdf(self.fname, out_fname, i1, i2, False)
             else:
                 chop_netcdf(self.fname, out_fname, i1, i2, True)
-            plt.close('all')
             
-            plt.close('all')
             
             #success and close the GUI
             easygui.msgbox("Success chopping file!", "Success")
             self.root.quit()
             self.root.destroy()
 #         except:
-#             easygui.msgbox("Could not export file, check file type and try again.", "Error")
+#             easygui.msgbox("Could not export file, check export parameters and try again.", "Error")
 
     def select_input(self):
         #general exception handling, finer details will be implemented as needed
@@ -373,9 +364,10 @@ class Chopper:
                 #enable the export button once a file is selected
                 #then force focus back on the gui
                 self.b['state'] = 'normal'
-            self.root.focus_force()
+                self.root.focus_force()
         except:
-            easygui.msgbox("Could not open file, check file type.", "Error")
+
+            easygui.msgbox('Cannot plot file, please check file type and try again', "Error")
              
     def format_date(self,x,arb=None):
         '''Format dates so that they are padded away from the x-axis'''

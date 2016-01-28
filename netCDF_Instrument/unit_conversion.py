@@ -21,6 +21,7 @@ PSI_TO_DBAR = 0.68947573
 ATM_TO_DBAR = 10.1325
 PASCAL_TO_DBAR = 0.0001
 METER_TO_FEET = 3.28084
+DBAR_TO_INCHES_OF_MERCURY = 2.9529983071415975
 
 USGS_PROTOTYPE_V_TO_DBAR = lambda v: 2.5274e-3 * v + 5.998439
 USGS_PROTOTYPE_V_TO_C = lambda v: 0.0114044 * v - 17.778
@@ -71,6 +72,8 @@ def convert_ms_to_datestring(ms, tzinfo, script = None):
         
         if script == None:
             final_date = date.strftime('%Y-%m-%dT%H:%M:%SZ')
+        elif script == 'csv':
+            final_date = date.strftime('%m/%d/%y %H:%M:%S')
         else:
             final_date = date.strftime('%m/%d/%y %H:%M')
         return final_date

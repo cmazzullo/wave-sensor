@@ -13,7 +13,7 @@ from collections import OrderedDict
 from tools.script1 import INSTRUMENTS, convert_to_netcdf
 import json
 import re
-from PIL.ImageTk import tkinter
+# from PIL.ImageTk import tkinter
 
 GLOBAL_HISTFILE = 'history.json'
 LOCAL_HISTFILE = 'history2_sea.json'
@@ -111,49 +111,49 @@ class Wavegui:
         """Run the csv to netCDF conversion on the selected files."""
         message = ('Working, this may take a few minutes.')
 
-        try:
-            dialog = MessageDialog(self.parent, message=message,
-                                   title='Processing...', buttons=0, wait=False)
-            globs = dict(zip(GLOBAL_FIELDS.keys(),
-                             self.global_form.export_entries()))
-            bad_data = None
-    
-            for fname, datafile in self.datafiles.items():
-                inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
-                inputs.update(globs)
-                inputs['sea_pressure'] = not self.air_pressure
-                inputs['in_filename'] = fname
-                inputs['out_filename'] = fname + '.nc'
-                inputs['initial_water_depth'] = 1.98
-                inputs['final_water_depth'] = 1.98
-                
-                process_files = self.validate_entries(inputs)
-                
-                if process_files == True:
-                    bad_data = convert_to_netcdf(inputs)
-                    self.remove_file(fname)
-                    dialog.destroy()
-                    if bad_data == True:
-                        MessageDialog(self.parent, message="There were some bad data points in the file, please cut them using chopper\n and/or" \
-                                      " use the \"Hydrostatic\" method in the Water Level GUI",
-                                  title='Data Issues!')
-                    else:
-                        MessageDialog(self.parent, message="There were no bad data points in the file",
-                                  title='No Data Issues!')
-                
-                    MessageDialog(self.parent, message="Success! Files saved.",
-                                  title='Success!') 
+#         try:
+        dialog = MessageDialog(self.parent, message=message,
+                               title='Processing...', buttons=0, wait=False)
+        globs = dict(zip(GLOBAL_FIELDS.keys(),
+                         self.global_form.export_entries()))
+        bad_data = None
+
+        for fname, datafile in self.datafiles.items():
+            inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
+            inputs.update(globs)
+            inputs['sea_pressure'] = not self.air_pressure
+            inputs['in_filename'] = fname
+            inputs['out_filename'] = fname + '.nc'
+            inputs['initial_water_depth'] = 1.98
+            inputs['final_water_depth'] = 1.98
+            
+            process_files = self.validate_entries(inputs)
+            
+            if process_files == True:
+                bad_data = convert_to_netcdf(inputs)
+                self.remove_file(fname)
+                dialog.destroy()
+                if bad_data == True:
+                    MessageDialog(self.parent, message="There were some bad data points in the file, please cut them using chopper\n and/or" \
+                                  " use the \"Hydrostatic\" method in the Water Level GUI",
+                              title='Data Issues!')
                 else:
-                    dialog.destroy()
-                    MessageDialog(self.parent, message= self.error_message,
-                                  title='Error')
-                
-                self.error_message = ''
-                    
-        except:
-            dialog.destroy()
-            MessageDialog(self.parent, message="Could not process files, please check file type.",
-                          title='Error')
+                    MessageDialog(self.parent, message="There were no bad data points in the file",
+                              title='No Data Issues!')
+            
+                MessageDialog(self.parent, message="Success! Files saved.",
+                              title='Success!') 
+            else:
+                dialog.destroy()
+                MessageDialog(self.parent, message= self.error_message,
+                              title='Error')
+            
+            self.error_message = ''
+#                     
+#         except:
+#             dialog.destroy()
+#             MessageDialog(self.parent, message="Could not process files, please check file type.",
+#                           title='Error')
     
     def validate_entries(self, inputs):
         '''Check if the GUI entries are filled out and in the proper format'''

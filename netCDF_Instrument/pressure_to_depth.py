@@ -117,3 +117,4 @@ def lowpass_filter(data):
     filtered_data = signal.filtfilt(b, a, data)
    
     return filtered_data
+

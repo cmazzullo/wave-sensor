@@ -13,6 +13,8 @@ from collections import OrderedDict
 from tools.script1 import INSTRUMENTS, convert_to_netcdf
 import json
 import re
+import sys
+import traceback
 
 GLOBAL_HISTFILE = 'history.json'
 LOCAL_HISTFILE = 'history2_air.json'
@@ -125,10 +127,14 @@ class Wavegui:
                               title='Error')
                     
                 self.error_message = ''
-            
+             
         except:
             dialog.destroy()
-            MessageDialog(self.parent, message="Could not process files, please check file type.",
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+
+            message = repr(traceback.format_exception(exc_type, exc_value,
+                                          exc_traceback))
+            MessageDialog(self.parent, message,
                           title='Error')
     
     def validate_entries(self, inputs):
