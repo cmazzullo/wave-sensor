@@ -316,43 +316,43 @@ class Chopper:
         
     def export(self):
         #exception handling for the export process
-#         try:
-            #get the beginning and end of the selection
+        try:
+#             #get the beginning and end of the selection
             date1 = self.date1.get()
             date2 = self.date2.get()
-            
+             
             #ask to save file name and directory
             out_fname = filedialog.asksaveasfilename()
             if out_fname == '':
                 return
-                     
+                      
             #convert string to date time, then convert to matplotlib number
             #tz = pytz.timezone(str(self.tzstringvar.get()))
             temp_dt = datetime.strptime(date1, '%m/%d/%y %H:%M:%S')
             #temp_dt = tz.localize(temp_dt, is_dst=None).astimezone(pytz.UTC)
             t1 = mdates.date2num(temp_dt)
-            
+             
             #tz = pytz.timezone(str(self.tzstringvar.get()))
             temp_dt2 = datetime.strptime(date2, '%m/%d/%y %H:%M:%S')
             #temp_dt2 = tz.localize(temp_dt2, is_dst=None).astimezone(pytz.UTC)
             t2 = mdates.date2num(temp_dt2)
-            
+             
             i1 = find_index(self.time_nums, t1)
             i2 = find_index(self.time_nums, t2)
-            
+             
             #chop out selected time series given the chosen parameters
             if self.methodvar.get() == "sea":
                 chop_netcdf(self.fname, out_fname, i1, i2, False)
             else:
                 chop_netcdf(self.fname, out_fname, i1, i2, True)
-            
-            
+             
+             
             #success and close the GUI
             easygui.msgbox("Success chopping file!", "Success")
             self.root.quit()
             self.root.destroy()
-#         except:
-#             easygui.msgbox("Could not export file, check export parameters and try again.", "Error")
+        except:
+            easygui.msgbox("Could not export file, check export parameters and try again.", "Error")
 
     def select_input(self):
         #general exception handling, finer details will be implemented as needed

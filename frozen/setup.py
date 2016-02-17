@@ -4,6 +4,7 @@ to be extracted manually for some reason, otherwise the executable will not run"
 import sys
 import traceback
 from cx_Freeze import setup, Executable
+import os
 
 # options = {
 #         'include_files': [("C:/Anaconda/Lib/site-packages/mpl_toolkits","mpl_toolkits")],
@@ -14,6 +15,18 @@ from cx_Freeze import setup, Executable
 # }
 sys.path.append('C:\\Users\\chogg\\Documents\\GitHub\\wave-sensor\\netCDF_Instrument')
 
+def zip_include_files():
+        path_base = "C:\\Python34\\Lib\\site-packages\\pytz\\zoneinfo\\"
+        skip_count = len(path_base) 
+        zip_includes = [(path_base, "pytz/zoneinfo/")]
+        for root, sub_folders, files in os.walk(path_base):
+            for file_in_root in files:
+                zip_includes.append(
+                        ("{}".format(os.path.join(root, file_in_root)),
+                         "{}".format(os.path.join("pytz/zoneinfo", root[skip_count:], file_in_root))
+                        ) 
+                )      
+        return zip_includes
 
 include_files = [
                  ('C:\\Python34\\Lib\\site-packages\\scipy\\special\\_ufuncs.pyd','_ufuncs.pyd'),
@@ -47,11 +60,13 @@ build_exe_options = {
                     'path': sys.path, 
                     'packages': ["tkinter", "matplotlib"],
                     'include_files':include_files,
+                    'zip_includes': zip_include_files()
 #                     'copy_dependent_files': True
                      }
 
 executables = [
-                 Executable('FrozenMaster.py', base = "Win32GUI"),
+#                 Executable('FrozenScript1.py')
+                Executable('FrozenMaster.py', base = "Win32GUI"),
 #                Executable('FrozenAverager.py', base = "Win32GUI"),
 #                Executable('FrozenBinaryScript1_Air.py', base = "Win32GUI"),
 #                Executable('FrozenBinaryScript1_Sea.py', base = "Win32GUI"),

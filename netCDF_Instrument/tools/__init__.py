@@ -26,3 +26,39 @@
 # 
 #             message = repr(traceback.format_exception(exc_type, exc_value,
 #                                           exc_traceback))
+# import csv
+# with open('test.csv', 'w') as csvfile:
+#     writer = csv.writer(csvfile, delimiter=',')
+#     
+#     csv_header = ["Latitude: %.4f, Longitude: %.4f, STN_Instrument_Id: %s"]
+#     writer.writerow(csv_header)
+
+# [a for a in dir(obj) if not a.startswith('__') and not callable(getattr(obj,a))]
+
+# import pandas as pd
+# import matplotlib.pyplot as plt
+# import matplotlib.gridspec as gridspec
+# #  
+# df = pd.read_csv('wind_data.csv', header=None)
+#       
+#     #generate 6 minute utc millisecond data
+#     #millisecond is a time stamp for Fri Jan 22 2016 23:00:00
+#       
+# wind_direction = df[6]
+# wind_speed = df[8]
+# import numpy as np
+#  
+# # grid_spec = gridspec.GridSpec(3,2,
+# #                                width_ratios=[1,2],
+# #                                height_ratios=[1,2,2]
+# #                                )
+#   
+# figure = plt.figure()
+# ax = figure.add_subplot('111')
+# 
+# U = np.
+# V
+# ax.plot(np.arange(0,len(wind_direction)),wind_speed)
+# 
+#   
+# plt.show()

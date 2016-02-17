@@ -3,6 +3,7 @@ import pytz
 import numpy as np
 import uuid
 import unit_conversion
+from numpy import float64
 
 class DataStore(object):
     '''Use this as an abstract data store, then pass a netcdf write stream to send data method'''
@@ -14,24 +15,24 @@ class DataStore(object):
         self.datum = None
         self.pressure_data = None
         self.pressure_qc_data = None
-        self.pressure_range = [0,50]
+        self.pressure_range = [float64(0),float64(50)]
         self.pressure_name = None
         self.temperature_data = None
         self.temperature_qc_data = None
-        self.temperature_range = [-20,50]
+        self.temperature_range = [float64(-20),float64(50)]
         self.z_data = 0
         self.z_qc_data = None
-        self.z_range = [-1000,1000]
+        self.z_range = [float64(-1000),float64(1000)]
         self.z_name = None
         self.latitude = 0
-        self.latitude_range = [-90,90]
+        self.latitude_range = [float64(-90),float64(90)]
         self.longitude = 0
-        self.longitude_range = [-180,180]
+        self.longitude_range = [float64(0),float64(180)]
         self.z = 0
         self.salinity = 0
         self.data_grouping = grouping
         self.epoch_start = datetime(year=1970,month=1,day=1,tzinfo=pytz.utc)
-        self.fill_value = np.float64(-1.0e+10)
+        self.fill_value = float64(-1.0e+10)
         self.initial_land_surface_elevation = 0
         self.final_land_surface_elevation = 0
         self.sensor_orifice_elevation_at_deployment_time = None
@@ -50,7 +51,7 @@ class DataStore(object):
                                 'comment': '',
                                 'ancillary_variables': ''}
         self.time_var = {
-                        'long_name': 'Time',
+                        'long_name': 'time',
                         'short_name': 'time',
                         'standard_name': "time",
                         'units': "milliseconds since " + self.epoch_start.strftime("%Y-%m-%d %H:%M:%S"),
@@ -58,7 +59,7 @@ class DataStore(object):
                         'axis': 'T',
                         'ancillary_variables': '',
                         'comment': "",
-                        'ioos_category': "Time",
+                        'ioos_category': "time",
                         'add_offset': 0.0,
                         'scale_factor': 1.0,
                         'compression': "not used at this time"}
@@ -66,13 +67,13 @@ class DataStore(object):
                         'long_name': "longitude of sensor",
                         'standard_name': "longitude",
                         'short_name': 'longitude',
-                        'units': "degrees",
+                        'units': "degrees_east",
                         'axis': 'X',
                         'valid_min': self.longitude_range[0],
                         'valid_max': self.longitude_range[1],
                         'ancillary_variables': '',
                         'comment': "longitude 0 = IERS Reference Meridian as used by WGS84 for longitude. East is positive.",
-                        'ioos_category': "Location",
+                        'ioos_category': "location",
                         'add_offset': 0.0,
                         'scale_factor': 1.0,
                         'compression': "not used at this time",
@@ -81,13 +82,13 @@ class DataStore(object):
                         'long_name': "latitude of sensor",
                         'standard_name': "latitude",
                         'short_name': 'latitude',
-                        'units': "degrees",
+                        'units': "degrees_north",
                         'axis': 'Y',
                         'valid_min': self.latitude_range[0],
                         'valid_max': self.latitude_range[1],
                         'ancillary_variables': '',
                         'comment': "latitude 0 equals equator. North is positive.",
-                        'ioos_category': "Location",
+                        'ioos_category': "location",
                         'add_offset': 0.0,
                         'scale_factor': 1.0,
                         'compression': "not used at this time",
@@ -97,13 +98,14 @@ class DataStore(object):
                         'standard_name': "altitude",
                         'short_name': 'altitude',
                         'units': "meters",
+                        'positive': 'up',
                         'datum': self.datum,
                         'axis': 'Z',
                         'valid_min': self.z_range[0],
                         'valid_max': self.z_range[1],
                         'ancillary_variables': '',
-                        'comment': "altitude of instrument",
-                        'ioos_category': "Location",
+                        'comment': "altitude of sensor used to derive sea surface elevation (unused)",
+                        'ioos_category': "location",
                         'add_offset': 0.0,
                         'scale_factor': 1.0,
                         'compression': "not used at this time",
@@ -113,20 +115,24 @@ class DataStore(object):
                                 'flag_meanings': "no_bad_data last_five_vals_identical, outside_valid_range, invalid_rate_of_change, interpolated_data",
                                 'comment': '1 signifies the value passed the test while a 0 flags a failed test, leading 1 is a placeholder'
                                 }
+        self.station_id = {
+                                      'cf_role': 'time_series_id',
+                                      'long_name': 'station identifier'
+                                      }
         self.pressure_var = {
-                             'long_name': "sensor pressure record",
-                             'standard_name': "sea_water_pressure",
+                             'long_name': "sensor pressure",
+                             'standard_name': "sea_pressure",
                              'short_name': "pressure",
                              'nodc_name': "pressure".upper(),
                              'units': "decibar",
-                             'scale_factor': np.float32(1.0),
-                             'add_offset': np.float32(0.0),
+                             'scale_factor': np.float64(1.0),
+                             'add_offset': np.float64(0.0),
                              'compression': "not used at this time",
                              'valid_min': self.pressure_range[0],
                              'valid_max': self.pressure_range[1],
                              'ancillary_variables': '',
                              'coordinates': "time latitude longitude altitude",
-                             'ioos_category': "Pressure",
+                             'ioos_category': "pressure",
                              'comment': "",
                              'instrument_manufacturer': "",
                              'instrument_make': "",
@@ -196,7 +202,7 @@ class DataStore(object):
                                  "license": "",
                                  "Metadata_Conventions": "Unidata Dataset Discovery v1.0",
                                  "metadata_link": "http://54.243.149.253/home/webmap/viewer.html?webmap=c07fae08c20c4117bdb8e92e3239837e",
-                                 "naming_authority": "not used at this time",
+                                 "naming_authority": "gov.usgs.water.stn",
                                  "processing_level": "deferred with intention to implement",
                                  "project": "deferred with intention to implement",
                                  "publisher_email": "deferred with intention to implement",
@@ -235,10 +241,12 @@ class DataStore(object):
         else:
             self.get_z_var(ds, True)
             self.get_z_qc_var(ds)
+            
         self.get_lat_var(ds)
         self.get_lon_var(ds)
         self.get_time_duration()
         self.get_global_vars(ds)
+        self.get_station_id(ds)
 
     def get_instrument_var(self,ds):
         instrument = ds.createVariable("instrument","i4")
@@ -283,6 +291,12 @@ class DataStore(object):
         for x in self.z_var_qc:
             z_qc.setncattr(x,self.z_var_qc[x])
         z_qc[:] = self.z_qc_data
+        
+    def get_station_id(self,ds):
+        st_id = ds.createVariable('station_id','S1',('station_id'))
+        for x in self.station_id:
+            st_id.setncattr(x,self.station_id[x])
+        st_id[:] = list(self.global_vars_dict['stn_station_number'])
 
     def get_pressure_var(self,ds):
         if self.pressure_name != None:

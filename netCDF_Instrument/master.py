@@ -5,7 +5,9 @@ import tools.script1_air_gui as script1_air
 # import tools.script2_gui as script2
 # import tools.average_gui as average
 # import tools.depth_grapher_gui as depth_grapher
-import tools.storm_surge_gui as storm_gui
+# import tools.storm_surge_gui as storm_gui
+import tools.peak_gui as peak_gui
+import tools.storm_gui as storm_gui
 
 import tkinter as Tk
 from tkinter import messagebox
@@ -38,8 +40,10 @@ class MasterGui:
         self.b3.pack(anchor=W,padx = 15,pady = 2)
 #         self.b4 = Tk.Button(self.root, text='Averager', command=self.averager)
 #         self.b4.pack(anchor=W,padx = 15,pady = 2)
-        self.b5 = Tk.Button(self.root, text='Storm Surge GUI', command=self.storm_surge)
+        self.b5 = Tk.Button(self.root, text='Storm GUI', command=self.storm_surge)
         self.b5.pack(anchor=W,padx = 15,pady = 2)
+        self.b6 = Tk.Button(self.root, text='Peak GUI', command=self.storm_wave)
+        self.b6.pack(anchor=W,padx = 15,pady = 2)
 #         self.emptyLabel = Tk.Label(self.root, text='', font=("Helvetica", 2))
 #         self.emptyLabel.pack(anchor=W,padx = 15,pady = 0)
 #         self.Label2 = Tk.Label(self.root, text='Graphing Utilities:')
@@ -88,8 +92,13 @@ class MasterGui:
 
     def storm_surge(self):
         self.root8 = Tk.Toplevel(self.root)
-        gui8 = storm_gui.StormSurgeGui(self.root8)
+        gui8 = storm_gui.StormGui(self.root8)
         self.root8.mainloop()
+        
+    def storm_wave(self):
+        self.root9 = Tk.Toplevel(self.root)
+        gui9 = peak_gui.PeakGui(self.root9)
+        self.root9.mainloop()
         
     def on_closing(self):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):

@@ -188,12 +188,12 @@ class NetCDFWriter(object):
         self.frequency = None
         self.valid_pressure_units = ["psi","pascals","atm"]
         self.valid_z_units = ["meters","feet"]
-        self.valid_latitude = (np.float32(-90),np.float32(90))
-        self.valid_longitude = (np.float32(-180),np.float32(180))
-        self.valid_z = (np.float32(-10000),np.float32(10000))
-        self.valid_salinity = (np.float32(0.0),np.float32(40000))
-        self.valid_pressure = (np.float32(-10000),np.float32(10000))
-        self.valid_temp = (np.float32(-10000), np.float32(10000))
+        self.valid_latitude = (np.float64(-90),np.float64(90))
+        self.valid_longitude = (np.float64(-180),np.float64(180))
+        self.valid_z = (np.float64(-10000),np.float64(10000))
+        self.valid_salinity = (np.float64(0.0),np.float64(40000))
+        self.valid_pressure = (np.float64(-10000),np.float64(10000))
+        self.valid_temp = (np.float64(-10000), np.float64(10000))
         self.fill_value = np.float64(-1.0e+10)
         self.creator_name = ""
         self.creator_email = ""
@@ -208,8 +208,8 @@ class NetCDFWriter(object):
         self.deployment_time = None
         self.retrieval_time = None
         self.bad_data = False
-        self.initial_land_surface_elevation = 0
-        self.final_land_surface_elevation = 0
+        self.initial_land_surface_elevation = np.float64(0)
+        self.final_land_surface_elevation = np.float64(0)
         self.device_depth = None
         self.device_depth2 = None
         self.datum = None
@@ -223,17 +223,18 @@ class NetCDFWriter(object):
     def write(self, sea_pressure=True):
         '''Writing a netCDF from the fields entered in either sea or air gui'''
         
+        self.is_Sea_pressure = sea_pressure
         #Assign variables according to the GUI used (air or sea)
         if sea_pressure == False:
             self.vstore.pressure_name = "air_pressure"
             self.vstore.pressure_var['standard_name'] = "air_pressure"
             self.summary = "These data were collected by an unvented pressure logger deployed in the air"
-            self.vstore.pressure_range = [0,20]
+            self.vstore.pressure_range = [np.float64(0),np.float64(20)]
         else:
             self.vstore.pressure_name = "sea_pressure"
             self.vstore.pressure_var['standard_name'] = "sea_pressure"
             self.summary = "These data were collected by an unvented pressure logger deployed in the sea" 
-            self.vstore.pressure_range = [0,50]
+            self.vstore.pressure_range = [np.float64(0),np.float64(50)]
             
         #Get Instrument Data
         self.instrument_info(self.instrument_name,self.vstore.pressure_var) 
@@ -271,43 +272,75 @@ class NetCDFWriter(object):
     def write_netCDF(self,var_datastore,series_length):
         with Dataset(self.out_filename, 'w', format="NETCDF4_CLASSIC") as ds:
             time_dimen = ds.createDimension("time", series_length)
+            station_dimen = ds.createDimension("station_id", len(self.stn_station_number))
             var_datastore.set_attributes(self.var_dict())
             var_datastore.z_var['datum'] = self.datum
             var_datastore.send_data(ds)
 
     def var_dict(self):
         var_dict = dict()
+        
+        #convert values to doubles
+        self.z = np.float64(self.z)
+        self.latitude = np.float64(self.latitude)
+        self.longitude = np.float64(self.longitude)
+        self.device_depth = np.float64(self.device_depth)
+        self.initial_water_depth = np.float64(self.initial_water_depth)
+        self.final_water_depth = np.float64(self.final_water_depth)
+        
         resolution_string = 'P{0}S';
-        lat_dict = {'valid_min': self.latitude, 'valid_max': self.latitude}
+        lat_dict = {'valid_min': self.valid_latitude[0], 'valid_max': self.valid_latitude[1]}
         var_dict['lat_var'] = lat_dict
-        lon_dict = {'valid_min': self.longitude, 'valid_max': self.longitude}
+        lon_dict = {'valid_min': self.valid_longitude[0], 'valid_max': self.valid_longitude[1]}
         var_dict['lon_var'] = lon_dict
+        
+        if self.is_Sea_pressure:
+            #get deployment and retrieval timestamps
+            dep_time = unit_conversion.datestring_to_ms(self.deployment_time, '%Y%m%d %H%M', \
+                                                         self.timezone_string,
+                                                         self.daylightSavings)
+            self.deployment_time = unit_conversion.convert_ms_to_datestring(dep_time, pytz.utc)
+            
+            ret_time = unit_conversion.datestring_to_ms(self.retrieval_time, '%Y%m%d %H%M', \
+                                                         self.timezone_string,
+                                                         self.daylightSavings)
+            self.retrieval_time = unit_conversion.convert_ms_to_datestring(ret_time, pytz.utc)
+        
+        
         global_vars = {'creator_name': self.creator_name,
                        'creator_email': self.creator_email,
                        'creator_url': self.creator_url,
                        'geospatial_vertical_reference': self.datum,
-                       'geospatial_lat_min': self.latitude,
-                       'geospatial_lat_max': self.latitude,
-                       'geospatial_lon_min': self.longitude,
-                       'geospatial_lon_max': self.longitude,
+                       'geospatial_lat_min': self.valid_latitude[0],
+                       'geospatial_lat_max': self.valid_latitude[1],
+                       'geospatial_lon_min': self.valid_longitude[0],
+                       'geospatial_lon_max': self.valid_longitude[1],
                        'geospatial_vertical_min': self.z,
                        'geospatial_vertical_max': self.z,
                        'sea_name': self.sea_name,
-                       'initial_water_depth': self.initial_water_depth,
-                       'initial_land_surface_elevation': float(self.initial_land_surface_elevation) / unit_conversion.METER_TO_FEET,
-                       'final_land_surface_elevation': float(self.final_land_surface_elevation) / unit_conversion.METER_TO_FEET,
-                       'final_water_depth': self.final_water_depth,
+                       'initial_water_depth': np.float64("{0:.4f}".format(self.initial_water_depth)),
+                       'initial_land_surface_elevation': np.float64("{0:.4f}".format( \
+                            float(self.initial_land_surface_elevation) / unit_conversion.METER_TO_FEET)),
+                       'final_land_surface_elevation': np.float64("{0:.4f}".format( \
+                            float(self.final_land_surface_elevation) / unit_conversion.METER_TO_FEET)),
+                       'land_surface_elevation_units': 'meters',
+                       'final_water_depth': np.float64("{0:.4f}".format(self.final_water_depth)),
+                       'water_depth_units': 'meters',
                        'deployment_time': self.deployment_time,
                        'retrieval_time': self.retrieval_time,
-                       'device_depth': self.device_depth,
+#                        'device_depth': self.device_depth,
                        'salinity' : self.salinity,
-                       'salinity_ppm': self.salinity,
-                       'sensor_orifice_elevation_at_deployment_time' : float(self.device_depth) / unit_conversion.METER_TO_FEET,
-                       'sensor_orifice_elevation_at_retrieval_time' : float(self.device_depth2) / unit_conversion.METER_TO_FEET,
+#                        'salinity_ppm': self.salinity,
+                       'sensor_orifice_elevation_at_deployment_time' : np.float64("{0:.4f}".format( \
+                                                float(self.device_depth) / unit_conversion.METER_TO_FEET)),
+                       'sensor_orifice_elevation_at_retrieval_time' : np.float64("{0:.4f}".format( \
+                                                float(self.device_depth2) / unit_conversion.METER_TO_FEET)),
+                       'sensor_orifice_elevation_units' : 'meters',
                        'time_coverage_resolution': resolution_string.format(1/self.frequency),
                        'summary': self.summary,
                        'stn_station_number': self.stn_station_number,
-                       'stn_instrument_id': self.stn_instrument_id
+                       'stn_instrument_id': self.stn_instrument_id,
+                       'featureType': 'timeSeries'
                        }
 
         var_dict['global_vars_dict'] = global_vars

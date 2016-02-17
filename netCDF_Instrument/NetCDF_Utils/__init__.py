@@ -31,3 +31,7 @@
 # print(a.group(0))
 # a = int('4')
 # print(a)
+# 
+# import numpy as np
+# 
+# print(np.arange(30,30.05,.1))

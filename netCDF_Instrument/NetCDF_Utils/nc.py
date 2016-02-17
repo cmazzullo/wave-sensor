@@ -4,12 +4,14 @@ netCDFs
 """
 import os
 from datetime import datetime
+import numpy as np
 from netCDF4 import Dataset
 from netCDF4 import num2date
 import netCDF4.utils
 import uuid
 # import netCDF4_utils, netcdftime # these make cx_freeze work
 import pytz
+import unit_conversion
 # Constant
 
 FILL_VALUE = -1e10
@@ -27,6 +29,9 @@ def chop_netcdf(fname, out_fname, begin, end, air_pressure = False):
     else:
         p = get_air_pressure(fname)[begin:end]
         
+    #get station id for the station_id dimension
+    stn_site_id = get_global_attribute(fname, 'stn_station_number')
+    
     t = get_time(fname)[begin:end]
     flags = get_flags(fname)[begin:end]
     alt = get_variable_data(fname, 'altitude')
@@ -35,6 +40,7 @@ def chop_netcdf(fname, out_fname, begin, end, air_pressure = False):
     d = Dataset(fname)
     output = Dataset(out_fname, 'w', format='NETCDF4_CLASSIC')
     output.createDimension('time', length)
+    
     # copy globals
     for att in d.ncattrs():
         setattr(output, att, d.__dict__[att])
@@ -44,6 +50,10 @@ def chop_netcdf(fname, out_fname, begin, end, air_pressure = False):
     # copy variables
     for key in d.variables:
         name = key
+        
+        if name == 'station_id':
+            output.createDimension("station_id", len(stn_site_id))
+            
         datatype = d.variables[key].datatype 
         
         dim = d.variables[key].dimensions
@@ -74,13 +84,17 @@ def chop_netcdf(fname, out_fname, begin, end, air_pressure = False):
     output.variables['altitude'][:] = alt
     output.variables['longitude'][:] = long
     output.variables['latitude'][:] = lat
+    
     d.close()
     output.close()
     
 def custom_copy(fname, out_fname, begin,end, mode="storm_surge", step = 1):
     if os.path.exists(out_fname):
         os.remove(out_fname)
-      
+    
+    #get station id for the station_id dimension
+    stn_site_id = get_global_attribute(fname, 'stn_station_number')
+    
     t = get_time(fname)[begin:end:step]
     
     flags = get_flags(fname)[begin:end:step]
@@ -90,29 +104,29 @@ def custom_copy(fname, out_fname, begin,end, mode="storm_surge", step = 1):
     d = Dataset(fname)
     output = Dataset(out_fname, 'w', format='NETCDF4_CLASSIC')
     output.createDimension('time', len(t))
+    output.createDimension("station_id", len(stn_site_id))
     print('length of time dimension', len(t))
     # copy globals
     for att in d.ncattrs():
         setattr(output, att, d.__dict__[att])
     
-    sea_uuid = get_global_attribute(fname, 'uuid') 
     setattr(output, 'uuid', str(uuid.uuid4()))   
     
+    has_station_id = False
     # copy variables
     for key in d.variables:
         
         #skip adding pressure qc if the mode is storm surge
-        if mode == 'storm_surge' and key == 'pressure_qc':
+        if mode == 'storm_surge' and (key == 'pressure_qc' or key == 'sea_pressure'):
             continue
         
+        if key == 'station_id':
+            has_station_id =True
+            
         name = key
         datatype = d.variables[key].datatype 
           
-#         datatype = np.dtype('float64')
-        if name == 'sea_pressure':
-            dim = d.variables['latitude'].dimensions
-        else:
-            dim = d.variables[key].dimensions
+        dim = d.variables[key].dimensions
         
         if datatype == "int32":
             var = output.createVariable(name, datatype, dim)
@@ -123,8 +137,8 @@ def custom_copy(fname, out_fname, begin,end, mode="storm_surge", step = 1):
             if att != '_FillValue':
                 setattr(var, att, d.variables[key].__dict__[att])
                 
-        if name == 'sea_pressure':
-            setattr(var, 'sea_uuid', sea_uuid)
+#         if name == 'sea_pressure':
+#             setattr(var, 'sea_uuid', sea_uuid)
             
     output.variables['time'][:] = t
     
@@ -136,7 +150,70 @@ def custom_copy(fname, out_fname, begin,end, mode="storm_surge", step = 1):
     output.variables['altitude'][:] = alt
     output.variables['longitude'][:] = long
     output.variables['latitude'][:] = lat
-    output.variables['sea_pressure'][:] = 0
+#     output.variables['sea_pressure'][:] = 0
+
+    if has_station_id == False:
+    #the following changes are essential in case the air and sea gui files are processed
+    #with older versions of the script
+        st_id = output.createVariable('station_id','S1',('station_id'))
+        st_id.setncattr('cf_role', 'time_series_id')
+        st_id.setncattr('long_name', 'station identifier')
+        st_id[:] = list(stn_site_id)
+    
+    deployment_time = unit_conversion.convert_ms_to_datestring(t[0], pytz.utc)
+    retrieval_time = unit_conversion.convert_ms_to_datestring(t[-1], pytz.utc)
+    set_global_attribute(out_fname, 'deployment_time', deployment_time)
+    set_global_attribute(out_fname, 'retrieval_time', retrieval_time)
+    set_global_attribute(out_fname, 'salinity_ppm', 'unused')
+    set_global_attribute(out_fname, 'device_depth', 'unused')
+    set_global_attribute(out_fname, 'geospatial_lon_min', np.float64(-180))
+    set_global_attribute(out_fname, 'geospatial_lon_max', np.float64(180))
+    set_global_attribute(out_fname, 'geospatial_lat_min', np.float64(-90))
+    set_global_attribute(out_fname, 'geospatial_lat_max', np.float64(90))
+    set_global_attribute(out_fname, 'geospatial_vertical_min', np.float64(0))
+    set_global_attribute(out_fname, 'geospatial_vertical_max', np.float64(0))
+    
+    first, last = get_sensor_orifice_elevation(out_fname)
+    set_global_attribute(out_fname, 'sensor_orifice_elevation_at_deployment_time', \
+                         np.float64("{0:.4f}".format(first)))
+    set_global_attribute(out_fname, 'sensor_orifice_elevation_at_retrieval_time', \
+                         np.float64("{0:.4f}".format(last)))
+    set_global_attribute(out_fname, 'sensor_orifice_elevation_units', 'meters')
+    
+    first_land, last_land = get_land_surface_elevation(out_fname)
+    set_global_attribute(out_fname, 'initial_land_surface_elevation', \
+                         np.float64("{0:.4f}".format(first_land)))
+    set_global_attribute(out_fname, 'final_land_surface_elevation', \
+                         np.float64("{0:.4f}".format(last_land)))
+    set_global_attribute(out_fname, 'land_surface_elevation_units', 'meters')
+    
+    first_depth = get_initial_water_depth(out_fname)
+    set_global_attribute(out_fname, 'initial_water_depth', \
+                         np.float64("{0:.4f}".format(first_depth)))
+    final_depth = get_final_water_depth(out_fname)
+    set_global_attribute(out_fname, 'final_water_depth', \
+                         np.float64("{0:.4f}".format(final_depth)))
+    set_global_attribute(out_fname, 'water_depth_units', 'meters')
+    set_global_attribute(out_fname, 'featureType', 'timeSeries')
+    
+    set_var_attribute(out_fname, 'latitude', 'valid_max', np.float64(90))
+    set_var_attribute(out_fname, 'latitude', 'valid_min', np.float64(-90))
+    set_var_attribute(out_fname, 'latitude', 'ioos_category', 'location')
+    set_var_attribute(out_fname, 'latitude', 'units', 'degrees_north')
+    set_var_attribute(out_fname, 'longitude', 'valid_max', np.float64(180))
+    set_var_attribute(out_fname, 'longitude', 'valid_min', np.float64(-180))
+    set_var_attribute(out_fname, 'longitude', 'ioos_category', 'location')
+    set_var_attribute(out_fname, 'longitude', 'units', 'degrees_east')
+    set_var_attribute(out_fname, 'altitude', 'valid_max', np.float64(1000))
+    set_var_attribute(out_fname, 'altitude', 'valid_min', np.float64(-1000))
+    set_var_attribute(out_fname, 'altitude', 'ioos_category', 'location')
+    set_var_attribute(out_fname, 'altitude', 'positive', 'up')
+    
+    set_var_attribute(out_fname, 'time', 'ioos_category', 'time')
+    set_var_attribute(out_fname, 'time', 'long_name', 'time')
+    set_var_attribute(out_fname, 'altitude', 'comment', 'unused')
+    # end attribute modifications
+    
     d.close()
     output.close()
 
@@ -164,19 +241,40 @@ def parse_time(fname, time_name):
 def append_air_pressure(fname, pressure, air_fname = None):
     """Insert air pressure array into the netCDF file fname"""
     name = 'air_pressure'
-    long_name = 'air pressure record'
+    long_name = 'air pressure'
     append_variable(fname, name, pressure, comment='',
                      long_name=long_name, og_fname=air_fname)
 
 
-def append_depth(fname, depth):
+def append_depth(fname, depth, calc_type='storm_surge'):
     """Insert depth array into the netCDF file at fname"""
-    comment = ('The depth, computed using the variable "corrected '
-               'water pressure".')
-    name = 'depth'
+    
+    if calc_type == 'storm_surge':
+        comment = ('Low-passed water surface elevation computed by: '
+                   '1. Subtracting air pressure from the sea pressure '
+                   '2. Removing the mean '
+                   '3. Low-pass filtering forward using a 4th-order Butterworth filter'
+                   ' with a cutoff at 1 minute '
+                   '4. Filtering backward with the same filter to reduce phase errors '
+                   '5. Adding the mean back in to the time series '
+                   '6. Using the hydrostatic assumption to convert the pressure to water'
+                   ' surface height above the sensor orifice '
+                   '7. Adding surveyed-to-datum sensor orifice height'
+                   ' The files for the sea pressure and air pressure used to calculate water level'
+                   ' are identified by the properties sea_uuid and air_uuid respectively.')
+    else:
+        comment = ('The depth, computed using the variable "corrected '
+                   'water pressure".')
+    name = 'water_surface_height_above_reference_datum'
+     
     print('len(depth) = ' + str(len(depth)))
     append_variable(fname, name, depth, comment=comment,
                      long_name=name)
+    
+    #Get uuid (previously that of sea file), and add as property to water_level variable
+    sea_uuid = get_global_attribute(fname, 'uuid')
+    set_var_attribute(fname, name, 'sea_uuid', sea_uuid)
+    set_global_attribute(fname, 'uuid', str(uuid.uuid4()))
 
 def append_depth_qc(fname, sea_qc, air_qc, mode="normal"):
     """Insert depth qc array"""
@@ -221,7 +319,7 @@ def get_water_depth(in_fname):
 
 def get_depth(fname):
     """Get the wave height array from the netCDF at fname"""
-    return get_variable_data(fname, 'depth')
+    return get_variable_data(fname, 'water_surface_height_above_reference_datum')
 
 
 def get_flags(fname):
@@ -323,7 +421,7 @@ def get_variable_attr(fname, variable_name, attr):
     """Get the values of a variable from a netCDF file."""
     with Dataset(fname) as nc_file:
         var = nc_file.variables[variable_name]
-        var_data = var[:]
+        var_data = var.getncattr(attr)
         return var_data
 
 # Backend
@@ -350,11 +448,11 @@ def append_variable(fname, standard_name, data, comment='',
     """Append a new variable to an existing netCDF."""
     with Dataset(fname, 'a', format='NETCDF4_CLASSIC') as nc_file:
         pvar = nc_file.createVariable(standard_name, 'f8', ('time',))
-        pvar.ioos_category = ''
+        
         pvar.comment = comment
         pvar.standard_name = standard_name
-        pvar.max = 1000
-        pvar.min = -1000
+        pvar.max = np.float64(1000)
+        pvar.min = np.float64(-1000)
         pvar.short_name = standard_name
         pvar.ancillary_variables = ''
         pvar.add_offset = 0.0
@@ -364,12 +462,14 @@ def append_variable(fname, standard_name, data, comment='',
         if flag_masks != None:
             pvar.flags_masks = flag_masks
             pvar.flag_meanings = flag_meanings
-        if standard_name == 'depth':
+        if standard_name == 'water_surface_height_above_reference_datum':
             pvar.units = 'meters'
-            pvar.nodc_name = 'WATER DEPTH'
+            pvar.nodc_name = 'WATER LEVEL'
+            pvar.ioos_category = 'sea_level'
         else:
             pvar.units = 'decibars'
             pvar.nodc_name = 'PRESSURE'
+            pvar.ioos_category = 'pressure'
         pvar.compression = 'not used at this time'
         
         #get instrument data if appending air pressure

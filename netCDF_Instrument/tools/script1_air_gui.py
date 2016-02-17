@@ -26,7 +26,7 @@ LOCAL_FIELDS = OrderedDict([
     ('instrument_name', ['Instrument:', [
         'MS TruBlue 255', 'Onset Hobo U20', #'LevelTroll','RBRSolo', 'USGS Homebrew'
         ], True]),
-     ('stn_station_number', ['STN Station Number:', '']),
+     ('stn_station_number', ['STN Site Id:', '']),
     ('stn_instrument_id', ['STN Instrument Id:', '']),
     ('latitude', ['Latitude (decimal degrees):', '', True]),
     ('longitude', ['Longitude (decimal degrees):', '', True]),
@@ -98,23 +98,24 @@ class Wavegui:
     def process_files(self):
         """Run the csv to netCDF conversion on the selected files."""
         message = ('Working, this may take a few minutes.')
+        dialog = None
 
         try:
             dialog = MessageDialog(self.parent, message=message,
                                    title='Processing...', buttons=0, wait=False)
             globs = dict(zip(GLOBAL_FIELDS.keys(),
                              self.global_form.export_entries()))
-    
-    
+     
+     
             for fname, datafile in self.datafiles.items():
                 inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
                 inputs.update(globs)
                 inputs['sea_pressure'] = not self.air_pressure
                 inputs['in_filename'] = fname
                 inputs['out_filename'] = fname + '.nc'
-                
+                 
                 process_files = self.validate_entries(inputs)
-            
+             
                 if process_files == True:
                     convert_to_netcdf(inputs)
                     self.remove_file(fname)
@@ -125,17 +126,19 @@ class Wavegui:
                     dialog.destroy()
                     MessageDialog(self.parent, message= self.error_message,
                               title='Error')
-                    
+                     
                 self.error_message = ''
              
         except:
-            dialog.destroy()
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-
-            message = repr(traceback.format_exception(exc_type, exc_value,
-                                          exc_traceback))
-            MessageDialog(self.parent, message,
+            if dialog is not None:
+                dialog.destroy()
+#             exc_type, exc_value, exc_traceback = sys.exc_info()
+# #    
+#             message = traceback.format_exception(exc_type, exc_value,
+#                                           exc_traceback)
+            MessageDialog(self.parent, message="Could not process files, please check file type.",
                           title='Error')
+            
     
     def validate_entries(self, inputs):
         '''Check if the GUI entries are filled out and in the proper format'''

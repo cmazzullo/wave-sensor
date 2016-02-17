@@ -8,19 +8,30 @@ import tools.script2 as script2
 import tools.script1_gui as gc
 import os
 from tools.depth_grapher import make_depth_graph
+import unit_conversion
+import pytz
 
-
-
-class StormSurgeGui:
+class StormWaveGui:
     def __init__(self, root):
         
         #root and selection dialogs for sea and air netCDF files
         self.root = root
-        root.title('Storm Surge GUI (Pressure -> Water Level)')
+        root.title('Storm Wave GUI (Pressure -> Water Level)')
         self.root.focus_force()
         
-        self.chopperLabel = Label(root, text='(Please make sure Chopper is closed before making a graph)')
-        self.chopperLabel.pack(anchor=W,padx = 15,pady = 2)
+#         self.chopperLabel = Label(root, text='(Please make sure Chopper is closed before making a graph)')
+#         self.chopperLabel.pack(anchor=W,padx = 2,pady = 2)
+#         
+#         methods = [('Hydrostatic', 'naive'),
+#                 ('Linear Wave', 'combo')]
+# 
+#         self.methodvar = StringVar()
+#         self.methodvar.set('naive')
+# 
+#         ttk.Label(root, text='Depth calculation:').pack(anchor=W,padx = 2,pady = 2)
+#         for name, kwarg in methods:
+#             ttk.Radiobutton(root, text=name, variable=self.methodvar,
+#                             value=kwarg).pack(anchor=W,padx = 15,pady = 2)
         
         self.sea_fname = ''
         self.sea_var = StringVar()
@@ -33,35 +44,36 @@ class StormSurgeGui:
         self.make_fileselect(root, 'Air file:',
                              self.air_var, 'air_fname')
         c3 = lambda: self.select_output_file(root)
-        self.output_label = Label(self.root, text='Output Formats (please check at least one):')
-        self.output_label.pack(anchor=W,padx = 2,pady = 2)
+#         self.output_label = Label(self.root, text='Output Formats (please check at least one):')
+#         self.output_label.pack(anchor=W,padx = 2,pady = 2)
         
         #Initialize output selection variables
+        self.maxOutput = BooleanVar()
         self.netOutput = BooleanVar()
         self.csvOutput = BooleanVar()
         self.graphOutput = BooleanVar()
+        
+        self.maxOutput.trace('w', self.button_state)
         self.netOutput.trace("w", self.button_state)
-        self.csvOutput.trace("w", self.csv_button_state)
+        self.csvOutput.trace("w", self.button_state)
         self.graphOutput.trace("w", self.hide_options)
         
         #Check boxes for output variables
-        self.netCDF = Checkbutton(root, text="netCDF", variable=self.netOutput)
-        self.netCDF.pack(anchor=W,padx = 15,pady = 2)
-        self.csv = Checkbutton(root, text="CSV", variable=self.csvOutput)
-        self.csv.pack(anchor=W,padx = 15,pady = 2)
-        self.graph = Checkbutton(root, text="Graph", variable=self.graphOutput)
-        self.graph.pack(anchor=W,padx = 15,pady = 2)
+#         self.maxWaterLevel = Checkbutton(root, text="Max Waterlevel", variable=self.maxOutput)
+#         self.maxWaterLevel.pack(anchor=W,padx = 15,pady = 2)
+#         self.netCDF = Checkbutton(root, text="netCDF", variable=self.netOutput)
+#         self.netCDF.pack(anchor=W,padx = 15,pady = 2)
+#         self.csv = Checkbutton(root, text="CSV", variable=self.csvOutput)
+#         self.csv.pack(anchor=W,padx = 15,pady = 2)
+#         self.graph = Checkbutton(root, text="Graph", variable=self.graphOutput)
+#         self.graph.pack(anchor=W,padx = 15,pady = 2)
         
         
         #Frame for graph options (will hide unless graph output is selected)
         self.graphOptions = Frame(root)
-        self.csvOptions = Frame(root)
         
-        self.TzLabel = Label(self.graphOptions, text='Time zone to display dates in:')
+        self.TzLabel = Label(self.root, text='Time zone to display date in:')
         self.TzLabel.pack(anchor=W,padx = 15,pady = 2)
-        self.TzLabel2 = Label(self.csvOptions, text='Time zone to display dates in:')
-        self.TzLabel2.pack(anchor=W,padx = 15,pady = 2)
-        
         options=('GMT',
                 'US/Aleutian',
                 'US/Central',
@@ -73,17 +85,13 @@ class StormSurgeGui:
         self.tzstringvar.set(options[0])
         
         
-        self.datePickFrame = Frame(self.graphOptions)
-        self.datePickFrame2 = Frame(self.csvOptions)
+        self.datePickFrame = Frame(self.root)
         
         OptionMenu(self.datePickFrame, self.tzstringvar, *options).pack(side=LEFT, pady=2, padx=15)
-        OptionMenu(self.datePickFrame2, self.tzstringvar, *options).pack(side=LEFT, pady=2, padx=15)
         
         self.daylightSavings = BooleanVar()
         Checkbutton(self.datePickFrame, text="Daylight Savings", variable=self.daylightSavings).pack(side=RIGHT)
         self.datePickFrame.pack(anchor=W)
-        Checkbutton(self.datePickFrame2, text="Daylight Savings", variable=self.daylightSavings).pack(side=RIGHT)
-        self.datePickFrame2.pack(anchor=W)
         
         #tkinter spacing
         self.emptyLabel4 = Label(self.graphOptions, text='', font=("Helvetica", 2))
@@ -154,6 +162,8 @@ class StormSurgeGui:
                                    state=DISABLED)
         
         self.b3.pack(anchor=W, fill=BOTH)
+        
+        self.justMax = True
     
     def hide_options(self, event, arb1, arb2):
         '''Checks whether the graph option is selected to show options and whether files and one
@@ -164,36 +174,14 @@ class StormSurgeGui:
             self.b3.config(state=DISABLED)
             
         if self.graphOutput.get() == True:
-            self.csvOptions.pack_forget()
             self.b3.pack_forget()
             self.graphOptions.pack(anchor=W, padx = 2)
             self.b3.pack(anchor=W, fill=BOTH)
         else:
             self.graphOptions.pack_forget()
-            if(self.csvOutput.get() == True):
-                self.b3.pack_forget()
-                self.csvOptions.pack(anchor=W, padx = 2)
-                self.b3.pack(anchor=W, fill=BOTH)
     
     def button_state(self, event, arb1, arb2):
         '''Checks whether files and one output is selected to enable the process files button'''
-        
-        if (self.sea_fname != '' and self.air_fname != '') and (self.graphOutput.get() or self.csvOutput.get() or self.netOutput.get()):
-            self.b3['state'] = 'ENABLED'
-        else:
-            self.b3.config(state=DISABLED)
-            
-    def csv_button_state(self, event, arb1, arb2):
-        '''Checks whether files and one output is selected to enable the process files button'''
-        
-        if self.graphOutput.get() == False:
-            if self.csvOutput.get() == True:
-                self.b3.pack_forget()
-                self.csvOptions.pack(anchor=W, padx = 2)
-                self.b3.pack(anchor=W, fill=BOTH)
-            else:
-                self.csvOptions.pack_forget()
-                
         if (self.sea_fname != '' and self.air_fname != '') and (self.graphOutput.get() or self.csvOutput.get() or self.netOutput.get()):
             self.b3['state'] = 'ENABLED'
         else:
@@ -204,8 +192,12 @@ class StormSurgeGui:
         if fname != '':
             stringvar.set(fname)
             setattr(self, varname, fname)
-            if(self.sea_fname != '' and self.air_fname != '') and (self.graphOutput.get() or self.csvOutput.get() or self.netOutput.get()):
-                self.b3['state'] = 'ENABLED'
+            if not self.justMax:
+                if(self.sea_fname != '' and self.air_fname != '') and (self.graphOutput.get() or self.csvOutput.get() or self.netOutput.get()):
+                    self.b3['state'] = 'ENABLED'
+            else:
+                if(self.sea_fname != '' and self.air_fname != ''):
+                    self.b3['state'] = 'ENABLED'
         self.root.focus_force()
 
     def make_button(self, root, text, command, state=None):
@@ -232,37 +224,99 @@ class StormSurgeGui:
         
         #Format the name properly based on the input of the user
         
-        og_fname = filedialog.asksaveasfilename()
-        output_fname = ''
-        plot_fname = ''
-        
-        if og_fname != None and og_fname != '' :
-                
-            last_index = og_fname.find('.')
-            if og_fname[last_index:] != '.nc':
-                
-                if last_index < 0:
-                    output_fname = ''.join([og_fname,'.nc'])
-                    plot_fname = ''.join([og_fname,'.jpg'])
-                else:
-                    output_fname = ''.join([og_fname[0:last_index],'.nc'])
-                    
-                    if og_fname[last_index:] != '.jpg':
-                        plot_fname = ''.join([og_fname[0:last_index],'.jpg'])
-                    else:
-                        plot_fname = og_fname
-            else:
-                output_fname = og_fname
-                plot_fname = ''.join([og_fname[0:last_index],'.jpg'])
-                
+        if not self.justMax:
+            og_fname = filedialog.asksaveasfilename()
+            output_fname = ''
+            plot_fname = ''
             
-           
-    #         dialog = gc.MessageDialog(root, message='Working, this may take up to 60 seconds.',
-    #                                title='Processing...', buttons=0, wait=False)
-#                    
-#             try:
+            if og_fname != None and og_fname != '' :
+                    
+                last_index = og_fname.find('.')
+                if og_fname[last_index:] != '.nc':
+                    
+                    if last_index < 0:
+                        output_fname = ''.join([og_fname,'.nc'])
+                        plot_fname = ''.join([og_fname,'.jpg'])
+                    else:
+                        output_fname = ''.join([og_fname[0:last_index],'.nc'])
+                        
+                        if og_fname[last_index:] != '.jpg':
+                            plot_fname = ''.join([og_fname[0:last_index],'.jpg'])
+                        else:
+                            plot_fname = og_fname
+                else:
+                    output_fname = og_fname
+                    plot_fname = ''.join([og_fname[0:last_index],'.jpg'])
+                    
                 
-                    #Get the sea time and air time and determine if there is overlap
+               
+        #         dialog = gc.MessageDialog(root, message='Working, this may take up to 60 seconds.',
+        #                                title='Processing...', buttons=0, wait=False)
+    #                    
+    #             try:
+                    
+                        #Get the sea time and air time and determine if there is overlap
+                sea_t = nc.get_time(self.sea_fname)
+                if self.air_fname != '':
+                    air_t = nc.get_time(self.air_fname)
+                    if (air_t[-1] < sea_t[0]) or (air_t[0] > sea_t[-1]):
+                        message = ("Air pressure and water pressure files don't "
+                                   "cover the same time period!\nPlease choose "
+                                   "other files.")
+                        gc.MessageDialog(root, message=message, title='Error!')
+                        return
+                    elif (air_t[0] > sea_t[0] or air_t[-1] < sea_t[-1]):
+                        message = ("The air pressure file doesn't span the "
+                        "entire time period covered by the water pressure "
+                        "file.\nThe period not covered by both files will be "
+                        "chopped")
+                        gc.MessageDialog(root, message=message, title='Warning')
+                
+                #This creates the depth file/s for storage or use in the graph
+                script2.make_depth_file(self.sea_fname, self.air_fname,
+                                        output_fname, method='naive', purpose='surface_waves', \
+                                        csv= self.csvOutput.get(), step=1)
+                
+               
+                #If graph output is selected get parameters and display graph
+                if self.graphOutput.get():
+                    baroYLims = []
+                    try:
+                        baroYLims.append(float(self.baroYlim1.get()))
+                        baroYLims.append(float(self.baroYlim2.get()))
+                    except:
+                        baroYLims = None
+                    
+                    wlYLims = []
+                    try:
+                        wlYLims.append(float(self.wlYlim1.get()))
+                        wlYLims.append(float(self.wlYlim2.get()))
+                    except:
+                        wlYLims = None
+                    
+                    
+                    make_depth_graph(0, output_fname, \
+                                             self.tzstringvar.get(), self.daylightSavings.get(),
+                                             self.methodvar.get(), None,
+                                             baroYLims, wlYLims, plot_fname)
+                   
+                    
+                #if netCDF output is not selected delete the netCDF file created
+                if self.netOutput.get() == False:
+                    if os.path.exists(output_fname):
+                        os.remove(output_fname)
+                
+                
+                gc.MessageDialog(root, message="Success! Files processed.",
+                                 title='Success!')
+                    
+    #             except:
+    #          
+    #                 gc.MessageDialog(root, message="Could not process file/s, please check file type.",
+    #                                  title='Error')
+            else:
+                self.root.focus_force()
+        else:
             sea_t = nc.get_time(self.sea_fname)
             if self.air_fname != '':
                 air_t = nc.get_time(self.air_fname)
@@ -280,49 +334,21 @@ class StormSurgeGui:
                     gc.MessageDialog(root, message=message, title='Warning')
             
             #This creates the depth file/s for storage or use in the graph
-            script2.make_depth_file(self.sea_fname, self.air_fname,
-                                    output_fname, method='naive', csv= self.csvOutput.get(), step= 1,
-                                    tz = self.tzstringvar.get(), dayLightSavings = self.daylightSavings.get())
-            
-           
-            #If graph output is selected get parameters and display graph
-            if self.graphOutput.get():
-                baroYLims = []
-                try:
-                    baroYLims.append(float(self.baroYlim1.get()))
-                    baroYLims.append(float(self.baroYlim2.get()))
-                except:
-                    baroYLims = None
+                final_depth, final_date = script2.make_depth_file(self.sea_fname, self.air_fname,
+                                    'arb', method='naive', purpose='get_max', \
+                                    csv= False, step=1)
                 
-                wlYLims = []
-                try:
-                    wlYLims.append(float(self.wlYlim1.get()))
-                    wlYLims.append(float(self.wlYlim2.get()))
-                except:
-                    wlYLims = None
+                final_depth = final_depth * unit_conversion.METER_TO_FEET
                 
+                formatted_date = unit_conversion.convert_ms_to_date(final_date, pytz.utc)
+                formatted_date = unit_conversion.adjust_from_gmt([formatted_date], \
+                                                                 self.tzstringvar.get(), self.daylightSavings.get())
                 
-                make_depth_graph(0, output_fname, \
-                                         self.tzstringvar.get(), self.daylightSavings.get(),
-                                         'water_level', None,
-                                         baroYLims, wlYLims, plot_fname)
-               
+                formatted_date = formatted_date[0].strftime('%m/%d/%y %H:%M:%S')
                 
-            #if netCDF output is not selected delete the netCDF file created
-            if self.netOutput.get() == False:
-                if os.path.exists(output_fname):
-                    os.remove(output_fname)
-            
-            
-            gc.MessageDialog(root, message="Success! Files processed.",
-                             title='Success!')
-                
-#             except:
-#           
-#                 gc.MessageDialog(root, message="Could not process file/s, please check file type.",
-#                                  title='Error')
-        else:
-            self.root.focus_force()
+                message = 'The max water level in feet is: %.4f\n' \
+                    'The time is: %s' % (final_depth, formatted_date)
+                gc.MessageDialog(root, message=message, title='Success!')
 
 def make_frame(frame, header=None):
     """Make a frame with uniform padding."""
@@ -331,5 +357,5 @@ def make_frame(frame, header=None):
  
 if __name__ == '__main__':
     root = Tk()
-    gui = StormSurgeGui(root)
+    gui = StormWaveGui(root)
     root.mainloop()

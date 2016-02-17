@@ -16,23 +16,33 @@ WATER_DENSITY = 1030  # density of seawater (kg / m**3)
 FILL_VALUE = -1e10
 
 
-def combo_method(time, pressure, device_d, water_d, tstep):
+def combo_method(time, pressure, device_d, water_d, tstep = 4):
     """Convert pressure series into depth series using fft method."""
     
     #this creates a split for each fill value since the fourier functions
     #handle fill values gracefully
-    split_idx = (pressure == FILL_VALUE)
-    idx = np.where(split_idx[1:] ^ split_idx[:-1])[0] + 1
+#     split_idx = (pressure == FILL_VALUE)
+#     idx = np.where(split_idx[1:] ^ split_idx[:-1])[0] + 1
+
+    #for the purposes of our method we will take windows of every 4096 amounting to 17 minutes and whatever seconds
+    #in order to maximize the i utility of the fourier functions 
+    window_size = 4096
     dchunks = []
-    for p_chunk, t_chunk, h_chunk in zip(np.split(pressure, idx),
-                                         np.split(time, idx),
-                                         np.split(water_d, idx)):
-        if p_chunk[0] == FILL_VALUE:
-            dchunks.append(p_chunk)
-            continue
+    for p_chunk, t_chunk, h_chunk, device_chunk in zip(np.split(pressure, window_size),
+                                         np.split(time, window_size),
+                                         np.split(water_d, window_size),
+                                         np.split(device_chunk, window_size)):
+#         if p_chunk[0] == FILL_VALUE:
+#             dchunks.append(p_chunk)
+#             continue
+        #calculate the average of the sensor orifice elevation for the given chunk
+        device_d = np.average(device_chunk)
+        #removing the linear trend
         coeff = np.polyfit(t_chunk, p_chunk, 1)
         static_p = coeff[1] + coeff[0]*t_chunk
         wave_p = p_chunk - static_p
+        
+        #applying linear wave theory to the wave and device slices
         wave_y = pressure_to_depth_lwt(wave_p, device_d, h_chunk, tstep)
         wave_y = np.pad(wave_y, (0, len(t_chunk) - len(wave_y)), mode='edge')
         dchunks.append(hydrostatic_method(static_p) + wave_y)
@@ -77,13 +87,24 @@ def pressure_to_depth_lwt(p_dbar, device_d, water_d, tstep, hi_cut='auto'):
     """Create wave height data from an array of pressure readings."""
     if hi_cut == 'auto':
         hi_cut = auto_cutoff(water_d)
+        
+    #Get the average of the water_d time seires
+    #*still need to establish relation to land surface elevation and sensor orifice elevation
     water_d = np.average(water_d)
+    
+    #create window to multiply by pressure time series to reduce gibbs effect and other ringing noise artifacts
     trimmed_p = trim_to_even(p_dbar)
     window = np.hamming(len(trimmed_p))
     scaled_p = trimmed_p * 1e4 * window
+    
+    #perform real fourier function on the scaled pressure and get the frequencies
     p_amps = np.fft.rfft(scaled_p)
     freqs = np.fft.rfftfreq(len(trimmed_p), d=tstep)
+    
+    #get the wave numbers by applying properties of the dispersion relation
     wavenumbers = omega_to_k(2 * np.pi * freqs, water_d)
+    
+    #convert scaled pressure to water level and converting any value above the cutoff to zero
     d_amps = pressure_to_eta(p_amps, wavenumbers, device_d, water_d)
     d_amps[np.where(freqs >= hi_cut)] = 0
     return np.fft.irfft(d_amps) / window

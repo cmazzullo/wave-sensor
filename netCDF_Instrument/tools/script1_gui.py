@@ -13,6 +13,8 @@ from collections import OrderedDict
 from tools.script1 import INSTRUMENTS, convert_to_netcdf
 import json
 import re
+import sys
+import traceback
 # from PIL.ImageTk import tkinter
 
 GLOBAL_HISTFILE = 'history.json'
@@ -25,7 +27,7 @@ LOCAL_FIELDS = OrderedDict([
     ('instrument_name', ['Instrument:', [
         'MS TruBlue 255', 'Onset Hobo U20', #'LevelTroll','RBRSolo', 'USGS Homebrew'
         ], True]),
-    ('stn_station_number', ['STN Station Number:', '']),
+    ('stn_station_number', ['STN Site Id:', '']),
     ('stn_instrument_id', ['STN Instrument Id:', '']),
     ('latitude', ['Latitude (decimal degrees):', '', True]),
     ('longitude', ['Longitude (decimal degrees):', '', True]),
@@ -49,8 +51,8 @@ WATER_ONLY_FIELDS = OrderedDict([
     ('final_land_surface_elevation', ['Final land surface elevation (feet):', '', False]),
     ('device_depth', ['Sensor orifice elevation at deployment time(feet):', '', False]),
     ('device_depth2', ['Sensor orifice elevation at retrieval time(feet):', '', False]),
-    ('deployment_time', ['Deployment time (YYYYMMDD HHMM):', '', False]),
-    ('retrieval_time', ['Retrieval time (YYYYMMDD HHMM):', '', False]),
+    ('deployment_time', ['Deployment time (YYYYMMDD HHMM) (24 hour clock):', '', False]),
+    ('retrieval_time', ['Retrieval time (YYYYMMDD HHMM) (24 hour clock):', '', False]),
     ('sea_name', ['Sea Name:', [
         'Chesapeake Bay', 'Great Lakes', 'Gulf of Alaska', 'Gulf of California',
         'Gulf of Maine', 'Gulf of Mexico', 'Hudson Bay', 'Massachusetts Bay',
@@ -111,49 +113,59 @@ class Wavegui:
         """Run the csv to netCDF conversion on the selected files."""
         message = ('Working, this may take a few minutes.')
 
-#         try:
-        dialog = MessageDialog(self.parent, message=message,
-                               title='Processing...', buttons=0, wait=False)
-        globs = dict(zip(GLOBAL_FIELDS.keys(),
-                         self.global_form.export_entries()))
-        bad_data = None
-
-        for fname, datafile in self.datafiles.items():
-            inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
-            inputs.update(globs)
-            inputs['sea_pressure'] = not self.air_pressure
-            inputs['in_filename'] = fname
-            inputs['out_filename'] = fname + '.nc'
-            inputs['initial_water_depth'] = 1.98
-            inputs['final_water_depth'] = 1.98
-            
-            process_files = self.validate_entries(inputs)
-            
-            if process_files == True:
-                bad_data = convert_to_netcdf(inputs)
-                self.remove_file(fname)
-                dialog.destroy()
-                if bad_data == True:
-                    MessageDialog(self.parent, message="There were some bad data points in the file, please cut them using chopper\n and/or" \
-                                  " use the \"Hydrostatic\" method in the Water Level GUI",
-                              title='Data Issues!')
+        dialog = None
+        
+        try:
+            dialog = MessageDialog(self.parent, message=message,
+                                   title='Processing...', buttons=0, wait=False)
+            globs = dict(zip(GLOBAL_FIELDS.keys(),
+                             self.global_form.export_entries()))
+            bad_data = None
+    
+            for fname, datafile in self.datafiles.items():
+                inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
+                inputs.update(globs)
+                inputs['sea_pressure'] = not self.air_pressure
+                inputs['in_filename'] = fname
+                inputs['out_filename'] = fname + '.nc'
+                inputs['initial_water_depth'] = 1.98
+                inputs['final_water_depth'] = 1.98
+                
+                process_files = self.validate_entries(inputs)
+                
+                if process_files == True:
+                    bad_data = convert_to_netcdf(inputs)
+                    self.remove_file(fname)
+                    dialog.destroy()
+                    if bad_data == True:
+                        MessageDialog(self.parent, message="There were some bad data points in the file, please cut them using chopper\n and/or" \
+                                      " use the \"Hydrostatic\" method in the Water Level GUI",
+                                  title='Data Issues!')
+                    else:
+                        MessageDialog(self.parent, message="There were no bad data points in the file",
+                                  title='No Data Issues!')
+                
+                    MessageDialog(self.parent, message="Success! Files saved.",
+                                  title='Success!') 
                 else:
-                    MessageDialog(self.parent, message="There were no bad data points in the file",
-                              title='No Data Issues!')
-            
-                MessageDialog(self.parent, message="Success! Files saved.",
-                              title='Success!') 
-            else:
+                    dialog.destroy()
+                    MessageDialog(self.parent, message= self.error_message,
+                                  title='Error')
+                
+                self.error_message = ''
+                     
+        except:
+            if dialog is not None:
                 dialog.destroy()
-                MessageDialog(self.parent, message= self.error_message,
-                              title='Error')
-            
-            self.error_message = ''
-#                     
-#         except:
-#             dialog.destroy()
-#             MessageDialog(self.parent, message="Could not process files, please check file type.",
-#                           title='Error')
+            MessageDialog(self.parent, message="Could not process files, please check file type.",
+                          title='Error')
+#             exc_type, exc_value, exc_traceback = sys.exc_info()
+# #    
+#             message = traceback.format_exception(exc_type, exc_value,
+#                                         exc_traceback)
+#             
+#             MessageDialog(root, message=message,
+#                              title='Error')
     
     def validate_entries(self, inputs):
         '''Check if the GUI entries are filled out and in the proper format'''
@@ -238,7 +250,7 @@ class Form(tk.Frame):
 
     def make_entry_row(self, field, row):
         """Create an Entry based on a field and return its StringVar."""
-        label = tk.Label(self, text=field[0], width=40, anchor='w')
+        label = tk.Label(self, text=field[0], width=45, anchor='w')
         label.grid(row=row, column=0, sticky='W')
         
         value = field[1]
