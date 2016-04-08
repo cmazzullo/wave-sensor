@@ -14,14 +14,13 @@ import matplotlib.image as image
 import matplotlib.ticker as ticker
 from tools.storm_options import StormOptions
 # from tests.test_script2 import water_fname
-matplotlib.use('TkAgg', warn=False)
 import pytz
 # import netCDF4_utils
 import pandas as pd
 import unit_conversion
 from matplotlib.ticker import FormatStrFormatter
 import tools.storm_graph_utilities as graph_util
-from tools.storm_options import StormOptions
+
 
 class StormGraph(object):
     
@@ -41,26 +40,41 @@ class StormGraph(object):
         
         if so.graph['Storm Tide with Unfiltered Water Level and Wind Data'].get() == True:
             so.get_meta_data()
+            so.get_air_meta_data()
+            so.get_wind_meta_data()
             so.get_raw_water_level()
             so.get_surge_water_level()
             so.slice_wind_data()
+            so.test_water_elevation_below_sensor_orifice_elvation()
             self.create_header(so, wind=True)
             self.Storm_Tide_Unfiltered_and_Wind(so)
             
-            
+            #To avoid over allocating memory for the graphs
+#             plt.close()
+              
         if so.graph['Storm Tide with Unfiltered Water Level'].get() == True:
             so.get_meta_data()
+            so.get_air_meta_data()
             so.get_raw_water_level()
             so.get_surge_water_level()
+            so.test_water_elevation_below_sensor_orifice_elvation()
             self.create_header(so)
             self.Storm_Tide_and_Unfiltered_Water_Level(so)
+        
+            #To avoid over allocating memory for the graphs
+#             plt.close()
             
         if so.graph['Storm Tide Water Level'].get() == True:
             so.get_meta_data()
+            so.get_air_meta_data()
             so.get_raw_water_level()
             so.get_surge_water_level()
+            so.test_water_elevation_below_sensor_orifice_elvation()
             self.create_header(so)
             self.Storm_Tide_Water_Level(so)
+        
+            #To avoid over allocating memory for the graphs
+#             plt.close()
             
         if so.graph['Atmospheric Pressure'].get() == True:
             so.get_air_meta_data()
@@ -68,6 +82,11 @@ class StormGraph(object):
             so.get_raw_air_pressure()
             self.create_baro_header(so)
             self.Atmospheric_Graph(so)
+            
+            #To avoid over allocating memory for the graphs
+#             plt.close()
+        
+        
         
     def create_header(self,so, wind=False):
 #         if self.figure is not None:
@@ -201,11 +220,17 @@ class StormGraph(object):
             ax.set_position(pos2) # set a new position
             
             #create the second graph title
-            second_title = "Latitude: %.4f, Longitude: %.4f, STN Site ID: %s" \
+            first_title = "Storm Tide Water Elevation, Latitude: %.4f Longitude: %.4f STN Site ID: %s" \
                 % (so.latitude,so.longitude,so.stn_station_number)
+            second_title = "Barometric Pressure, Latitude: %.4f Longitude: %.4f STN Site ID: %s" \
+                % (so.air_latitude,so.air_longitude,so.air_stn_station_number)
     #         if extra != None and extra != '':
-            ax.set_title("Storm Tide Water Elevation and Barometric Pressure (Time Zone %s)\n%s" \
-                         % (so.timezone,second_title),y=1.010)
+            titleText = ax.text(0.5, 1.065,first_title,  \
+                va='center', ha='center', transform=ax.transAxes)
+            titleText2 = ax.text(0.5, 1.03,second_title,  \
+                va='center', ha='center', transform=ax.transAxes)
+            
+            ax.set_xlabel('Timezone: %s' % so.timezone)
     #         else:
     #             ax.set_title("Storm Tide Water Elevation and Barometric Pressure (Time Zone %s)" % tz,y=1.015)
             
@@ -233,8 +258,8 @@ class StormGraph(object):
             #plan on rebuilding the flow of execution, ignore spaghetti for now
             depth_min_start = np.min(self.df.RawDepth)
             
-            depth_idx = so.raw_water_level.argmax()
-            tide_idx = so.surge_water_level.argmax() - 1
+            depth_idx = np.nanargmax(so.raw_water_level)
+            tide_idx = np.nanargmax(so.surge_water_level)
            
             depth_max = so.raw_water_level[depth_idx] * unit_conversion.METER_TO_FEET
             depth_time = unit_conversion.convert_ms_to_date(so.sea_time[depth_idx], pytz.UTC)
@@ -270,6 +295,8 @@ class StormGraph(object):
             #changes scale so the air pressure is more readable
             minY = np.floor(np.min(self.df.Pressure))
             maxY = np.ceil(np.max(self.df.Pressure))
+            print('minm_max:', np.min(self.df.Pressure),minY,np.max(self.df.Pressure),maxY)
+        
             
             if so.baroYLims is None:
                 par1.set_ylim([minY,maxY])
@@ -323,14 +350,26 @@ class StormGraph(object):
             pos2 = [pos1.x0, pos1.y0,  pos1.width, pos1.height + .06] 
             ax.set_position(pos2) # set a new position
             
-            #create the second graph title
-            second_title = "Latitude: %.4f, Longitude: %.4f, STN Site ID: %s" \
+            first_title = "Storm Tide Water Elevation, Latitude: %.4f Longitude: %.4f STN Site ID: %s" \
                 % (so.latitude,so.longitude,so.stn_station_number)
+            second_title = "Barometric Pressure, Latitude: %.4f Longitude: %.4f STN Site ID: %s" \
+                % (so.air_latitude,so.air_longitude,so.air_stn_station_number)
+                
+            titleText = ax.text(0.5, 1.08,first_title,  \
+                va='center', ha='center', transform=ax.transAxes)
+            titleText2 = ax.text(0.5, 1.03,second_title,  \
+                va='center', ha='center', transform=ax.transAxes)
     #         if extra != None and extra != '':
-            ax.set_title("Storm Tide Water Elevation and Barometric Pressure (Time Zone %s)\n%s" \
-                         % (so.timezone,second_title),y=1.010)
-    #         else:
-    #             ax.set_title("Storm Tide Water Elevation and Barometric Pressure (Time Zone %s)" % tz,y=1.015)
+#             ax.set_title("%s\n%s" \
+#                          % (first_title,second_title))#,y=1.010)
+            
+            third_title = "Wind Speed and Direction, Latitude: %.4f Longitude: %.4f STN Site ID: %s" \
+                % (so.wind_latitude,so.wind_longitude,so.wind_stn_station_number)
+                
+            titleText3 = ax2.text(0.5, -.1,third_title,  \
+                va='center', ha='center', transform=ax.transAxes)
+            
+            ax2.set_xlabel('Timezone: %s' % so.timezone)
             
             par1 = ax.twinx()
             pos1 = par1.get_position() # get the original position 
@@ -356,8 +395,8 @@ class StormGraph(object):
             #plan on rebuilding the flow of execution, ignore spaghetti for now
             depth_min_start = np.min(self.df.RawDepth)
             
-            depth_idx = so.raw_water_level.argmax()
-            tide_idx = so.surge_water_level.argmax() - 1
+            depth_idx = np.nanargmax(so.raw_water_level)
+            tide_idx = np.nanargmax(so.surge_water_level)
            
             depth_max = so.raw_water_level[depth_idx] * unit_conversion.METER_TO_FEET
             depth_time = unit_conversion.convert_ms_to_date(so.sea_time[depth_idx], pytz.UTC)
@@ -404,6 +443,9 @@ class StormGraph(object):
                     par1.set_yticks(np.arange(so.baroYLims[0],so.baroYLims[1],.1))
                     
                 par1.set_ylim([so.baroYLims[0],so.baroYLims[1]])
+                
+            scale = (self.time_nums[1] - self.time_nums[0]) * (len(self.time_nums) * .1)
+            ax.set_xlim([self.time_nums[0] - scale, self.time_nums[-1] + scale])
     
             #plot the pressure, depth, and min depth
             
@@ -423,8 +465,8 @@ class StormGraph(object):
             
             plt.setp( ax.get_xticklabels(), visible=False)
             plt.setp( ax2.get_yaxis(), visible=False)
-            ax2.set_title('Wind Speed and Direction')
-            ax2.set_ylim([-1,1])
+            
+            ax2.set_ylim([-.75,.75])
             
             
             graph_util.plot_wind_data2(ax2, so, self.wind_time_nums)
@@ -444,7 +486,9 @@ class StormGraph(object):
             
              
             file_name = ''.join([so.output_fname,'_stormtide_unfiltered_wind','.jpg'])
+            
             plt.savefig(file_name)
+          
             
     def Storm_Tide_Water_Level(self,so):
         ax = self.figure.add_subplot(self.grid_spec[1,0:])
@@ -452,14 +496,15 @@ class StormGraph(object):
         pos2 = [pos1.x0, pos1.y0,  pos1.width, pos1.height + .06] 
         ax.set_position(pos2) # set a new position
         
-        #create the second graph title
-        second_title = "Latitude: %.4f, Longitude: %.4f, STN Site ID: %s" \
-            % (so.latitude,so.longitude,so.stn_station_number)
+        first_title = "Storm Tide Water Elevation, Latitude: %.4f Longitude: %.4f STN Site ID: %s" \
+                % (so.latitude,so.longitude,so.stn_station_number)
+        second_title = "Barometric Pressure, Latitude: %.4f Longitude: %.4f STN Site ID: %s" \
+                % (so.air_latitude,so.air_longitude,so.air_stn_station_number)
     #         if extra != None and extra != '':
-        ax.set_title("Storm Tide Water Elevation and Barometric Pressure (Time Zone %s)\n%s" \
-                     % (so.timezone,second_title),y=1.010)
-    #         else:
-    #             ax.set_title("Storm Tide Water Elevation and Barometric Pressure (Time Zone %s)" % tz,y=1.015)
+        titleText = ax.text(0.5, 1.065,first_title,  \
+                va='center', ha='center', transform=ax.transAxes)
+        titleText2 = ax.text(0.5, 1.03,second_title,  \
+                va='center', ha='center', transform=ax.transAxes)
         
         par1 = ax.twinx()
         pos1 = par1.get_position() # get the original position 
@@ -475,7 +520,7 @@ class StormGraph(object):
     
         #x axis formatter for dates (function format_date() below)
         ax.xaxis.set_major_formatter(ticker.FuncFormatter(self.format_date))
-    
+        ax.set_xlabel('Timezone: %s' % so.timezone)
     
         sensor_min = np.min(so.sensor_orifice_elevation)
         
@@ -485,10 +530,10 @@ class StormGraph(object):
         #plan on rebuilding the flow of execution, ignore spaghetti for now
         depth_min_start = np.min(self.df.SurgeDepth)
         
-        depth_idx = so.raw_water_level.argmax()
-        tide_idx = so.surge_water_level.argmax()
+        depth_idx = np.nanargmax(so.raw_water_level)
+        tide_idx = np.nanargmax(so.surge_water_level)
        
-        depth_max = so.raw_water_level[depth_idx] * unit_conversion.METER_TO_FEET
+       
         depth_time = unit_conversion.convert_ms_to_date(so.sea_time[depth_idx], pytz.UTC)
         tide_max = so.surge_water_level[tide_idx] * unit_conversion.METER_TO_FEET
         tide_time = unit_conversion.convert_ms_to_date(so.sea_time[tide_idx], pytz.UTC)
@@ -523,6 +568,7 @@ class StormGraph(object):
         minY = np.floor(np.min(self.df.Pressure))
         maxY = np.ceil(np.max(self.df.Pressure))
         
+      
         if so.baroYLims is None:
                 par1.set_ylim([minY,maxY])
                 par1.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
@@ -572,12 +618,14 @@ class StormGraph(object):
         pos2 = [pos1.x0, pos1.y0,  pos1.width, pos1.height + .06] 
         ax.set_position(pos2) # set a new position
         
-        #create the second graph title
-        second_title = "Latitude: %.4f, Longitude: %.4f, STN Site ID: %s" \
-            % (so.air_latitude,so.air_longitude,so.air_stn_station_number)
+       
+        first_title = "Barometric Pressure, Latitude: %.4f Longitude: %.4f STN Site ID: %s" \
+                % (so.air_latitude,so.air_longitude,so.air_stn_station_number)
     #         if extra != None and extra != '':
-        ax.set_title("Barometric Pressure (Time Zone %s)\n%s" \
-                     % (so.timezone,second_title),y=1.010)
+        titleText = ax.text(0.5, 1.03,first_title,  \
+                va='center', ha='center', transform=ax.transAxes)
+        
+        ax.set_xlabel('Timezone: %s' % so.timezone)
     #         else:
     #             ax.set_title("Storm Tide Water Elevation and Barometric Pressure (Time Zone %s)" % tz,y=1.015)
         
@@ -641,14 +689,14 @@ class Bool(object):
 if __name__ == '__main__':
   
     so = StormOptions()
-    so.air_fname = 'SSS-CT-NEW-00012BP.chop.hobo.nc'
-    so.sea_fname = 'SSS-CT-NEW-04676WV.chop.true.nc'
-    so.wind_fname = 'wind_data_CT.nc'
-    so.format_output_fname('test1')
+    so.air_fname = 'Assateague Baro.csv.nc'
+    so.sea_fname = 'MDWOR04586.csv.nc'
+    so.wind_fname = 'joachim_wind-2.nc'
+    so.format_output_fname('test')
     so.timezone = 'GMT'
     so.daylight_savings = False
     so.graph['Storm Tide with Unfiltered Water Level and Wind Data'] = Bool(True)
-    so.graph['Storm Tide with Unfiltered Water Level'] = Bool(False)
+    so.graph['Storm Tide with Unfiltered Water Level'] = Bool(True)
     so.graph['Storm Tide Water Level'] = Bool(False)
     so.graph['Atmospheric Pressure'] = Bool(False)
                     

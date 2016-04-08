@@ -10,7 +10,7 @@ import numpy.testing as nptest
 import numpy as np
 import os
 from tools.script2 import make_depth_file
-import NetCDF_Utils.nc as nc
+import netCDF_Utils.nc as nc
 
 DIRNAME = os.path.dirname(__file__)
 WATER_BASENAME = 'script2test.nc'

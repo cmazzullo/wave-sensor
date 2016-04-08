@@ -1,0 +1,3 @@
+python pressure_script.py "MDWOR04586.csv" "MDW.csv.nc" "Jake Mazzullo" stuff@gmail.com ^
+zombo.com "MS TruBlue 255" 1 1 20.0 20 US/Central False NAVD88 1 1.5 "Sea Pressure" "20151002 0000" ^
+"20151010 0000" --salinity "Salt Water (^> 30 ppt)" --initial_land_surface_elevation 1 --final_land_surface_elevation 1.2 --deployment_time "20140101 0000" --retrieval_time "20140102 0000" --sea_name "Chesapeake Bay"

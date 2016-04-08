@@ -1,8 +1,7 @@
 """Contains classes that read CSV files output by pressure sensors."""
 
 from datetime import datetime
-from NetCDF_Utils.edit_netcdf import NetCDFWriter
-import DataTests
+from netCDF_Utils import edit_netcdf
 import unit_conversion as uc
 import numpy as np
 import pandas as pd
@@ -18,7 +17,7 @@ def find_first(fname, expr):
                 return i + 1
 
 
-class Hobo(NetCDFWriter):
+class Hobo(edit_netcdf.NetCDFWriter):
     '''derived class for hobo csv files '''
     def __init__(self):
         self.timezone_marker = "time zone"
@@ -38,31 +37,28 @@ class Hobo(NetCDFWriter):
             skip_index = find_first(self.in_filename, '#')
             second = True
         
-        print(second)
         df = pd.read_table(self.in_filename, skiprows=skip_index, header=None,
                            engine='c', sep=',', usecols=(1, 2))
         df = df.dropna()
         
         try:
-            first_stamp = uc.datestring_to_ms(df.values[0][0], self.date_format_string, self.tz_info, self.daylightSavings)
-            second_stamp = uc.datestring_to_ms(df.values[1][0], self.date_format_string, self.tz_info, self.daylightSavings)
+            first_stamp = uc.datestring_to_ms(df.values[0][0], self.date_format_string, self.tz_info, self.daylight_savings)
+            second_stamp = uc.datestring_to_ms(df.values[1][0], self.date_format_string, self.tz_info, self.daylight_savings)
         except:
-            first_stamp = uc.datestring_to_ms(df.values[0][0], self.date_format_string2, self.tz_info, self.daylightSavings)
-            second_stamp = uc.datestring_to_ms(df.values[1][0], self.date_format_string2, self.tz_info, self.daylightSavings)
-            
-        print('tstamps: ', first_stamp, second_stamp, self.tz_info)
+            first_stamp = uc.datestring_to_ms(df.values[0][0], self.date_format_string2, self.tz_info, self.daylight_savings)
+            second_stamp = uc.datestring_to_ms(df.values[1][0], self.date_format_string2, self.tz_info, self.daylight_savings)
             
         self.frequency = 1000 / (second_stamp - first_stamp)
         
         
         try:
-            start_ms = uc.datestring_to_ms(df[1][0], self.date_format_string, self.tz_info, self.daylightSavings)
+            start_ms = uc.datestring_to_ms(df[1][0], self.date_format_string, self.tz_info, self.daylight_savings)
         except:
-            start_ms = uc.datestring_to_ms(df[1][0], self.date_format_string2, self.tz_info, self.daylightSavings)
+            start_ms = uc.datestring_to_ms(df[1][0], self.date_format_string2, self.tz_info, self.daylight_savings)
             
         self.utc_millisecond_data = uc.generate_ms(start_ms, df.shape[0], self.frequency)
         
-#         if self.daylightSavings == True:
+#         if self.daylight_savings == True:
 #             self.utc_millisecond_data = [x - 3600000 for x in self.utc_millisecond_data]
         
         self.pressure_data = df[2].values * uc.PSI_TO_DBAR
@@ -78,7 +74,7 @@ class Hobo(NetCDFWriter):
         
 
 
-class House(NetCDFWriter):
+class House(edit_netcdf.NetCDFWriter):
     '''Processes files coming out of the USGS-made sensors'''
     def __init__(self):
         self.timezone_marker = "time zone"
@@ -109,7 +105,7 @@ class House(NetCDFWriter):
                     break
 
 
-class Leveltroll(NetCDFWriter):
+class Leveltroll(edit_netcdf.NetCDFWriter):
     '''derived class for leveltroll ascii files
     '''
     def __init__(self):
@@ -131,12 +127,10 @@ class Leveltroll(NetCDFWriter):
             data = np.genfromtxt(f, dtype=self.numpy_dtype, delimiter=',',
                                  usecols=[1, 2, 3])
         long_seconds = data["seconds"]
-        print(long_seconds[::-1])
         self.utc_millisecond_data = [(x * 1000) + self.data_start
                                      for x in long_seconds]
         self.pressure_data = data["pressure"] * uc.PSI_TO_DBAR
         self.frequency = 1 / (long_seconds[1] - long_seconds[0])
-        print(len(self.pressure_data))
 
     def read_header(self, f):
         ''' read the header from the level troll ASCII file
@@ -191,7 +185,7 @@ class Leveltroll(NetCDFWriter):
         return offset.total_seconds()
 
 
-class MeasureSysLogger(NetCDFWriter):
+class MeasureSysLogger(edit_netcdf.NetCDFWriter):
     '''derived class for Measurement Systems cvs files
     '''
     def __init__(self):
@@ -213,29 +207,29 @@ class MeasureSysLogger(NetCDFWriter):
         
         try:
             self.data_start = uc.datestring_to_ms(df[3][3][1:],
-                                                  self.date_format_string, self.tz_info, self.daylightSavings)
+                                                  self.date_format_string, self.tz_info, self.daylight_savings)
             second_stamp = uc.datestring_to_ms(df[3][4][1:],
-                                               self.date_format_string, self.tz_info, self.daylightSavings)
+                                               self.date_format_string, self.tz_info, self.daylight_savings)
             self.frequency = 1000 / (second_stamp - self.data_start)
             
             
             self.pressure_data = df[5].values * uc.PSI_TO_DBAR
-            start_ms = uc.datestring_to_ms('%s' % df[3][0][1:], self.date_format_string, self.tz_info, self.daylightSavings)
+            start_ms = uc.datestring_to_ms('%s' % df[3][0][1:], self.date_format_string, self.tz_info, self.daylight_savings)
         
         except:
             self.data_start = uc.datestring_to_ms(df[3][3][1:],
-                                                  self.date_format_string2, self.tz_info, self.daylightSavings)
+                                                  self.date_format_string2, self.tz_info, self.daylight_savings)
             second_stamp = uc.datestring_to_ms(df[3][4][1:],
-                                               self.date_format_string2, self.tz_info, self.daylightSavings)
+                                               self.date_format_string2, self.tz_info, self.daylight_savings)
             self.frequency = 1000 / (second_stamp - self.data_start)
             
             
             self.pressure_data = df[5].values * uc.PSI_TO_DBAR
-            start_ms = uc.datestring_to_ms('%s' % df[3][0][1:], self.date_format_string2, self.tz_info, self.daylightSavings)
+            start_ms = uc.datestring_to_ms('%s' % df[3][0][1:], self.date_format_string2, self.tz_info, self.daylight_savings)
             
         self.utc_millisecond_data = uc.generate_ms(start_ms, df.shape[0], self.frequency)
         
-#         if self.daylightSavings == True:
+#         if self.daylight_savings == True:
 #             self.utc_millisecond_data = [x - 3600000 for x in self.utc_millisecond_data]
             
         if re.match('^[0-9]{1,3}.[0-9]+$', str(df[6][0])):
@@ -252,7 +246,7 @@ class MeasureSysLogger(NetCDFWriter):
         
 
 
-class RBRSolo(NetCDFWriter):
+class RBRSolo(edit_netcdf.NetCDFWriter):
     '''derived class for RBR solo engineer text files, (exported via ruskin software)
     '''
     def __init__(self):
@@ -266,7 +260,6 @@ class RBRSolo(NetCDFWriter):
         only parse the initial datetime = much faster
         '''
         skip_index = find_first(self.in_filename, '^[0-9]{2}-[A-Z]{1}[a-z]{2,8}-[0-9]{4}')
-        print(skip_index)
         df = pd.read_csv(self.in_filename, skiprows=skip_index, delim_whitespace=True,
                          header=None, engine='c', usecols=[0, 1, 2])
         
@@ -274,10 +267,9 @@ class RBRSolo(NetCDFWriter):
         self.utc_millisecond_data = uc.generate_ms(self.datestart, df.shape[0] - 1,
                                                     self.frequency)
         self.pressure_data = np.array([x for x in df[2][:-1]])
-        print(self.pressure_data[0], len(self.pressure_data))
 
 
-class Waveguage(NetCDFWriter):
+class Waveguage(edit_netcdf.NetCDFWriter):
     """Reads in an ASCII file output by a Waveguage pressure sensor
     from Ocean Sensor Systems Inc.
 
@@ -313,9 +305,7 @@ class Waveguage(NetCDFWriter):
         for stamp, press in zip(t, chunks):
             if prev_stamp:
                 n = press_entries(stamp, prev_stamp) - len(prev_press)
-                print(n)
                 narr = np.zeros(n, dtype=np.float64) + self.fill_value
-                print('narr = %d' % narr[1])
                 final = np.hstack((final, prev_press, narr))
             prev_stamp = stamp
             prev_press = press

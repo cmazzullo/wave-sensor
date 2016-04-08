@@ -8,12 +8,13 @@ Provides methods to convert water pressure into water depth.
 """
 
 import numpy as np
+import unit_conversion as uc
 from scipy import signal
 
 # Constants
-GRAVITY = 9.8  # (m / s**2)
-WATER_DENSITY = 1030  # density of seawater (kg / m**3)
-FILL_VALUE = -1e10
+GRAVITY = uc.GRAVITY  
+WATER_DENSITY = uc.WATER_DENSITY
+FILL_VALUE =  uc.FILL_VALUE
 
 
 def combo_method(time, pressure, device_d, water_d, tstep = 4):
@@ -25,28 +26,40 @@ def combo_method(time, pressure, device_d, water_d, tstep = 4):
 #     idx = np.where(split_idx[1:] ^ split_idx[:-1])[0] + 1
 
     #for the purposes of our method we will take windows of every 4096 amounting to 17 minutes and whatever seconds
-    #in order to maximize the i utility of the fourier functions 
-    window_size = 4096
-    dchunks = []
-    for p_chunk, t_chunk, h_chunk, device_chunk in zip(np.split(pressure, window_size),
-                                         np.split(time, window_size),
-                                         np.split(water_d, window_size),
-                                         np.split(device_chunk, window_size)):
-#         if p_chunk[0] == FILL_VALUE:
-#             dchunks.append(p_chunk)
-#             continue
-        #calculate the average of the sensor orifice elevation for the given chunk
-        device_d = np.average(device_chunk)
+    #in order to maximize the i utility of the fourier functions
+    increment_size = 2048
+    current_start_index = 0
+    current_end_index = 4096
+    series_len = len(time)
+    len_finished = False
+    dchunks, tchunks = [], []
+    
+    
+    while len_finished == False:
+
+        device_chunk = device_d[current_start_index, current_end_index]
+        p_chunk = pressure[current_start_index, current_end_index]
+        t_chunk = time[current_start_index, current_end_index]
+        h_chunk = water_d[current_start_index, current_end_index]
+         
+        device_d_average = np.average(device_chunk)
         #removing the linear trend
         coeff = np.polyfit(t_chunk, p_chunk, 1)
         static_p = coeff[1] + coeff[0]*t_chunk
         wave_p = p_chunk - static_p
-        
+         
         #applying linear wave theory to the wave and device slices
-        wave_y = pressure_to_depth_lwt(wave_p, device_d, h_chunk, tstep)
+        wave_y = pressure_to_depth_lwt(wave_p, device_d_average, h_chunk, tstep)
         wave_y = np.pad(wave_y, (0, len(t_chunk) - len(wave_y)), mode='edge')
         dchunks.append(hydrostatic_method(static_p) + wave_y)
-    return np.concatenate(dchunks)
+        tchunks.append(t_chunk)
+        
+        if current_end_index >= series_len:
+            len_finished = True
+            
+        current_start_index += increment_size
+        current_end_index += increment_size
+    return (dchunks,tchunks)
 
 
 def hydrostatic_method(pressure):
@@ -75,7 +88,7 @@ def k_to_omega(wavenumber, water_d):
 
 def omega_to_k(omega, h):
     """Converts angular frequency to wavenumber for water waves.
-
+    
     Approximation to the dispersion relation, Fenton and McKee (1989)."""
     T = 2 * np.pi / omega
     l0 = GRAVITY * T**2 / (2 * np.pi)
@@ -91,6 +104,8 @@ def pressure_to_depth_lwt(p_dbar, device_d, water_d, tstep, hi_cut='auto'):
     #Get the average of the water_d time seires
     #*still need to establish relation to land surface elevation and sensor orifice elevation
     water_d = np.average(water_d)
+    surface_height = hydrostatic_method(np.average(p_dbar))
+    water_d = water_d - surface_height
     
     #create window to multiply by pressure time series to reduce gibbs effect and other ringing noise artifacts
     trimmed_p = trim_to_even(p_dbar)
@@ -127,7 +142,7 @@ def _coefficient(wavenumber, device_d, water_d):
                                       np.cosh(wavenumber * water_d))
     
 def lowpass_filter(data):
-    '''Performs a butterworth filter of order 4 with a 10 min cutoff'''
+    '''Performs a butterworth filter of order 4 with a 1 min cutoff'''
     fs = 4 
     cutoff = .0166666665
     
@@ -138,4 +153,6 @@ def lowpass_filter(data):
     filtered_data = signal.filtfilt(b, a, data)
    
     return filtered_data
+
+    
 

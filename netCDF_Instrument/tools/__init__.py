@@ -62,3 +62,19 @@
 # 
 #   
 # plt.show()
+# u = [1,2,3,4]
+# v = [3,4,5,6]
+# import numpy as np
+# import unit_conversion
+# a = [(np.sqrt(x**2 + y**2)) * \
+#                  unit_conversion.METERS_PER_SECOND_TO_MILES_PER_HOUR \
+#                  for x, y in zip(u,v)]
+# print()
+# import numpy as np
+# a = np.array([1,2,3,4], dtype=np.double)
+# b = np.array([2,3,0,5], dtype=np.double)
+# a[np.where(a > b)] = np.NaN
+# print(a)    
+# import numpy as np
+# 
+# print(np.sqrt([1,2,3,4]))

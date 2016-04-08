@@ -236,336 +236,338 @@ def DepthPlot():
 # Static Variables
 # series_length = 130
 #DepthPlot()
-t_delta = .00006944444444
-# 
-constituent_data = [];
-# 
-# # M2 only, 13 hours
-# constituents = []
-# constituents.append(constituent("M2",12.4206012,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length + 2, "t_delta": t_delta, "name": "M2_Only13.nc"})
- 
-series_length = 10000000
-# M2 only, amplitude 1.0
-# constituents = []
-# constituents.append(constituent("M2",12.4206012,2,0))
-# constituent_data.append({"data": constituents, "series_length": series_length  * 8, "t_delta": t_delta, "name": "M2_Only_2AmpNoise.nc",
-#                          "noise": True, "noise_level": 2})
-# 
-# constituent_data.append({"data": constituents, "series_length": series_length  * 8, "t_delta": t_delta, "name": "M2_Only_2AmpClean.nc",
-#                          "noise": False, "noise_level": 2})
-# # 
-# # N2 only, amplitude 1.0
-# constituents = []
-# constituents.append(constituent("N2",12.65834751,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length + 1, "t_delta": t_delta, "name": "N2_Only.nc"})
-# 
-# # S2 only, amplitude 1.0
-# constituents = []
-# constituents.append(constituent("S2",12.0,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length + 1, "t_delta": t_delta, "name": "S2_Only.nc"})
-# 
-# # O1 only, amplitude 1.0
-# constituents = []
-# constituents.append(constituent("O1",25.81933871,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length + 1, "t_delta": t_delta, "name": "O1_Only.nc"})
-# 
-# # K1 only, amplitude 1.0
-# constituents = []
-# constituents.append(constituent("K1",23.93447213,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length + 1, "t_delta": t_delta, "name": "K1_Only.nc"})
-# 
-# M2 & S2, amplitudes 1.0 for each, no phase difference
-# constituents = []
-# constituents.append(constituent("M2",12.4206012,1,0))
-# constituents.append(constituent("S2",12.0,1,0))
-# constituents.append(constituent("wave1",.0002777777777,1,0))
-# constituents.append(constituent("wave2",.0005555555554,2,0))
-# constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, "name": "M2_S2_plus.nc",
-#                          "noise": False, "noise_level": 0})
 
-# constituents = []
-# constituents.append(constituent("M2",12.4206012,1,0))
-# constituents.append(constituent("S2",12.0,1,0))
-# constituents.append(constituent("wave1",.0002777777777,4,0))
-# constituents.append(constituent("wave2",.0005555555554,1,0))
-# constituents.append(constituent("wave3",.00416666666664,3,0))
-# constituents.append(constituent("wave4",.00555555555554,3,0))
-# constituents.append(constituent("wave5",.00833333333332,3,0))
-# constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, "name": "M2_S2_plus2.nc",
-#                          "noise": False, "noise_level": 0})
-
-constituents = []
-constituents.append(constituent("M2",12.4206012,1,0))
-constituents.append(constituent("S2",12.0,1,0))
-constituents.append(constituent("wave5",.00833333333332,3,0))
-constituents.append(constituent("wave6",.01111111111108,4,0))
-constituents.append(constituent("wave7",.02222222222216,4,0))
-constituents.append(constituent("wave8",.02666666666665,4,0))
-constituents.append(constituent("wave9",.07999999999995,4,0))
-constituents.append(constituent("wave10",.15999999999995,4,0))
-constituents.append(constituent("wave11",.31999999999999,4,0))
-constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, "name": "M2_S2_plus4.nc",
-                         "noise": False, "noise_level": 0})
-
-# constituents = []
-# constituents.append(constituent("M2",12.4206012,1,0))
-# constituents.append(constituent("S2",12.0,1,0))
-# constituents.append(constituent("wave1",.0002777777777,4,0))
-# constituents.append(constituent("wave2",.0005555555554,1,0))
-# constituents.append(constituent("wave3",.00416666666664,3,0))
-# constituents.append(constituent("wave4",.00555555555554,3,0))
-# constituents.append(constituent("wave5",.00833333333332,3,0))
-# constituents.append(constituent("wave6",.01111111111108,4,0))
-# constituents.append(constituent("wave7",.02222222222216,4,0))
-# constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, "name": "M2_S2_plus3Noise.nc",
-#                          "noise": True, "noise_level": 1})
-
-# constituents = []
-# constituents.append(constituent("M2",12.4206012,1,0))
-# constituents.append(constituent("S2",12.0,1,0))
-# constituents.append(constituent("wave1",.0002777777777,1,0))
-# constituents.append(constituent("wave2",.0005555555554,2,0))
-# constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, "name": "M2_S2_plus.nc",
-#                          "noise": False, "noise_level": 0})
-# 
-# # M2 & N2, amplitudes 1.0 for each, no phase difference
-# constituents = []
-# constituents.append(constituent("M2",12.4206012,1,0))
-# constituents.append(constituent("N2",12.65834751,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length + 1, "t_delta": t_delta, "name": "M2_N2.nc"})
-# 
-# # N2 & S2, amplitudes 1.0 for each, no phase difference
-# constituents = []
-# constituents.append(constituent("S2",12.0,1,0))
-# constituents.append(constituent("N2",12.65834751,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length + 1, "t_delta": t_delta, "name": "S2_N2.nc"})
- 
-# M2, N2 & S2, amplitudes 1.0 for each, no phase differences, 30 day
-# constituents = []
-# constituents.append(constituent("M2",12.4206012,1,0))
-# constituents.append(constituent("S2",12.0,1,0))
-# constituents.append(constituent("N2",12.65834751,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, 
-#                          "name": "M2_S2_N2_30day.nc", "noise": False})
-# 
-# constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, 
-#                          "name": "M2_S2_N2_30dayNoise.nc", "noise": True})
-# 
-# # M2, N2 & S2, amplitudes 1.0 for each, no phase differences, 60 day
-# constituents = []
-# constituents.append(constituent("M2",12.4206012,1,0))
-# constituents.append(constituent("S2",12.0,1,0))
-# constituents.append(constituent("N2",12.65834751,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length * 2, "t_delta": t_delta, 
-#                          "name": "M2_S2_N2_60day.nc", "noise": False})
-# constituent_data.append({"data": constituents, "series_length": series_length * 2, "t_delta": t_delta, 
-#                          "name": "M2_S2_N2_60dayNoise.nc", "noise": True})
-# 
-# 
-# # M2, N2 & S2, amplitudes 1.0 for each, no phase differences, 120 day
-# constituents = []
-# constituents.append(constituent("M2",12.4206012,1,0))
-# constituents.append(constituent("S2",12.0,1,0))
-# constituents.append(constituent("N2",12.65834751,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length * 4, "t_delta": t_delta, 
-#                          "name": "M2_S2_N2_120day.nc", "noise": False})
-# constituent_data.append({"data": constituents, "series_length": series_length * 4, "t_delta": t_delta, 
-#                          "name": "M2_S2_N2_120dayNoise.nc", "noise": True})
-# 
-# M2, N2 & S2, amplitudes 1.0 for each, no phase differences, 240 day
-# constituents = []
-# constituents.append(constituent("M2",12.4206012,1,0))
-# constituents.append(constituent("S2",12.0,1,0))
-# constituents.append(constituent("N2",12.65834751,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length * 8, "t_delta": t_delta, 
-#                          "name": "M2_S2_N2_240day.nc", "noise": False})
-# constituent_data.append({"data": constituents, "series_length": series_length * 8, "t_delta": t_delta, 
-#                          "name": "M2_S2_N2_240dayNoise.nc", "noise": True})
-# 
-# # M2, N2 & S2, amplitudes 1.0 for each, no phase differences, 480 day
-# constituents = []
-# constituents.append(constituent("M2",12.4206012,1,0))
-# constituents.append(constituent("S2",12.0,1,0))
-# constituents.append(constituent("N2",12.65834751,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length * 16, "t_delta": t_delta, 
-#                          "name": "M2_S2_N2_480day.nc", "noise": False})
-# constituent_data.append({"data": constituents, "series_length": series_length * 16, "t_delta": t_delta, 
-#                          "name": "M2_S2_N2_480dayNoise.nc", "noise": True})
-# 
-# # O1 & K1, amplitudes 1.0 for each, no phase differences, 15 day
-# constituents = []
-# constituents.append(constituent("O1",25.81933871,1,0))
-# constituents.append(constituent("K1",23.93447213,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length / 2, "t_delta": t_delta, 
-#                          "name": "O1_K1_15day.nc", "noise": False})
-# constituent_data.append({"data": constituents, "series_length": series_length / 2, "t_delta": t_delta, 
-#                          "name": "O1_K1_15dayNoise.nc", "noise": True})
-# 
-# # O1 & K1, amplitudes 1.0 for each, no phase differences, 30 day
-# constituents = []
-# constituents.append(constituent("O1",25.81933871,1,0))
-# constituents.append(constituent("K1",23.93447213,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, 
-#                          "name": "O1_K1_30day.nc", "noise": False})
-# constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, 
-#                          "name": "O1_K1_30dayNoise.nc", "noise": True})
-# 
-# # O1 & K1, amplitudes 1.0 for each, no phase differences, 60 day
-# constituents = []
-# constituents.append(constituent("O1",25.81933871,1,0))
-# constituents.append(constituent("K1",23.93447213,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length * 2, "t_delta": t_delta, 
-#                          "name": "O1_K1_60day.nc", "noise": False})
-# constituent_data.append({"data": constituents, "series_length": series_length * 2, "t_delta": t_delta, 
-#                          "name": "O1_K1_60dayNoise.nc", "noise": False})
- 
-# # O1 & K1, amplitudes 1.0 for each, no phase differences, 120 day
-# constituents = []
-# constituents.append(constituent("O1",25.81933871,1,0))
-# constituents.append(constituent("K1",23.93447213,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length * 4, "t_delta": t_delta, 
-#                          "name": "O1_K1_120day.nc", "noise": False})
-# constituent_data.append({"data": constituents, "series_length": series_length * 4, "t_delta": t_delta, 
-#                          "name": "O1_K1_120dayNoise.nc", "noise": True})
-# 
-# # O1 & K1, amplitudes 1.0 for each, no phase differences, 240 day
-# constituents = []
-# constituents.append(constituent("O1",25.81933871,1,0))
-# constituents.append(constituent("K1",23.93447213,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length * 8, "t_delta": t_delta, 
-#                          "name": "O1_K1_240day.nc", "noise": False})
-# constituent_data.append({"data": constituents, "series_length": series_length * 8, "t_delta": t_delta, 
-#                          "name": "O1_K1_240dayNoise.nc", "noise": True})
-# 
-# # O1 & K1, amplitudes 1.0 for each, no phase differences, 480 day
-# constituents = []
-# constituents.append(constituent("O1",25.81933871,1,0))
-# constituents.append(constituent("K1",23.93447213,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length * 16, "t_delta": t_delta, 
-#                          "name": "O1_K1_480day.nc", "noise": False})
-# constituent_data.append({"data": constituents, "series_length": series_length * 16, "t_delta": t_delta, 
-#                          "name": "O1_K1_480dayNoise.nc", "noise": True})
-
-#The Big 5 30 Day
-# constituents = []
-# constituents.append(constituent("O1",25.81933871,1,0))
-# constituents.append(constituent("K1",23.93447213,1,0))
-# constituents.append(constituent("M2",12.4206012,1,0))
-# constituents.append(constituent("S2",12.0,1,0))
-# constituents.append(constituent("N2",12.65834751,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, 
-#                          "name": "Big5_30day.nc", "noise": False, "noise_level": 1})
-# constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, 
-#                          "name": "Big5_30dayNoise.nc", "noise": True, "noise_level": 1})
-# 
-#The Big 5 60 Day
-# constituents = []
-# constituents.append(constituent("O1",25.81933871,1,0))
-# constituents.append(constituent("K1",23.93447213,1,0))
-# constituents.append(constituent("M2",12.4206012,1,0))
-# constituents.append(constituent("S2",12.0,1,0))
-# constituents.append(constituent("N2",12.65834751,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length * 2, "t_delta": t_delta, 
-#                          "name": "Big5_60day.nc", "noise": False, "noise_level": 1})
-# constituent_data.append({"data": constituents, "series_length": series_length * 2, "t_delta": t_delta, 
-#                          "name": "Big5_60dayNoise.nc", "noise": True, "noise_level": 1})
-# 
-# #The Big 5 120 Day
-# constituents = []
-# constituents.append(constituent("O1",25.81933871,1,0))
-# constituents.append(constituent("K1",23.93447213,1,0))
-# constituents.append(constituent("M2",12.4206012,1,0))
-# constituents.append(constituent("S2",12.0,1,0))
-# constituents.append(constituent("N2",12.65834751,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length * 4, "t_delta": t_delta, 
-#                          "name": "Big5_120day.nc", "noise": False})
-# constituent_data.append({"data": constituents, "series_length": series_length * 4, "t_delta": t_delta, 
-#                          "name": "Big5_120dayNoise.nc", "noise": True})
-# 
-# #The Big 5 240 Day
-# constituents = []
-# constituents.append(constituent("O1",25.81933871,1,0))
-# constituents.append(constituent("K1",23.93447213,1,0))
-# constituents.append(constituent("M2",12.4206012,1,0))
-# constituents.append(constituent("S2",12.0,1,0))
-# constituents.append(constituent("N2",12.65834751,1,0))
-# constituent_data.append({"data": constituents, "series_length": series_length * 8, "t_delta": t_delta, 
-#                          "name": "Big5_240day.nc", "noise": False, "noise_level": 1})
-# constituent_data.append({"data": constituents, "series_length": series_length * 8, "t_delta": t_delta, 
-#                          "name": "Big5_240dayNewNoise.nc", "noise": True, "noise_level": 1})
-# # 
-# # #The Big 5 480 Day
-# constituents = []
-# constituents.append(constituent("O1",25.81933871,1,0))
-# constituents.append(constituent("K1",23.93447213,1,0))
-# constituents.append(constituent("M2",12.4206012,1,0))
-# constituents.append(constituent("S2",12.0,1,0))
-# constituents.append(constituent("N2",12.65834751,1,0))
-# # constituent_data.append({"data": constituents, "series_length": series_length * 16, "t_delta": t_delta, 
-# #                          "name": "Big5_480day.nc", "noise": False})
-# constituent_data.append({"data": constituents, "series_length": series_length * 16, "t_delta": t_delta, 
-#                          "name": "Big5_480dayNewNoise.nc", "noise": True, "noise_level":1})
-
-# # Repeat the "M2 only" test with a 60-day timeseries, a 120-day timeseries and a 240-day timeseries.
-# constituents = []
-# constituents.append(constituent("M2",12.4206012,1,0))
-# 
-# #60 days
-# constituent_data.append({"data": constituents, "series_length": series_length * 2, "t_delta": t_delta, "name": "M2_60day.nc"})
-# 
-# #120 days
-# constituent_data.append({"data": constituents, "series_length": series_length * 4, "t_delta": t_delta, "name": "M2_120day.nc"})
-# 
-# #240 days
-# constituent_data.append({"data": constituents, "series_length": series_length * 8, "t_delta": t_delta, "name": "M2_240day.nc"})
-# 
-# # Repeat the "M2 & S2" test with a 60-day timeseries, a 120-day timeseries and a 240-day timeseries.
-# constituents = []
-# constituents.append(constituent("M2",12.4206012,1,0))
-# constituents.append(constituent("S2",12.0,1,0))
-# 
-# #60 days
-# constituent_data.append({"data": constituents, "series_length": series_length * 2, "t_delta": t_delta, "name": "M2_S2_60day.nc"})
-# 
-# #120 days
-# constituent_data.append({"data": constituents, "series_length": series_length * 4, "t_delta": t_delta, "name": "M2_S2_120day.nc"})
-# 
-# #240 days
-# constituent_data.append({"data": constituents, "series_length": series_length * 8, "t_delta": t_delta, "name": "M2_S2_240day.nc"})
-# 
-# # Repeat the "M2 only" test with a 30-day timeseries, but a 1-minute timestep, a 10-minute timestep, 
-# # a 30-minute timestep and a 60-minute timestep
-# constituents = []
-# constituents.append(constituent("M2",12.4206012,1,0))
-# 
-# 
-# #1 min tdelta
-# t_delta = .0166666666666667
-# constituent_data.append({"data": constituents, "series_length": int(series_length / (t_delta * 10)) + 1, "t_delta": t_delta, "name": "M2_1min.nc"})
-# 
-# #30 sec tdelta
-# t_delta = .0083333333333333
-# constituent_data.append({"data": constituents, "series_length": int(series_length / (t_delta * 10)) + 1, "t_delta": t_delta, "name": "M2_30sec.nc"})
-# 
-# #10 min tdelta
-# t_delta = .166666666666667
-# constituent_data.append({"data": constituents, "series_length": int(series_length / (t_delta * 10)) + 1, "t_delta": t_delta, "name": "M2_10min.nc"})
-# 
-# #60 min tdelta
-# t_delta = 1
-# constituent_data.append({"data": constituents, "series_length": int(series_length / (t_delta * 10)) + 1, "t_delta": t_delta, "name": "M2_60min.nc"})
-
-tdelta = 0.00041657
- 
-#Create the test data
-create_test_data(constituent_data);
-#  
-# print('all done!')
- 
-# 
-# Remember to run the following...
-# Repeat the "M2 only" test with the Rayleigh factor set at 1.0, 0.5 and 0.0.
+if __name__ == '__main__':
+    t_delta = .00006944444444
+    # 
+    constituent_data = [];
+    # 
+    # # M2 only, 13 hours
+    # constituents = []
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length + 2, "t_delta": t_delta, "name": "M2_Only13.nc"})
+     
+    series_length = 1000000
+    # M2 only, amplitude 1.0
+    # constituents = []
+    # constituents.append(constituent("M2",12.4206012,2,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length  * 8, "t_delta": t_delta, "name": "M2_Only_2AmpNoise.nc",
+    #                          "noise": True, "noise_level": 2})
+    # 
+    # constituent_data.append({"data": constituents, "series_length": series_length  * 8, "t_delta": t_delta, "name": "M2_Only_2AmpClean.nc",
+    #                          "noise": False, "noise_level": 2})
+    # # 
+    # # N2 only, amplitude 1.0
+    # constituents = []
+    # constituents.append(constituent("N2",12.65834751,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length + 1, "t_delta": t_delta, "name": "N2_Only.nc"})
+    # 
+    # # S2 only, amplitude 1.0
+    # constituents = []
+    # constituents.append(constituent("S2",12.0,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length + 1, "t_delta": t_delta, "name": "S2_Only.nc"})
+    # 
+    # # O1 only, amplitude 1.0
+    # constituents = []
+    # constituents.append(constituent("O1",25.81933871,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length + 1, "t_delta": t_delta, "name": "O1_Only.nc"})
+    # 
+    # # K1 only, amplitude 1.0
+    # constituents = []
+    # constituents.append(constituent("K1",23.93447213,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length + 1, "t_delta": t_delta, "name": "K1_Only.nc"})
+    # 
+    # M2 & S2, amplitudes 1.0 for each, no phase difference
+    # constituents = []
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # constituents.append(constituent("S2",12.0,1,0))
+    # constituents.append(constituent("wave1",.0002777777777,1,0))
+    # constituents.append(constituent("wave2",.0005555555554,2,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, "name": "M2_S2_plus.nc",
+    #                          "noise": False, "noise_level": 0})
+    
+    # constituents = []
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # constituents.append(constituent("S2",12.0,1,0))
+    # constituents.append(constituent("wave1",.0002777777777,4,0))
+    # constituents.append(constituent("wave2",.0005555555554,1,0))
+    # constituents.append(constituent("wave3",.00416666666664,3,0))
+    # constituents.append(constituent("wave4",.00555555555554,3,0))
+    # constituents.append(constituent("wave5",.00833333333332,3,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, "name": "M2_S2_plus2.nc",
+    #                          "noise": False, "noise_level": 0})
+    
+    constituents = []
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # constituents.append(constituent("S2",12.0,1,0))
+    constituents.append(constituent("wave5",.00833333333332,3,0))
+    # constituents.append(constituent("wave6",.01111111111108,4,0))
+    # constituents.append(constituent("wave7",.02222222222216,4,0))
+    # constituents.append(constituent("wave8",.02666666666665,4,0))
+    # constituents.append(constituent("wave9",.07999999999995,4,0))
+    # constituents.append(constituent("wave10",.15999999999995,4,0))
+    # constituents.append(constituent("wave11",.31999999999999,4,0))
+    constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, "name": "30_sec_wave.nc",
+                             "noise": False, "noise_level": 0})
+    
+    # constituents = []
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # constituents.append(constituent("S2",12.0,1,0))
+    # constituents.append(constituent("wave1",.0002777777777,4,0))
+    # constituents.append(constituent("wave2",.0005555555554,1,0))
+    # constituents.append(constituent("wave3",.00416666666664,3,0))
+    # constituents.append(constituent("wave4",.00555555555554,3,0))
+    # constituents.append(constituent("wave5",.00833333333332,3,0))
+    # constituents.append(constituent("wave6",.01111111111108,4,0))
+    # constituents.append(constituent("wave7",.02222222222216,4,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, "name": "M2_S2_plus3Noise.nc",
+    #                          "noise": True, "noise_level": 1})
+    
+    # constituents = []
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # constituents.append(constituent("S2",12.0,1,0))
+    # constituents.append(constituent("wave1",.0002777777777,1,0))
+    # constituents.append(constituent("wave2",.0005555555554,2,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, "name": "M2_S2_plus.nc",
+    #                          "noise": False, "noise_level": 0})
+    # 
+    # # M2 & N2, amplitudes 1.0 for each, no phase difference
+    # constituents = []
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # constituents.append(constituent("N2",12.65834751,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length + 1, "t_delta": t_delta, "name": "M2_N2.nc"})
+    # 
+    # # N2 & S2, amplitudes 1.0 for each, no phase difference
+    # constituents = []
+    # constituents.append(constituent("S2",12.0,1,0))
+    # constituents.append(constituent("N2",12.65834751,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length + 1, "t_delta": t_delta, "name": "S2_N2.nc"})
+     
+    # M2, N2 & S2, amplitudes 1.0 for each, no phase differences, 30 day
+    # constituents = []
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # constituents.append(constituent("S2",12.0,1,0))
+    # constituents.append(constituent("N2",12.65834751,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, 
+    #                          "name": "M2_S2_N2_30day.nc", "noise": False})
+    # 
+    # constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, 
+    #                          "name": "M2_S2_N2_30dayNoise.nc", "noise": True})
+    # 
+    # # M2, N2 & S2, amplitudes 1.0 for each, no phase differences, 60 day
+    # constituents = []
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # constituents.append(constituent("S2",12.0,1,0))
+    # constituents.append(constituent("N2",12.65834751,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length * 2, "t_delta": t_delta, 
+    #                          "name": "M2_S2_N2_60day.nc", "noise": False})
+    # constituent_data.append({"data": constituents, "series_length": series_length * 2, "t_delta": t_delta, 
+    #                          "name": "M2_S2_N2_60dayNoise.nc", "noise": True})
+    # 
+    # 
+    # # M2, N2 & S2, amplitudes 1.0 for each, no phase differences, 120 day
+    # constituents = []
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # constituents.append(constituent("S2",12.0,1,0))
+    # constituents.append(constituent("N2",12.65834751,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length * 4, "t_delta": t_delta, 
+    #                          "name": "M2_S2_N2_120day.nc", "noise": False})
+    # constituent_data.append({"data": constituents, "series_length": series_length * 4, "t_delta": t_delta, 
+    #                          "name": "M2_S2_N2_120dayNoise.nc", "noise": True})
+    # 
+    # M2, N2 & S2, amplitudes 1.0 for each, no phase differences, 240 day
+    # constituents = []
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # constituents.append(constituent("S2",12.0,1,0))
+    # constituents.append(constituent("N2",12.65834751,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length * 8, "t_delta": t_delta, 
+    #                          "name": "M2_S2_N2_240day.nc", "noise": False})
+    # constituent_data.append({"data": constituents, "series_length": series_length * 8, "t_delta": t_delta, 
+    #                          "name": "M2_S2_N2_240dayNoise.nc", "noise": True})
+    # 
+    # # M2, N2 & S2, amplitudes 1.0 for each, no phase differences, 480 day
+    # constituents = []
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # constituents.append(constituent("S2",12.0,1,0))
+    # constituents.append(constituent("N2",12.65834751,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length * 16, "t_delta": t_delta, 
+    #                          "name": "M2_S2_N2_480day.nc", "noise": False})
+    # constituent_data.append({"data": constituents, "series_length": series_length * 16, "t_delta": t_delta, 
+    #                          "name": "M2_S2_N2_480dayNoise.nc", "noise": True})
+    # 
+    # # O1 & K1, amplitudes 1.0 for each, no phase differences, 15 day
+    # constituents = []
+    # constituents.append(constituent("O1",25.81933871,1,0))
+    # constituents.append(constituent("K1",23.93447213,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length / 2, "t_delta": t_delta, 
+    #                          "name": "O1_K1_15day.nc", "noise": False})
+    # constituent_data.append({"data": constituents, "series_length": series_length / 2, "t_delta": t_delta, 
+    #                          "name": "O1_K1_15dayNoise.nc", "noise": True})
+    # 
+    # # O1 & K1, amplitudes 1.0 for each, no phase differences, 30 day
+    # constituents = []
+    # constituents.append(constituent("O1",25.81933871,1,0))
+    # constituents.append(constituent("K1",23.93447213,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, 
+    #                          "name": "O1_K1_30day.nc", "noise": False})
+    # constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, 
+    #                          "name": "O1_K1_30dayNoise.nc", "noise": True})
+    # 
+    # # O1 & K1, amplitudes 1.0 for each, no phase differences, 60 day
+    # constituents = []
+    # constituents.append(constituent("O1",25.81933871,1,0))
+    # constituents.append(constituent("K1",23.93447213,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length * 2, "t_delta": t_delta, 
+    #                          "name": "O1_K1_60day.nc", "noise": False})
+    # constituent_data.append({"data": constituents, "series_length": series_length * 2, "t_delta": t_delta, 
+    #                          "name": "O1_K1_60dayNoise.nc", "noise": False})
+     
+    # # O1 & K1, amplitudes 1.0 for each, no phase differences, 120 day
+    # constituents = []
+    # constituents.append(constituent("O1",25.81933871,1,0))
+    # constituents.append(constituent("K1",23.93447213,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length * 4, "t_delta": t_delta, 
+    #                          "name": "O1_K1_120day.nc", "noise": False})
+    # constituent_data.append({"data": constituents, "series_length": series_length * 4, "t_delta": t_delta, 
+    #                          "name": "O1_K1_120dayNoise.nc", "noise": True})
+    # 
+    # # O1 & K1, amplitudes 1.0 for each, no phase differences, 240 day
+    # constituents = []
+    # constituents.append(constituent("O1",25.81933871,1,0))
+    # constituents.append(constituent("K1",23.93447213,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length * 8, "t_delta": t_delta, 
+    #                          "name": "O1_K1_240day.nc", "noise": False})
+    # constituent_data.append({"data": constituents, "series_length": series_length * 8, "t_delta": t_delta, 
+    #                          "name": "O1_K1_240dayNoise.nc", "noise": True})
+    # 
+    # # O1 & K1, amplitudes 1.0 for each, no phase differences, 480 day
+    # constituents = []
+    # constituents.append(constituent("O1",25.81933871,1,0))
+    # constituents.append(constituent("K1",23.93447213,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length * 16, "t_delta": t_delta, 
+    #                          "name": "O1_K1_480day.nc", "noise": False})
+    # constituent_data.append({"data": constituents, "series_length": series_length * 16, "t_delta": t_delta, 
+    #                          "name": "O1_K1_480dayNoise.nc", "noise": True})
+    
+    #The Big 5 30 Day
+    # constituents = []
+    # constituents.append(constituent("O1",25.81933871,1,0))
+    # constituents.append(constituent("K1",23.93447213,1,0))
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # constituents.append(constituent("S2",12.0,1,0))
+    # constituents.append(constituent("N2",12.65834751,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, 
+    #                          "name": "Big5_30day.nc", "noise": False, "noise_level": 1})
+    # constituent_data.append({"data": constituents, "series_length": series_length, "t_delta": t_delta, 
+    #                          "name": "Big5_30dayNoise.nc", "noise": True, "noise_level": 1})
+    # 
+    #The Big 5 60 Day
+    # constituents = []
+    # constituents.append(constituent("O1",25.81933871,1,0))
+    # constituents.append(constituent("K1",23.93447213,1,0))
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # constituents.append(constituent("S2",12.0,1,0))
+    # constituents.append(constituent("N2",12.65834751,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length * 2, "t_delta": t_delta, 
+    #                          "name": "Big5_60day.nc", "noise": False, "noise_level": 1})
+    # constituent_data.append({"data": constituents, "series_length": series_length * 2, "t_delta": t_delta, 
+    #                          "name": "Big5_60dayNoise.nc", "noise": True, "noise_level": 1})
+    # 
+    # #The Big 5 120 Day
+    # constituents = []
+    # constituents.append(constituent("O1",25.81933871,1,0))
+    # constituents.append(constituent("K1",23.93447213,1,0))
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # constituents.append(constituent("S2",12.0,1,0))
+    # constituents.append(constituent("N2",12.65834751,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length * 4, "t_delta": t_delta, 
+    #                          "name": "Big5_120day.nc", "noise": False})
+    # constituent_data.append({"data": constituents, "series_length": series_length * 4, "t_delta": t_delta, 
+    #                          "name": "Big5_120dayNoise.nc", "noise": True})
+    # 
+    # #The Big 5 240 Day
+    # constituents = []
+    # constituents.append(constituent("O1",25.81933871,1,0))
+    # constituents.append(constituent("K1",23.93447213,1,0))
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # constituents.append(constituent("S2",12.0,1,0))
+    # constituents.append(constituent("N2",12.65834751,1,0))
+    # constituent_data.append({"data": constituents, "series_length": series_length * 8, "t_delta": t_delta, 
+    #                          "name": "Big5_240day.nc", "noise": False, "noise_level": 1})
+    # constituent_data.append({"data": constituents, "series_length": series_length * 8, "t_delta": t_delta, 
+    #                          "name": "Big5_240dayNewNoise.nc", "noise": True, "noise_level": 1})
+    # # 
+    # # #The Big 5 480 Day
+    # constituents = []
+    # constituents.append(constituent("O1",25.81933871,1,0))
+    # constituents.append(constituent("K1",23.93447213,1,0))
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # constituents.append(constituent("S2",12.0,1,0))
+    # constituents.append(constituent("N2",12.65834751,1,0))
+    # # constituent_data.append({"data": constituents, "series_length": series_length * 16, "t_delta": t_delta, 
+    # #                          "name": "Big5_480day.nc", "noise": False})
+    # constituent_data.append({"data": constituents, "series_length": series_length * 16, "t_delta": t_delta, 
+    #                          "name": "Big5_480dayNewNoise.nc", "noise": True, "noise_level":1})
+    
+    # # Repeat the "M2 only" test with a 60-day timeseries, a 120-day timeseries and a 240-day timeseries.
+    # constituents = []
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # 
+    # #60 days
+    # constituent_data.append({"data": constituents, "series_length": series_length * 2, "t_delta": t_delta, "name": "M2_60day.nc"})
+    # 
+    # #120 days
+    # constituent_data.append({"data": constituents, "series_length": series_length * 4, "t_delta": t_delta, "name": "M2_120day.nc"})
+    # 
+    # #240 days
+    # constituent_data.append({"data": constituents, "series_length": series_length * 8, "t_delta": t_delta, "name": "M2_240day.nc"})
+    # 
+    # # Repeat the "M2 & S2" test with a 60-day timeseries, a 120-day timeseries and a 240-day timeseries.
+    # constituents = []
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # constituents.append(constituent("S2",12.0,1,0))
+    # 
+    # #60 days
+    # constituent_data.append({"data": constituents, "series_length": series_length * 2, "t_delta": t_delta, "name": "M2_S2_60day.nc"})
+    # 
+    # #120 days
+    # constituent_data.append({"data": constituents, "series_length": series_length * 4, "t_delta": t_delta, "name": "M2_S2_120day.nc"})
+    # 
+    # #240 days
+    # constituent_data.append({"data": constituents, "series_length": series_length * 8, "t_delta": t_delta, "name": "M2_S2_240day.nc"})
+    # 
+    # # Repeat the "M2 only" test with a 30-day timeseries, but a 1-minute timestep, a 10-minute timestep, 
+    # # a 30-minute timestep and a 60-minute timestep
+    # constituents = []
+    # constituents.append(constituent("M2",12.4206012,1,0))
+    # 
+    # 
+    # #1 min tdelta
+    # t_delta = .0166666666666667
+    # constituent_data.append({"data": constituents, "series_length": int(series_length / (t_delta * 10)) + 1, "t_delta": t_delta, "name": "M2_1min.nc"})
+    # 
+    # #30 sec tdelta
+    # t_delta = .0083333333333333
+    # constituent_data.append({"data": constituents, "series_length": int(series_length / (t_delta * 10)) + 1, "t_delta": t_delta, "name": "M2_30sec.nc"})
+    # 
+    # #10 min tdelta
+    # t_delta = .166666666666667
+    # constituent_data.append({"data": constituents, "series_length": int(series_length / (t_delta * 10)) + 1, "t_delta": t_delta, "name": "M2_10min.nc"})
+    # 
+    # #60 min tdelta
+    # t_delta = 1
+    # constituent_data.append({"data": constituents, "series_length": int(series_length / (t_delta * 10)) + 1, "t_delta": t_delta, "name": "M2_60min.nc"})
+    
+    tdelta = 0.00041657
+     
+    #Create the test data
+    create_test_data(constituent_data);
+    #  
+    # print('all done!')
+     
+    # 
+    # Remember to run the following...
+    # Repeat the "M2 only" test with the Rayleigh factor set at 1.0, 0.5 and 0.0.
      
 
 

@@ -13,8 +13,11 @@ import os
 # #         'copy_dependent_files': True
 #      
 # }
-sys.path.append('C:\\Users\\chogg\\Documents\\GitHub\\wave-sensor\\netCDF_Instrument')
 
+sys.path.append('C:\\Users\\chogg\\Documents\\GitHub\\wave-sensor\\netCDF_Instrument')
+sys.path.append('C:\\Users\\chogg\\Documents\\GitHub\\wave-sensor\\netCDF_Instrument\\netCDF_Utils')
+sys.path.append('C:\\Users\\chogg\\Documents\\GitHub\\wave-sensor\\netCDF_Instrument\\tools')
+ 
 def zip_include_files():
         path_base = "C:\\Python34\\Lib\\site-packages\\pytz\\zoneinfo\\"
         skip_count = len(path_base) 
@@ -27,7 +30,7 @@ def zip_include_files():
                         ) 
                 )      
         return zip_includes
-
+ 
 include_files = [
                  ('C:\\Python34\\Lib\\site-packages\\scipy\\special\\_ufuncs.pyd','_ufuncs.pyd'),
                  ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\libifcoremd.dll','libifcoremd.dll'),
@@ -54,19 +57,20 @@ include_files = [
                  ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_vml_p4m.dll',''),
                  ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_vml_p4m2.dll',''),
                  ('C:\\Python34\\Lib\\site-packages\\numpy\\core\\mkl_vml_p4m3.dll','')
-                
+                 
                  ]
 build_exe_options = {
                     'path': sys.path, 
                     'packages': ["tkinter", "matplotlib"],
                     'include_files':include_files,
-                    'zip_includes': zip_include_files()
+                    'zip_includes': zip_include_files(),
 #                     'copy_dependent_files': True
                      }
 
 executables = [
+                Executable('FrozenMaster.py', base="Win32GUI")
 #                 Executable('FrozenScript1.py')
-                Executable('FrozenMaster.py', base = "Win32GUI"),
+#                 Executable('format_time.py', base = None),
 #                Executable('FrozenAverager.py', base = "Win32GUI"),
 #                Executable('FrozenBinaryScript1_Air.py', base = "Win32GUI"),
 #                Executable('FrozenBinaryScript1_Sea.py', base = "Win32GUI"),
@@ -82,6 +86,6 @@ setup(name='advanced_cx_Freeze_sample',
       version='0.1',
       description='Advanced sample cx_Freeze script',
       executables=executables,
-      options={"build_exe": build_exe_options},
+    options={"build_exe": build_exe_options},
       )
 

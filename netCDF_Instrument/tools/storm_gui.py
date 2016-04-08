@@ -3,15 +3,13 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
 
-import NetCDF_Utils.nc as nc
-import tools.script2 as script2
 import tools.script1_gui as gc
-import os
 from tools.storm_options import StormOptions
 from tools.storm_graph import StormGraph
 from tools.storm_csv import StormCSV
 from tools.storm_netCDF import Storm_netCDF
 import traceback
+from tools.storm_statistics import StormStatistics
 
 
 class StormGui:
@@ -19,11 +17,14 @@ class StormGui:
         
         #root and selection dialogs for sea and air netCDF files
         self.root = root
+        
+        self.top = Frame(self.root)
+#       
         root.title('Storm Surge GUI (Pressure -> Water Level)')
         self.root.focus_force()
         
-        self.chopperLabel = Label(root, text='(Please make sure Chopper is closed before making a graph)')
-        self.chopperLabel.pack(anchor=W,padx = 15,pady = 2)
+        self.stormLabel = Label(self.top, text='(Please make sure Chopper is closed before making a graph)')
+        self.stormLabel.pack(anchor=W,pady = 2)
         
         self.sea_fname = ''
         self.sea_var = StringVar()
@@ -35,42 +36,48 @@ class StormGui:
         self.wind_var = StringVar()
         self.wind_var.set('File containing wind data...')
         
-        self.make_fileselect(root, 'Water file:',
+        self.make_fileselect(self.top, 'Water file:',
                              self.sea_var, 'sea_fname')
-        self.make_fileselect(root, 'Air file:',
+        self.make_fileselect(self.top, 'Air file:',
                              self.air_var, 'air_fname')
-        self.make_fileselect(root, 'Wind file:',
-                             self.wind_var, 'wind_fname')
-        c3 = lambda: self.select_output_file(root)
+#         self.make_fileselect(self.top, 'Wind file:',
+#                              self.wind_var, 'wind_fname')
+        c3 = lambda: self.select_output_file(self.root)
         
         self.so = StormOptions()
         
+        self.top.grid(row=0, columnspan=2, sticky=W, padx = 15)
+        
+        self.side1 = Frame(self.root)
+        
         #Check boxes for output variables
-        self.netCDFLabel = Label(self.root, text='netCDF Options:')
+        self.netCDFLabel = Label(self.side1, text='netCDF Options:')
         self.netCDFLabel.pack(anchor=W,padx = 2,pady = 2)
         
         for x in sorted(self.so.netCDF):
             self.so.netCDF[x] = BooleanVar()
-            button = Checkbutton(root, text=x, variable=self.so.netCDF[x])
-            button.pack(anchor=W,padx = 15,pady = 2)
+            button = Checkbutton(self.side1, text=x, variable=self.so.netCDF[x])
+            button.pack(anchor=W,padx = 0,pady = 2)
         
-        self.csvLabel = Label(self.root, text='CSV Options:')
+        self.csvLabel = Label(self.side1, text='CSV Options:')
         self.csvLabel.pack(anchor=W,padx = 2,pady = 2)
         
         for x in sorted(self.so.csv):
             self.so.csv[x] = BooleanVar()
-            button = Checkbutton(root, text=x, variable=self.so.csv[x])
-            button.pack(anchor=W,padx = 15,pady = 2)
+            button = Checkbutton(self.side1, text=x, variable=self.so.csv[x])
+            button.pack(anchor=W,padx = 0,pady = 2)
             
-        self.graphLabel = Label(self.root, text='Graph Options:')
+        self.graphLabel = Label(self.side1, text='Graph Options:')
         self.graphLabel.pack(anchor=W,padx = 2,pady = 2)
         
         for x in sorted(self.so.graph):
             self.so.graph[x] = BooleanVar()
-            button = Checkbutton(root, text=x, variable=self.so.graph[x])
-            button.pack(anchor=W,padx = 15,pady = 2)
+            button = Checkbutton(self.side1, text=x, variable=self.so.graph[x])
+            button.pack(anchor=W,padx = 0,pady = 2)
+            
         
-        self.TzLabel = Label(self.root, text='Time zone to display dates in:')
+        
+        self.TzLabel = Label(self.side1, text='Time zone to display dates in:')
         self.TzLabel.pack(anchor=W,padx = 2,pady = 2)
         
         options=('GMT',
@@ -83,21 +90,21 @@ class StormGui:
         self.tzstringvar = StringVar()
         self.tzstringvar.set(options[0])
 
-        self.datePickFrame = Frame(self.root)
+        self.datePickFrame = Frame(self.side1)
         
         OptionMenu(self.datePickFrame, self.tzstringvar, *options).pack(side=LEFT, pady=2, padx=15)
         self.daylightSavings = BooleanVar()
         Checkbutton(self.datePickFrame, text="Daylight Savings", variable=self.daylightSavings).pack(side=RIGHT)
         self.datePickFrame.pack(anchor=W)
         
-        self.emptyLabel4 = Label(self.root, text='', font=("Helvetica", 2))
+        self.emptyLabel4 = Label(self.side1, text='', font=("Helvetica", 2))
         self.emptyLabel4.pack(anchor=W,padx = 15,pady = 0)
         
         #variables and text boxes for air pressure limits
-        self.BaroPickLabel = Label(self.root, text='Barometric Pressure Y Axis Limits: (optional)')
+        self.BaroPickLabel = Label(self.side1, text='Barometric Pressure Y Axis Limits: (optional)')
         self.BaroPickLabel.pack(anchor=W,padx = 15,pady = 0)
         
-        self.baroPickFrame = Frame(self.root)
+        self.baroPickFrame = Frame(self.side1)
         self.bLowerLabel = Label(self.baroPickFrame, text="lower:").pack(side=LEFT, pady=10, padx=2)
         self.baroYlim1 = Entry(self.baroPickFrame, width=5)
         self.baroYlim1.pack(side=LEFT, pady=2, padx=15)
@@ -107,14 +114,14 @@ class StormGui:
         self.baroPickFrame.pack(anchor=W, padx = 15)
         
         #tkinter spacing
-        self.emptyLabel4 = Label(self.root, text='', font=("Helvetica", 2))
+        self.emptyLabel4 = Label(self.side1, text='', font=("Helvetica", 2))
         self.emptyLabel4.pack(anchor=W,padx = 15,pady = 0)
         
         #variables and textboxes for water level limits
-        self.WaterLevelLabel = Label(self.root, text='Water Level Y Axis Limits: (optional)')
+        self.WaterLevelLabel = Label(self.side1, text='Water Level Y Axis Limits: (optional)')
         self.WaterLevelLabel.pack(anchor=W,padx = 15,pady = 0)
         
-        self.wlPickFrame = Frame(self.root)
+        self.wlPickFrame = Frame(self.side1)
         self.wlLowerLabel = Label(self.wlPickFrame, text="lower:").pack(side=LEFT, pady=10, padx=2)
         self.wlYlim1 = Entry(self.wlPickFrame, width=5)
         self.wlYlim1.pack(side=LEFT, pady=2, padx=15)
@@ -123,10 +130,31 @@ class StormGui:
         self.wlUpperLabel = Label(self.wlPickFrame, text="upper:").pack(side=RIGHT, pady=10, padx=2)
         self.wlPickFrame.pack(anchor=W, padx = 15)
         
-        self.b3 = self.make_button(root, "Process Files", c3,
-                                   state=DISABLED)
+
         
-        self.b3.pack(anchor=W, fill=BOTH)
+        self.side1.grid(row=1, column=0, sticky=W, padx = 15)
+        
+#         self.side2 = Frame(self.root)
+#           
+#           
+#         self.TzLabel = Label(self.side2, text='Graph Statistics (choose at most 2):')
+#         self.TzLabel.pack(padx = 2,pady = 0)
+#            
+#         for x in sorted(self.so.statistics):
+#             self.so.statistics[x] = BooleanVar()
+#             button = Checkbutton(self.side2, text=x, variable=self.so.statistics[x])
+#             button.pack(anchor=W,padx = 2,pady = 2)
+#   
+#         self.side2.grid(row=1, column=1, sticky=N, padx = 15)
+        
+        self.final = Frame(self.root)
+        self.b3 = ttk.Button(self.final,text="Process Files", command=c3, state=DISABLED,width=50)
+        
+        self.b3.pack(fill='both')
+         
+       
+        
+        self.final.grid(row=2, columnspan=2)
     
 
     def select_file(self, varname, stringvar):
@@ -167,10 +195,20 @@ class StormGui:
                 gc.MessageDialog(root, message=message, title='Error!')
                 return
             
+#         if (self.wind_fname is None or self.wind_fname == '') and self.so.wind_check_selected() == True:
+#                 message = ("Please upload a wind netCDF file or uncheck options that require it")
+#                 gc.MessageDialog(root, message=message, title='Error!')
+#                 return
+            
         if self.so.check_selected() == False:
             message = ("Please select at least one option")
             gc.MessageDialog(root, message=message, title='Error!')
             return
+        
+#         if self.so.stat_check_selected() == False:
+#             message = ("Please select at most two stat options")
+#             gc.MessageDialog(root, message=message, title='Error!')
+#             return
         
         self.so.clear_data()
         og_fname = filedialog.asksaveasfilename()
@@ -228,12 +266,15 @@ class StormGui:
             sg = StormGraph()
             sg.process_graphs(self.so) 
             
+    #         s_stat = StormStatistics()
+    #         s_stat.process_graphs(self.so)
+            
             gc.MessageDialog(root, message="Success! Files processed.",
                                      title='Success!')
                 
         except:
 #             exc_type, exc_value, exc_traceback = sys.exc_info()
-    
+#       
 #             message = traceback.format_exception(exc_type, exc_value,
 #                                           exc_traceback)
             message = 'Could not process files, please check file type.'

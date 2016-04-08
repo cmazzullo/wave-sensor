@@ -56,7 +56,6 @@ from parameter_database import _master_speed_dict, letter_to_factor_map
 import baker
 from netCDF4 import Dataset
 import netCDF4
-import netCDF4_utils
 import pytz
 
 #import pandas.Series as pd

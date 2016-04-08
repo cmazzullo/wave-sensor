@@ -10,11 +10,12 @@ from tkinter import ttk
 from tkinter.filedialog import askopenfilename
 import os
 from collections import OrderedDict
-from tools.script1 import INSTRUMENTS, convert_to_netcdf
+from pressure_script import INSTRUMENTS, convert_to_netcdf
 import json
 import re
 import sys
 import traceback
+import unit_conversion as uc
 # from PIL.ImageTk import tkinter
 
 GLOBAL_HISTFILE = 'history.json'
@@ -38,7 +39,7 @@ LOCAL_FIELDS = OrderedDict([
                 'US/Hawaii',
                 'US/Mountain',
                 'US/Pacific'], True]),
-    ('daylightSavings', ['Daylight Savings',False]),
+    ('daylight_savings', ['Daylight Savings',False]),
     ('datum', ['Datum:', ['NAVD88',
                             'NGVD29',
                             'Above Ground Level',
@@ -49,8 +50,8 @@ WATER_ONLY_FIELDS = OrderedDict([
         'Fresh Water (< .5 ppt)'], False]),
     ('initial_land_surface_elevation', ['Initial land surface elevation (feet):', '', False]),
     ('final_land_surface_elevation', ['Final land surface elevation (feet):', '', False]),
-    ('device_depth', ['Sensor orifice elevation at deployment time(feet):', '', False]),
-    ('device_depth2', ['Sensor orifice elevation at retrieval time(feet):', '', False]),
+    ('initial_sensor_orifice_elevation', ['Sensor orifice elevation at deployment time(feet):', '', False]),
+    ('final_sensor_orifice_elevation', ['Sensor orifice elevation at retrieval time(feet):', '', False]),
     ('deployment_time', ['Deployment time (YYYYMMDD HHMM) (24 hour clock):', '', False]),
     ('retrieval_time', ['Retrieval time (YYYYMMDD HHMM) (24 hour clock):', '', False]),
     ('sea_name', ['Sea Name:', [
@@ -115,50 +116,61 @@ class Wavegui:
 
         dialog = None
         
-        try:
-            dialog = MessageDialog(self.parent, message=message,
-                                   title='Processing...', buttons=0, wait=False)
-            globs = dict(zip(GLOBAL_FIELDS.keys(),
-                             self.global_form.export_entries()))
-            bad_data = None
-    
-            for fname, datafile in self.datafiles.items():
-                inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
-                inputs.update(globs)
-                inputs['sea_pressure'] = not self.air_pressure
-                inputs['in_filename'] = fname
-                inputs['out_filename'] = fname + '.nc'
-                inputs['initial_water_depth'] = 1.98
-                inputs['final_water_depth'] = 1.98
-                
-                process_files = self.validate_entries(inputs)
-                
-                if process_files == True:
-                    bad_data = convert_to_netcdf(inputs)
-                    self.remove_file(fname)
-                    dialog.destroy()
-                    if bad_data == True:
-                        MessageDialog(self.parent, message="There were some bad data points in the file, please cut them using chopper\n and/or" \
-                                      " use the \"Hydrostatic\" method in the Water Level GUI",
-                                  title='Data Issues!')
-                    else:
-                        MessageDialog(self.parent, message="There were no bad data points in the file",
-                                  title='No Data Issues!')
-                
-                    MessageDialog(self.parent, message="Success! Files saved.",
-                                  title='Success!') 
-                else:
-                    dialog.destroy()
-                    MessageDialog(self.parent, message= self.error_message,
-                                  title='Error')
-                
-                self.error_message = ''
-                     
-        except:
-            if dialog is not None:
+#         try:
+        dialog = MessageDialog(self.parent, message=message,
+                               title='Processing...', buttons=0, wait=False)
+        globs = dict(zip(GLOBAL_FIELDS.keys(),
+                         self.global_form.export_entries()))
+        bad_data = None
+
+        for fname, datafile in self.datafiles.items():
+            inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
+            inputs.update(globs)
+            
+            if self.air_pressure == False:
+                inputs['pressure_type'] = 'Sea Pressure'
+            else:
+                inputs['pressure_type'] = 'Air Pressure'
+            inputs['sea_pressure'] = not self.air_pressure
+            inputs['in_filename'] = fname
+            inputs['out_filename'] = fname + '.nc'
+            
+            process_files = self.validate_entries(inputs)
+            
+            inputs['deployment_time'] = uc.datestring_to_ms(inputs['deployment_time'], '%Y%m%d %H%M', \
+                                                             inputs['tz_info'],
+                                                             inputs['daylight_savings'])
+        
+            inputs['retrieval_time'] = uc.datestring_to_ms(inputs['retrieval_time'], '%Y%m%d %H%M', \
+                                                             inputs['tz_info'],
+                                                             inputs['daylight_savings'])
+            
+            if process_files == True:
+                bad_data = convert_to_netcdf(inputs)
+                self.remove_file(fname)
                 dialog.destroy()
-            MessageDialog(self.parent, message="Could not process files, please check file type.",
-                          title='Error')
+                if bad_data == True:
+                    MessageDialog(self.parent, message="There were some bad data points in the file, please cut them using chopper\n and/or" \
+                                  " use the \"Hydrostatic\" method in the Water Level GUI",
+                              title='Data Issues!')
+                else:
+                    MessageDialog(self.parent, message="There were no bad data points in the file",
+                              title='No Data Issues!')
+            
+                MessageDialog(self.parent, message="Success! Files saved.",
+                              title='Success!') 
+            else:
+                dialog.destroy()
+                MessageDialog(self.parent, message= self.error_message,
+                              title='Error')
+            
+            self.error_message = ''
+                     
+#         except:
+#             if dialog is not None:
+#                 dialog.destroy()
+#             MessageDialog(self.parent, message="Could not process files, please check file type.",
+#                           title='Error')
 #             exc_type, exc_value, exc_traceback = sys.exc_info()
 # #    
 #             message = traceback.format_exception(exc_type, exc_value,
@@ -191,8 +203,8 @@ class Wavegui:
         "stn_instrument_id": "STN Instrument Id",
         "initial_land_surface_elevation": "Initial Land Surface Elevation",
         "final_land_surface_elevation": "Final Land Surface Elevation",
-        "device_depth": "Sensor Orifice Elevation at Deployment Time",
-        "device_depth2": "Sensor Orifice Elevation at Retrieval Time",
+        "initial_sensor_orifice_elevation": "Sensor Orifice Elevation at Deployment Time",
+        "final_sensor_orifice_elevation": "Sensor Orifice Elevation at Retrieval Time",
         "deployment_time": "Deployment Time",
         "retrieval_time": "Retrieval Time"
          }

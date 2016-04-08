@@ -1,4 +1,4 @@
-"""Tests that netCDFs created by script1 contain the right data and metadata.
+"""Tests that netCDFs created by pressure_script contain the right data and metadata.
 
 Uses some made up data files in the tests directory.
 
@@ -8,7 +8,7 @@ leveltroll.csv in the test_data directory, and manually enter the
 values in INPUTS into the fields of the GUI.
 
 Coverage:
-Metadata in the netCDF produced by script1 (variables and attributes)
+Metadata in the netCDF produced by pressure_script (variables and attributes)
 Pressure data in the netCDF
 Leveltroll file format
 """

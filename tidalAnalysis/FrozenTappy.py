@@ -1,7 +1,7 @@
 
 import netCDF4
 import netcdftime
-import netCDF4_utils
+
 from netCDF4 import Dataset
 import Tkinter as Tk
 

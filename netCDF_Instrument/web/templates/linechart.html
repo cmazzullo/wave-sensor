@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="./css/style.css" ></link>
+<link rel="stylesheet" type="text/css" href="./css/jquery.datetimepicker.css"></link>
+<div id="header">
+<img id="main_logo" src="./images/wavelab.png" />
+<div id="menu">
+<ul id="main_menu">
+<li><a href="http://localhost:8080/test2">Single</a></li>
+<li><a href="http://localhost:8080/test2">Multi</a></li>
+<li><a href="http://localhost:8080/test2">Spectra</a></li>
+<li><a href="http://localhost:8080/test2">Statistics</a></li>
+</ul>
+</div>
+</div>
+<div id="sidebar">
+<h3>Time Options</h3>
+<form id="graphForm">
+<table>
+<tr><td>Timezone:</td><td>
+<select id="timezone" >
+<option>GMT</option>
+<option>EST</option>
+<option>PDT</option>
+</select>
+</td></tr>
+<tr><td>DST:</td><td><input type="checkbox" id="dst" /></td></tr>
+<tr><td>Start Time:</td><td><input type="text" id="start_date" value="2016/01/22 17:00"/></td></tr>
+<tr><td>End Time:</td><td><input type="text" id="end_date" value="2016/01/28 12:00"/></td></tr>
+</td></tr>
+<tr><td></td><td><button>Submit</button></td></tr>
+</table>
+</form>
+<h3>File Options</h3>
+
+<table>
+<tr><td>Sea File:</td><td>
+<input type="file" style="width: 170px"/>
+</td></tr>
+<tr><td>Air File:</td><td><input type="file" style="width: 170px"/></td></tr>
+</table>
+</div>
+
+<div id="mainGraph">
+
+<h1>Dashboard</h1>
+
+<div id="dash2" class="dash_tile">
+<div class="dash_title">Sea Instrument Location <button class="expand">Expand</button></div>
+<div id="map1" class="dash_content"></div>
+</div>
+
+<div id="dash1" class="dash_tile">
+<div class="dash_title">Raw Water Level <button class="expand">Expand</button></div>
+<svg id="visualization1" width="440" height="220"></svg>
+</div>
+
+
+<div id="dash3" class="dash_tile">
+<div class="dash_title">Surge Water Level <button class="expand">Expand</button></div>
+<svg id="visualization2" width="440" height="220"></svg>
+</div>
+
+<div id="dash5" class="dash_tile">
+<div class="dash_title">Wave Water Level <button class="expand">Expand</button></div>
+<svg id="visualization3" width="440" height="220"></svg>
+</div>
+
+<div id="dash4" class="dash_tile">
+<div class="dash_title">Air Instrument Location <button class="expand">Expand</button></div>
+<div id="map2" class="dash_content"></div>
+</div>
+
+<div id="dash6" class="dash_tile">
+<div class="dash_title">Atmospheric Pressure<button class="expand">Expand</button></div>
+<svg id="visualization4" width="440" height="220"></svg>
+</div>
+
+</div>
+<div id="footer"><a style="float:left; color:white; margin-left: 30px"href="http://www.freepik.com/free-photos-vectors/background">Background vector designed by Freepik</a> USGS &#169;2016</div>
+
+<script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+<script
+			  src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"
+			  integrity="sha256-xNjb53/rY+WmG+4L6tTl9m6PpqknWZvRt0rO1SRnJzw="
+			  crossorigin="anonymous"></script>
+<script src="./js/jquery.datetimepicker.js"></script>
+
+<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBKbkdjgPWlg8vSn-yDSHCp3ucmcm93bAQ">
+</script>
+<script src="./js/graph.js" charset="utf-8"></script>
+<script src="./js/dash.js" charset="utf-8"></script>
+

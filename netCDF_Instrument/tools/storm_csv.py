@@ -15,11 +15,11 @@ class StormCSV(object):
     
     def process_csv(self,so):
         
-#         if so.csv['Storm Tide with Unfiltered Water Level'].get() == True:
-#             so.get_meta_data()
-#             so.get_raw_water_level()
-#             so.get_surge_water_level()
-#             self.Storm_Tide_and_Unfiltered_Water_Level(so)
+        if so.csv['Storm Tide with Unfiltered Water Level'].get() == True:
+            so.get_meta_data()
+            so.get_raw_water_level()
+            so.get_surge_water_level()
+            self.Storm_Tide_and_Unfiltered_Water_Level(so)
             
         if so.csv['Storm Tide Water Level'].get() == True:
             so.get_meta_data()

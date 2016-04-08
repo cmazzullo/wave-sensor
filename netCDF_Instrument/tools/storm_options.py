@@ -5,7 +5,8 @@ Created on Feb 4, 2016
 '''
 from tools.storm_data import StormData
 import numpy as np
-from NetCDF_Utils import nc
+from netCDF_Utils import nc
+import unit_conversion
 
 
 class StormOptions(StormData):
@@ -13,12 +14,12 @@ class StormOptions(StormData):
     def __init__(self):
         
         self.netCDF = {
-#                        'Storm Tide with Unfiltered Water Level': None,
+                        'Storm Tide with Unfiltered Water Level': None,
                        'Storm Tide Water Level': None,
                        }
         
         self.csv = {
-#                     'Storm Tide with Unfiltered Water Level': None,
+                    'Storm Tide with Unfiltered Water Level': None,
                     'Storm Tide Water Level': None,
                     'Atmospheric Pressure': None
                     
@@ -26,10 +27,24 @@ class StormOptions(StormData):
         
         self.graph = {
                     'Storm Tide with Unfiltered Water Level and Wind Data' : None,
-                      'Storm Tide with Unfiltered Water Level': None,
-                      'Storm Tide Water Level': None,
-                      'Atmospheric Pressure': None
+                    'Storm Tide with Unfiltered Water Level': None,
+                    'Storm Tide Water Level': None,
+                    'Atmospheric Pressure': None
                       }
+        
+        self.statistics = {'H1/3': None,
+                           'H1/32': None, # contains functions and labels
+                     'T1/3': None,
+                     'H10%': None,
+                     'H1%': None,
+                     'RMS' : None,
+                     'Median': None,
+                     'Maximum': None,
+                     'Average': None,
+                     'Average Z Cross': None,
+                     'Mean Wave Period': None,
+                     'Crest': None,
+                     'Peak Wave': None}
         
         #not using the formatted time properties thus far...
         self.sea_fname = None
@@ -55,10 +70,16 @@ class StormOptions(StormData):
         self.raw_water_level = None
         self.surge_water_level = None
         self.wave_water_level = None
+        self.wave_water_level_chunks = None
+        self.elevation_chunks = None
+        self.wave_time_chunks = None
+        self.wind_speed_chunks = None
         self.sensor_orifice_elevation = None
         self.land_surface_elevation = None
         self.derived_water_depth = None
         self.wind_direction = None
+        self.u = None
+        self.v = None
         self.wind_speed = None
         self.surge_peak = None
         self.wave_peak = None
@@ -70,12 +91,18 @@ class StormOptions(StormData):
         self.air_latitude = None
         self.air_longitude = None
         self.air_stn_station_number = None
+        self.wind_latitude = None
+        self.wind_longitude = None
+        self.wind_stn_station_number = None
         self.sliced = False
         self.wind_sliced = False
         self.begin = None
         self.end = None
         self.baroYLims = None
         self.wlYLims = None
+        self.stat_dictionary = None
+        self.stn_instrument_id = None
+        self.air_stn_instrument_id = None
         
     def get_sea_time(self):
         if self.sea_time is None:
@@ -117,19 +144,17 @@ class StormOptions(StormData):
             self.interpolated_air_pressure = self.interpolate_air_pressure(self.sea_time, self.air_time, \
                                             self.raw_air_pressure)
     def get_wind_speed(self):
-        if self.wind_speed is None:
-            self.wind_speed = self.extract_wind_speed(self.wind_fname) 
-            
-    def get_wind_direction(self):
-        if self.wind_direction is None:
-            self.wind_direction = self.extract_wind_direction(self.wind_fname) 
+        if self.u is None:
+            self.u = self.extract_wind_u(self.wind_fname)
+            self.v = self.extract_wind_v(self.wind_fname)
+            self.wind_speed = self.derive_wind_speed(self.u,self.v)
  
     def get_sensor_orifice_elevation(self):
         if self.sensor_orifice_elevation is None:
             
             self.get_sea_pressure()
-            self.sensor_orifice_elevation = self.extract_sensor_orifice_elevation(self.sea_fname, \
-                                            len(self.raw_sea_pressure))
+            self.sensor_orifice_elevation = np.array(self.extract_sensor_orifice_elevation(self.sea_fname, \
+                                            len(self.raw_sea_pressure)))
             
     def get_land_surface_elevation(self):
         if self.land_surface_elevation is None:
@@ -139,7 +164,6 @@ class StormOptions(StormData):
                                             len(self.raw_sea_pressure))
             
     def get_derived_water_depth(self):
-        '''The word depth should not be used, will correct the terminology shortly'''
         if self.derived_water_depth is None:
             self.get_land_surface_elevation()
             self.get_sensor_orifice_elevation()
@@ -155,7 +179,6 @@ class StormOptions(StormData):
             
             self.get_corrected_pressure()
             self.sea_pressure_mean = np.mean(self.corrected_sea_pressure)
-            print(self.sea_pressure_mean)
         
     def slice_series(self):
         if self.sliced == False:
@@ -168,7 +191,7 @@ class StormOptions(StormData):
             itemindex = np.where(~np.isnan(self.interpolated_air_pressure))
             self.begin = begin = itemindex[0][0]
             self.end = end = itemindex[0][len(itemindex[0]) - 1]
-            
+            print(self.begin,self.end)
             #slice all data to include all instances where the times overlap
             self.interpolated_air_pressure = self.interpolated_air_pressure[begin:end]
             self.raw_sea_pressure = self.raw_sea_pressure[begin:end]
@@ -185,17 +208,20 @@ class StormOptions(StormData):
         if self.wind_sliced == False:
             self.get_wind_time()
             self.get_wind_speed()
-            self.get_wind_direction()
+#             self.get_wind_direction()
             
             self.wind_time[np.where(self.wind_time < self.sea_time[0])] = np.NaN
             self.wind_time[np.where(self.wind_time > self.sea_time[-1])] = np.NaN
             wind_itemindex = np.where(~np.isnan(self.wind_time))
+            
             wind_begin = wind_itemindex[0][0]
             wind_end = wind_itemindex[0][len(wind_itemindex[0]) - 1]
             
             self.wind_time = self.wind_time[wind_begin:wind_end]
             self.wind_speed = self.wind_speed[wind_begin:wind_end]
-            self.wind_direction = self.wind_direction[wind_begin:wind_end]
+            self.u = self.u[wind_begin:wind_end]
+            self.v = self.v[wind_begin:wind_end]
+#             self.wind_direction = self.wind_direction[wind_begin:wind_end]
             self.wind_sliced = True
         
     
@@ -218,8 +244,8 @@ class StormOptions(StormData):
             self.get_corrected_pressure()
             self.get_sensor_orifice_elevation()
             
-            self.raw_water_level =  self.derive_raw_water_level(self.corrected_sea_pressure, 
-                                                                self.sensor_orifice_elevation) 
+            self.raw_water_level =  np.array(self.derive_raw_water_level(self.corrected_sea_pressure, 
+                                                                self.sensor_orifice_elevation)) 
             
     def get_surge_water_level(self): 
         if self.surge_water_level is None:
@@ -228,28 +254,71 @@ class StormOptions(StormData):
             self.get_pressure_mean()
             self.get_surge_sea_pressure()
             
-            self.surge_water_level = self.derive_filtered_water_level(self.surge_sea_pressure, 
+            self.surge_water_level = np.array(self.derive_filtered_water_level(self.surge_sea_pressure, 
                                                                       self.sea_pressure_mean, 
-                                                                      self.sensor_orifice_elevation)
+                                                                      self.sensor_orifice_elevation))
+            
+    def test_water_elevation_below_sensor_orifice_elvation(self):
+        self.raw_water_level[np.where(self.raw_water_level < self.sensor_orifice_elevation)] = np.NaN
+        self.surge_water_level[np.where(self.surge_water_level < self.sensor_orifice_elevation)] = np.NaN
+        
+        
+        
+        
                   
     def get_wave_water_level(self, method = 'hyrdostatic'):
-        if self.wave_water_level is None:
-            self.get_corrected_pressure()
-            self.get_sensor_orifice_elevation()
-            self.get_pressure_mean()
-            self.get_wave_sea_pressure()
-            self.get_derived_water_depth()
-                   
-            if method == 'hydrostatic':
-                self.wave_water_level = self.derive_filtered_water_level(self.wave_sea_pressure, 
-                                                                      self.sea_pressure_mean, 
-                                                                      self.sensor_orifice_elevation)
-            else:
-                self.wave_water_level = self.derive_lwt_wave_water_level(self.sea_time, 
-                                                                         self.corrected_sea_pressure,
-                                                                         self.derived_water_depth, 
-                                                                         self.sensor_orifice_elevation,
-                                                                         )
+        if self.wave_water_level_chunks is None:
+            self.get_raw_water_level()
+            self.get_surge_water_level()
+                
+#             if method == 'hyrdostatic':
+            self.wave_water_level = self.raw_water_level - self.surge_water_level
+            
+            self.chunk_data()
+#             else:
+#                 self.wave_water_level_chunks, self.wave_time_chunks = self.derive_lwt_wave_water_level(self.sea_time, 
+#                                                                          self.wave_sea_pressure,
+#                                                                          self.land_surface_elevation, 
+#                                                                          self.sensor_orifice_elevation,)
+                
+    def chunk_data(self):
+        start_index = 0
+        end_index = 4096
+        increment = 2048
+        self.wave_time_chunks, self.wave_water_level_chunks, self.wind_speed_chunks = [], [], []
+        
+        if self.wind_speed is not None:
+            ws = np.interp(self.sea_time,self.wind_time,self.wind_speed)
+        else:
+            self.wind_speed_chunks = None
+        
+        while end_index < len(self.wave_water_level):
+            self.wave_time_chunks.append(self.sea_time[start_index:end_index] / 1000)
+            self.wave_water_level_chunks.append(self.wave_water_level[start_index:end_index])
+            
+            if self.wind_speed is not None:
+                self.wind_speed_chunks.append(ws[start_index:end_index] / 
+                                          unit_conversion.METERS_PER_SECOND_TO_MILES_PER_HOUR)
+            
+            
+            start_index += increment
+            end_index += increment
+
+    def get_wave_statistics(self):
+        if self.stat_dictionary is None:
+            self.get_wave_water_level()
+            self.stat_dictionary = self.derive_statistics(self.wave_water_level_chunks, self.wave_time_chunks, \
+                                                          self.wind_speed_chunks)
+            
+    def check_file_types(self):
+        try:
+            nc.get_air_pressure(self.air_fname)
+            nc.get_pressure(self.sea_fname)
+        except:
+            return False
+        
+        return True
+        
             
     def check_selected(self):
         for x in self.netCDF:
@@ -262,6 +331,10 @@ class StormOptions(StormData):
             
         for x in self.graph:
             if self.graph[x].get() == True:
+                return True
+            
+        for x in self.statistics:
+            if self.statistics[x].get() == True:
                 return True
             
         return False
@@ -279,7 +352,26 @@ class StormOptions(StormData):
             if x != 'Atmospheric Pressure' and self.graph[x].get() == True:
                 return True
             
+        return False  
+       
+    
+    def wind_check_selected(self):
+        for x in self.graph:
+            if x == 'Storm Tide with Unfiltered Water Level and Wind Data' and self.graph[x].get() == True:
+                return True
+            
         return False
+    
+    def stat_check_selected(self):
+        count = 0
+        for x in self.statistics:
+            if self.statistics[x].get() == True:
+                count += 1
+                
+        if count > 2:
+            return False
+        else:
+            return True
     
     def time_comparison(self):
         '''Checks to see the overlap of the two pressure files.  Returns 1 if there is some overlap, 
@@ -312,12 +404,22 @@ class StormOptions(StormData):
             self.latitude = nc.get_variable_data(self.sea_fname,'latitude')
             self.longitude = nc.get_variable_data(self.sea_fname,'longitude')
             self.stn_station_number = nc.get_global_attribute(self.sea_fname, 'stn_station_number')
+            self.stn_instrument_id = nc.get_global_attribute(self.sea_fname, 'stn_instrument_id')
             
     def get_air_meta_data(self):
         if self.air_latitude is None:
             self.air_latitude = nc.get_variable_data(self.air_fname,'latitude')
             self.air_longitude = nc.get_variable_data(self.air_fname,'longitude')
             self.air_stn_station_number = nc.get_global_attribute(self.air_fname, 'stn_station_number')
+            self.air_stn_instrument_id = nc.get_global_attribute(self.air_fname, 'stn_instrument_id')
+            
+    def get_wind_meta_data(self):
+        if self.wind_latitude is None:
+            self.wind_latitude = nc.get_variable_data(self.wind_fname,'latitude')
+            self.wind_longitude = nc.get_variable_data(self.wind_fname,'longitude')
+            self.wind_stn_station_number = nc.get_global_attribute(self.wind_fname, 'stn_station_number')
+            
+   
             
     def clear_data(self):
         self.sea_fname = None
@@ -326,6 +428,8 @@ class StormOptions(StormData):
         self.output_fname = None
         self.sea_time = None
         self.formatted_sea_time = None
+        self.air_time = None
+        self.formatted_air_time = None
         self.wind_time = None
         self.formatted_wind_time = None
         self.wind_time = None
@@ -341,10 +445,15 @@ class StormOptions(StormData):
         self.raw_water_level = None
         self.surge_water_level = None
         self.wave_water_level = None
+        self.wave_water_level_chunks = None
+        self.elevation_chunks = None
+        self.wave_time_chunks = None
         self.sensor_orifice_elevation = None
         self.land_surface_elevation = None
         self.derived_water_depth = None
         self.wind_direction = None
+        self.u = None
+        self.v = None
         self.wind_speed = None
         self.surge_peak = None
         self.wave_peak = None
@@ -356,12 +465,18 @@ class StormOptions(StormData):
         self.air_latitude = None
         self.air_longitude = None
         self.air_stn_station_number = None
+        self.wind_latitude = None
+        self.wind_longitude = None
+        self.wind_stn_station_number = None
         self.sliced = False
         self.wind_sliced = False
         self.begin = None
         self.end = None
         self.baroYLims = None
         self.wlYLims = None
+        self.stat_dictionary = None
+        self.stn_instrument_id = None
+        self.air_stn_instrument_id = None
         
             
         

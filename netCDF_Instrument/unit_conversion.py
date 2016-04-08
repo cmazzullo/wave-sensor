@@ -22,11 +22,19 @@ ATM_TO_DBAR = 10.1325
 PASCAL_TO_DBAR = 0.0001
 METER_TO_FEET = 3.28084
 DBAR_TO_INCHES_OF_MERCURY = 2.9529983071415975
+METERS_PER_SECOND_TO_MILES_PER_HOUR = 2.236936292054
 
 USGS_PROTOTYPE_V_TO_DBAR = lambda v: 2.5274e-3 * v + 5.998439
 USGS_PROTOTYPE_V_TO_C = lambda v: 0.0114044 * v - 17.778
 
 EPOCH_START = datetime(year=1970, month=1, day=1, tzinfo=pytz.utc)
+
+FILL_VALUE = -1e10
+
+GRAVITY = 9.8  # (m / s**2)
+GRAVITY_FEET = 32.1740 #(f / s**2)
+WATER_DENSITY = 1030  # density of seawater (kg / m**3)
+FILL_VALUE = -1e10
 
 
 def get_time_duration(ms_difference):
@@ -127,5 +135,24 @@ def adjust_from_gmt(datetimes, tzinfo, dst):
         datetimes = [x + delta for x in datetimes]
         
     return datetimes
+
+def adjust_by_hours(datetimes, hours):
+    
+    delta = timedelta(hours=hours)
+    datetimes = [x - delta for x in datetimes]
+    time_zone = pytz.timezone("GMT") 
+    datetimes = [time_zone.localize(x) for x in datetimes]
+    return datetimes
+
+def make_timezone_aware(datetime, tz, daylight_savings):
+    
+    time_zone = pytz.timezone(tz)
+    datetime = time_zone.localize(datetime, is_dst=daylight_savings)
+    
+    if daylight_savings == True:
+        delta = timedelta(hours=1)
+        datetime = datetime - delta
+   
+    return datetime
     
 

@@ -10,7 +10,7 @@ from tkinter import ttk
 from tkinter.filedialog import askopenfilename
 import os
 from collections import OrderedDict
-from tools.script1 import INSTRUMENTS, convert_to_netcdf
+from pressure_script import INSTRUMENTS, convert_to_netcdf
 import json
 import re
 import sys
@@ -31,26 +31,19 @@ LOCAL_FIELDS = OrderedDict([
     ('latitude', ['Latitude (decimal degrees):', '', True]),
     ('longitude', ['Longitude (decimal degrees):', '', True]),
     ('tz_info', ['Time zone the instrument recorded time in:', ['GMT',
-                            'US/Alaska',
                             'US/Aleutian',
-                            'US/Arizona',
                             'US/Central',
-                            'US/East-Indiana',
                             'US/Eastern',
                             'US/Hawaii',
-                            'US/Indiana-Starke',
-                            'US/Michigan',
                             'US/Mountain',
-                            'US/Pacific',
-                            'US/Pacific-New',
-                            'US/Samoa'], True]),
-    ('daylightSavings', ['Daylight Savings',False]),
+                            'US/Pacific'], True]),
+    ('daylight_savings', ['Daylight Savings',False]),
     ('datum', ['Datum:', ['NAVD88',
                             'NGVD29',
                             'Above Ground Level',
                             'Local Control Point'], True]),
-    ('device_depth', ['Sensor orifice elevation at deployment time(feet):', '', False]),
-    ('device_depth2', ['Sensor orifice elevation at retrieval time(feet):', '', False])])
+    ('initial_sensor_orifice_elevation', ['Sensor orifice elevation at deployment time(feet):', '', False]),
+    ('final_sensor_orifice_elevation', ['Sensor orifice elevation at retrieval time(feet):', '', False])])
 
 
 class Wavegui:
@@ -100,44 +93,47 @@ class Wavegui:
         message = ('Working, this may take a few minutes.')
         dialog = None
 
-        try:
-            dialog = MessageDialog(self.parent, message=message,
-                                   title='Processing...', buttons=0, wait=False)
-            globs = dict(zip(GLOBAL_FIELDS.keys(),
-                             self.global_form.export_entries()))
-     
-     
-            for fname, datafile in self.datafiles.items():
-                inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
-                inputs.update(globs)
-                inputs['sea_pressure'] = not self.air_pressure
-                inputs['in_filename'] = fname
-                inputs['out_filename'] = fname + '.nc'
-                 
-                process_files = self.validate_entries(inputs)
+#         try:
+        dialog = MessageDialog(self.parent, message=message,
+                               title='Processing...', buttons=0, wait=False)
+        globs = dict(zip(GLOBAL_FIELDS.keys(),
+                         self.global_form.export_entries()))
+ 
+ 
+        for fname, datafile in self.datafiles.items():
+            inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
+            inputs.update(globs)
+            if self.air_pressure == False:
+                inputs['pressure_type'] = 'Sea Pressure'
+            else:
+                inputs['pressure_type'] = 'Air Pressure'
+            inputs['in_filename'] = fname
+            inputs['out_filename'] = fname + '.nc'
              
-                if process_files == True:
-                    convert_to_netcdf(inputs)
-                    self.remove_file(fname)
-                    dialog.destroy()
-                    MessageDialog(self.parent, message="Success! Files saved.",
-                          title='Success!')
-                else:
-                    dialog.destroy()
-                    MessageDialog(self.parent, message= self.error_message,
-                              title='Error')
-                     
-                self.error_message = ''
-             
-        except:
-            if dialog is not None:
+            process_files = self.validate_entries(inputs)
+         
+            if process_files == True:
+                convert_to_netcdf(inputs)
+                self.remove_file(fname)
                 dialog.destroy()
-#             exc_type, exc_value, exc_traceback = sys.exc_info()
-# #    
-#             message = traceback.format_exception(exc_type, exc_value,
-#                                           exc_traceback)
-            MessageDialog(self.parent, message="Could not process files, please check file type.",
+                MessageDialog(self.parent, message="Success! Files saved.",
+                      title='Success!')
+            else:
+                dialog.destroy()
+                MessageDialog(self.parent, message= self.error_message,
                           title='Error')
+                 
+            self.error_message = ''
+             
+#         except:
+#             if dialog is not None:
+#                 dialog.destroy()
+# #             exc_type, exc_value, exc_traceback = sys.exc_info()
+# # #    
+# #             message = traceback.format_exception(exc_type, exc_value,
+# #                                           exc_traceback)
+#             MessageDialog(self.parent, message="Could not process files, please check file type.",
+#                           title='Error')
             
     
     def validate_entries(self, inputs):
@@ -145,7 +141,7 @@ class Wavegui:
         
         ignore = [
                   'in_filename',
-                  'tzinfo', 
+                  'tz_info', 
                   'sea_name',
                   'sea_pressure',
                   'salinity',
@@ -164,8 +160,8 @@ class Wavegui:
         "stn_instrument_id": "STN Instrument Id",
         "initial_land_surface_elevation": "Initial Land Surface Elevation",
         "final_land_surface_elevation": "Final Land Surface Elevation",
-        "device_depth": "Sensor Orifice Elevation at Deployment Time",
-        "device_depth2": "Sensor Orifice Elevation at Retrieval Time",
+        "initial_sensor_orifice_elevation": "Sensor Orifice Elevation at Deployment Time",
+        "final_sensor_orifice_elevation": "Sensor Orifice Elevation at Retrieval Time",
         "deployment_time": "Deployment Time",
         "retrieval_time": "Retrieval Time"
          }
