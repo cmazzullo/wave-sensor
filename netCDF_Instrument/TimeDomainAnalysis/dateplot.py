@@ -5,7 +5,7 @@ import datetime
 import numpy as np
 import os
 import pressure_to_depth as p2d
-import NetCDF_Utils.nc as nc
+import netCDF_Utils.nc as nc
 
 folder = '..\\Presentation\\DepthPlot\\'
 fname = folder + 'logger3.csv.nc'
@@ -84,7 +84,7 @@ plt.show()
 # import numpy as np
 
 # import DepthCalculation.pressure_to_depth as p2d
-# import NetCDF_Utils.nc as nc
+# import netCDF_Utils.nc as nc
 
 # fname = ('C:\\Users\\cmazzullo\\wave-sensor-test-data\\'
 #          'test-ncs\\logger1.csv.nc')

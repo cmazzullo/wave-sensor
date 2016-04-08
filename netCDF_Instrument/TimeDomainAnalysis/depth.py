@@ -10,8 +10,8 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 
 from NetCDF_Utils.edit_netcdf import NetCDFReader, NetCDFWriter
-import NetCDF_Utils.VarDatastore as v_store
-import NetCDF_Utils.Testing as tests
+import netCDF_Utils.VarDatastore as v_store
+import netCDF_Utils.Testing as tests
 
 class Depth(NetCDFWriter, NetCDFReader):
     """Calculates depth by subtracting air pressure from pressure data, interpolating where necessary.

@@ -9,6 +9,7 @@ import pandas as pd
 import random
 import unit_conversion
 import shutil
+import netCDF_Utils.nc as nc
 
 def wind_data(file_name, mode='netCDF'):
     
@@ -139,15 +140,13 @@ def get_rand_discrete_data(series_len, threshold, data_max, data_min):
         
     return data_series
 
-#maybe a good idea down the road
-# def change_netCDFTime(in_file_name, out_file_name):
-#     shutil.copy(in_file_name, out_file_name)
-#     
-#     new_times = unit_conversion.date_to_ms(date)
-    
-            
 
-        
-        
+def change_netCDFTime(in_file_name, out_file_name, start_ms):
+    shutil.copy(in_file_name, out_file_name)
+    time_len = len(nc.get_time(out_file_name))
+    new_time = unit_conversion.generate_ms(start_ms, time_len, 1/900)
+    nc.set_variable_data(out_file_name, 'time', new_time)
+    
+
 if __name__ == '__main__':
     quick_dirty_wind_data('wind_data.csv', 'wind_data_CT.nc')

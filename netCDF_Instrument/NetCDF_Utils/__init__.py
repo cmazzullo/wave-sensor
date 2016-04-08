@@ -33,5 +33,12 @@
 # print(a)
 # 
 # import numpy as np
+# # 
+# # print(np.arange(30,30.05,.1))
+# a = np.array([8,2,3,4])
+# b = np.array([4,5,6,7])
 # 
-# print(np.arange(30,30.05,.1))
+# b_mask = (b < 7).astype(float)
+# c = a * b_mask
+# print(c)
+
