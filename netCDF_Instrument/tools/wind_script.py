@@ -43,7 +43,7 @@ def get_data_type(attrib, sites):
           
 def get_wind_data(file_name,sites,start_date = None, end_date = None, tz=None, ds=None):
     
-    print(ds)
+    
     var_datastore = DataStore(0)
     dt1 = datetime.strptime(start_date,'%Y-%m-%d %H:%M')
     dt1 = unit_conversion.make_timezone_aware(dt1, tz, ds)
@@ -119,6 +119,7 @@ def get_wind_data(file_name,sites,start_date = None, end_date = None, tz=None, d
             var_datastore.longitude = lon
             var_datastore.u_data = u
             var_datastore.v_data = v
+            print(len(gust), len(v))
             var_datastore.gust_data = gust
             var_datastore.send_wind_data(ds)
 #        

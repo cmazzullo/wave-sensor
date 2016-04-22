@@ -88,12 +88,18 @@ def k_to_omega(wavenumber, water_d):
 
 def omega_to_k(omega, h):
     """Converts angular frequency to wavenumber for water waves.
-    
+    Using Lo approximation
     Approximation to the dispersion relation, Fenton and McKee (1989)."""
     T = 2 * np.pi / omega
-    l0 = GRAVITY * T**2 / (2 * np.pi)
-    l = l0 * np.tanh((2 * np.pi * h / l0)**(3/4))**(2/3)
+    print(T)
+    Lo = GRAVITY * T**2 / (2 * np.pi)
+    l = Lo * np.tanh(((2 * np.pi)*((np.sqrt( h / GRAVITY))/T))**(3/4))**(2/3)
+    
     return np.nan_to_num(2 * np.pi / l) # nan at omega = 0 (low freq limit)
+
+def echart_omega_to_wavenumber(omega, h):
+    ke =  omega/(GRAVITY*np.sqrt(np.tanh(h*(omega/GRAVITY))))
+    return np.nan_to_num(2 * np.pi / ke)
 
 
 def pressure_to_depth_lwt(p_dbar, device_d, water_d, tstep, hi_cut='auto'):
@@ -140,11 +146,17 @@ def _coefficient(wavenumber, device_d, water_d):
         raise ValueError("Device depth > water depth.")
     return WATER_DENSITY * GRAVITY * (np.cosh(wavenumber * (water_d + device_d)) /
                                       np.cosh(wavenumber * water_d))
+
+def eta_to_pressure(a, omega, k, z, H, t): 
     
+    return WATER_DENSITY * ((a*omega**2)/k)*(np.cosh(k*(z+H))/np.sinh(k*H)) \
+        * (np.cos(omega*t)) - (WATER_DENSITY*GRAVITY*z)
+       
 def lowpass_filter(data):
     '''Performs a butterworth filter of order 4 with a 1 min cutoff'''
     fs = 4 
     cutoff = .0166666665
+#     cutoff = .0001
     
     lowcut = cutoff / (.5 * fs)
         

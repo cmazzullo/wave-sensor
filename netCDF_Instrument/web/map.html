@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+
+</head>
+<body>
+<div id="map1" style="height:500px; width:800px"></div>
+</body>
+<script 
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBKbkdjgPWlg8vSn-yDSHCp3ucmcm93bAQ">
+</script>
+<script>
+
+var data = [[39.245121002197266 , -75.45108795166016],
+[39.252166748046875 , -75.42991638183594],
+[39.25468444824219 , -75.4132080078125],
+[39.259071350097656 , -75.40620422363281]]
+
+myLatLng = {lat: data[0][0], lng: data[0][1]}
+
+map = new google.maps.Map(document.getElementById('map1'), {
+	  center: myLatLng,
+	  zoom: 14
+	});
+	
+for (var i = 0; i < data.length; i++)
+	{
+		myLatLng = {lat: data[i][0], lng: data[i][1]}
+		marker = new google.maps.Marker({
+			position: myLatLng,
+			label: (i+1)+'',
+			map: map
+		});
+	}
+	
+
+</script>

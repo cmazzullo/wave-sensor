@@ -179,8 +179,10 @@ def compute_time_series(freqs, spectrum, calc=True, scale_factor = None):
 #     plt.show()
     
     stats.std_dev = True
-    ht = stats.significant_wave_height([x/1000.0 for x in time], wl)
-    azc = stats.average_zero_crossing_period([x/1000.0 for x in time], wl)
+    stat_o = stats.Stats()
+    
+    ht = stat_o.significant_wave_height([x/1000.0 for x in time], wl)
+    azc = stat_o.average_zero_crossing_period([x/1000.0 for x in time], wl)
     
     print('computed significant wave height',ht)
     print('computed significant avzcp',azc)

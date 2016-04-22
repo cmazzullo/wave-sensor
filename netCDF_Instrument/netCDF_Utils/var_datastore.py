@@ -264,7 +264,7 @@ class DataStore(object):
         self.get_u_var(ds)
         self.get_v_var(ds)
         
-        if len(self.gust_data) > 0:
+        if len(self.gust_data) == len(self.v_data):
             self.get_gust_var(ds)
             
         self.get_global_vars(ds)

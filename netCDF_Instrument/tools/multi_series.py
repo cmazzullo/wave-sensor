@@ -35,19 +35,19 @@ class MultiSeries():
         
         if mo.graph['Atmospheric Pressure'].get() == True:
             self.create_header()
-            self.multi_air_pressure(mo, 'New York')
+            self.multi_air_pressure(mo, 'Delaware')
        
         if mo.graph['Storm Tide Water Level'].get() == True:
             self.create_header()
-            self.multi_water_level(mo, 'New York', mode = 'Surge')
+            self.multi_water_level(mo, 'Delaware', mode = 'Surge')
             
         if mo.graph['Unfiltered Water Level'].get() == True:
             self.create_header()
-            self.multi_water_level(mo, 'New York')
+            self.multi_water_level(mo, 'Delaware')
             
         if mo.graph['Wave Water Level'].get() == True:
             self.create_header()
-            self.multi_water_level(mo, 'New York', mode='Wave')
+            self.multi_water_level(mo, 'Delaware', mode='Wave')
             
     
     def create_header(self):
@@ -128,6 +128,8 @@ class MultiSeries():
             label_list.append('STN Site ID: %s, STN Instrument ID: %s, Lat: %s, Lon: %s' \
                                %(x.air_stn_station_number, x.air_stn_instrument_id, 
                                  x.air_latitude, x.air_longitude))
+            
+            
                         
         legend = ax.legend(legend_list,label_list
         , \
@@ -262,6 +264,8 @@ class MultiSeries():
                 label_list.append('STN Site ID: %s, STN Instrument ID: %s, Lat: %s, Lon: %s' \
                                %(x.stn_station_number, x.stn_instrument_id, 
                                  x.latitude, x.longitude))
+                
+            print(x.latitude,',',x.longitude)
                         
                    
         legend = ax.legend(legend_list,label_list

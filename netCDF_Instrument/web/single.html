@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
+<head>
 <link rel="stylesheet" type="text/css" href="./css/style.css" ></link>
 <link rel="stylesheet" type="text/css" href="./css/jquery.datetimepicker.css"></link>
+</head>
+<body>
 <div id="header">
 <img id="main_logo" src="./images/wavelab.png" />
 <div id="menu">
 <ul id="main_menu">
-<li><a href="http://localhost:8080/test2">Single</a></li>
-<li><a href="http://localhost:8080/test2">Multi</a></li>
-<li><a href="http://localhost:8080/test2">Spectra</a></li>
-<li><a href="http://localhost:8080/test2">Statistics</a></li>
+<li><a href="http://localhost:8080/single_data">Single</a></li>
+<li><a href="http://localhost:8080/multi_data">Multi</a></li>
+<li><a href="http://localhost:8080/spectra_data">Spectra</a></li>
+<li><a href="http://localhost:8080/stat_data">Statistics</a></li>
 </ul>
 </div>
 </div>
@@ -43,26 +46,36 @@
 
 <div id="mainGraph">
 
-<h1>Dashboard</h1>
+<h1>Single Dashboard</h1>
 
+<div class="dash_tile_full">
+<div class="dash_title">Instrument Info</div>
+<table>
+<tr><th></th><th>Sea Instrument</th><th>Air Instrument</th></tr>
+<tr><td><b>STN Site ID:</b></td><td id="sea_site"></td><td id="air_site"></td></tr>
+<tr><td><b>STN Instrument ID:</b></td><td id="sea_instrument"></td><td id="air_instrument"></td></tr>
+<tr><td><b>Latitude:</b></td><td id="sea_lat"></td><td id="air_lat"></td></tr>
+<tr><td><b>Longitude:</b></td><td id="sea_lon"></td><td id="air_lon"></td></tr>
+</table>
+</div>
 <div id="dash2" class="dash_tile">
 <div class="dash_title">Sea Instrument Location <button class="expand">Expand</button></div>
 <div id="map1" class="dash_content"></div>
 </div>
 
 <div id="dash1" class="dash_tile">
-<div class="dash_title">Raw Water Level <button class="expand">Expand</button></div>
+<div class="dash_title">Raw Water Level in Feet <button class="expand">Expand</button></div>
 <svg id="visualization1" width="440" height="220"></svg>
 </div>
 
 
 <div id="dash3" class="dash_tile">
-<div class="dash_title">Surge Water Level <button class="expand">Expand</button></div>
+<div class="dash_title">Surge Water Level in Feet<button class="expand">Expand</button></div>
 <svg id="visualization2" width="440" height="220"></svg>
 </div>
 
 <div id="dash5" class="dash_tile">
-<div class="dash_title">Wave Water Level <button class="expand">Expand</button></div>
+<div class="dash_title">Wave Water Level in Feet<button class="expand">Expand</button></div>
 <svg id="visualization3" width="440" height="220"></svg>
 </div>
 
@@ -72,12 +85,13 @@
 </div>
 
 <div id="dash6" class="dash_tile">
-<div class="dash_title">Atmospheric Pressure<button class="expand">Expand</button></div>
+<div class="dash_title">Atmospheric Pressure in Inches of Mercury<button class="expand">Expand</button></div>
 <svg id="visualization4" width="440" height="220"></svg>
 </div>
 
 </div>
 <div id="footer"><a style="float:left; color:white; margin-left: 30px"href="http://www.freepik.com/free-photos-vectors/background">Background vector designed by Freepik</a> USGS &#169;2016</div>
+</body>
 
 <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
 <script

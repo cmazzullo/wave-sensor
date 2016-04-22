@@ -60,8 +60,6 @@ class StormStatistics(object):
         
         if so.statistics['H1/3'].get() == True:
             data.append(['H1/3','Significant Wave Height in Feet','Significant Wave Height in Feet              '])
-        if so.statistics['H1/32'].get() == True:
-            data.append(['H1/32','Significant Wave Height in Feet','Significant Wave Height in Feet              '])
         if so.statistics['T1/3'].get() == True:
             data.append(['T1/3', 'Significant Wave Period in Seconds','Significant Wave Period in Seconds        '])
         if so.statistics['H10%'].get() == True:

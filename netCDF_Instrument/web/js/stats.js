@@ -1,6 +1,9 @@
 
 $(function() {
 	
+	$('#sidebar').css('min-height', '2800px');
+	$('#mainGraph').css('min-height', '2800px');
+	
 	$.getScript( "./js/graphs.js" )
 	  .done(function( script, textStatus ) {
 	    console.log( 'success',textStatus );
@@ -43,76 +46,36 @@ $(function() {
 		console.log(dash_object.contentType);
 		switch(dash_object.contentType)
 		{
-		case "map":
-			console.log('map')
-			var myLatLng = null
-			if (dash_object.method == 'sea_pressure')
-				{
-				myLatLng = {lat: data['latitude'], lng: data['longitude']};
-				}
-			else{
-				myLatLng = {lat: data['air_latitude'], lng: data['air_longitude']};
-			}
-			
-			if (dash_object.contentCreated == false)
-				{
-					console.log('not_created');
-					
-	
-					map = new google.maps.Map(document.getElementById(dash_object.contentId), {
-					  center: myLatLng,
-					  zoom: 14
-					});
-					
-					marker = new google.maps.Marker({
-						position: myLatLng,
-						label: 'Instrument',
-						map: map
-					});
-					
-					dash_object.contentCreated = true;
-				}
-			else
-				{
-					
-					map = new google.maps.Map(document.getElementById(dash_object.contentId), {
-					  center: myLatLng,
-					  zoom: 14
-					});
-					
-					marker = new google.maps.Marker({
-						position: myLatLng,
-						label: 'Instrument',
-						map: map
-					});
-					
-					if (change == true && dash_object.expanded == false)
-					{
-						$('#' + dash_object.contentId).css({'width': '960px','height': '438px'});
-						dash_object.expanded = true;
-					}
-					else if (change == true && dash_object.expanded == true)
-					{
-						$('#' + dash_object.contentId).css({'width': '470px','height': '218px'});
-						dash_object.expanded = false;
-					}
-					google.maps.event.trigger(map, 'resize');
-				}
-			break;
-		case "water_level_graph":
+		case "stat":
 			
 			//Get the appropriate graph data
 			var graph_data = null
 			switch(dash_object.method)
 			{
-			case "Unfiltered":
-				graph_data = data['raw_data']; break;
-			case "Surge":
-				graph_data = data['surge_data']; break;
-			case "Wave":
-				graph_data = data['wave_data']; break;
-			case "Air":
-				graph_data = data['air_data']; break;
+			case "1":
+				graph_data = data['H1/3']; break;
+			case "2":
+				graph_data = data['H10%']; break;
+			case "3":
+				graph_data = data['H1%']; break;
+			case "4":
+				graph_data = data['RMS']; break;
+			case "5":
+				graph_data = data['Median']; break;
+			case "6":
+				graph_data = data['Maximum']; break;
+			case "7":
+				graph_data = data['Average']; break;
+			case "8":
+				graph_data = data['T1/3']; break;
+			case "9":
+				graph_data = data['Average Z Cross']; break;
+			case "10":
+				graph_data = data['Mean Wave Period']; break;
+			case "11":
+				graph_data = data['Crest']; break;
+			case "12":
+				graph_data = data['Peak Wave']; break;
 			}
 			
 			
@@ -151,8 +114,44 @@ $(function() {
 					 }
 				}
 			break;
-		
+		case "main_stat":
+			var graph_data = [data['wave_wl'],data['H1/3'],data['H10%'],data['H1%']]
 			
+			//If content not created, create, otherwise update
+			if (dash_object.contentCreated == false)
+				{
+					makeMultiGraph(graph_data,dash_object,['red','green','blue','purple']);
+					dash_object.contentCreated = true;
+				}
+			else
+				{
+				//If dash tile is expanded, change width and height, otherwise just update
+				 if (change == true)
+					 {
+						if (change == true && dash_object.expanded == false)
+						{
+							$('#' + dash_object.contentId).attr('width', '960px');
+							$('#' + dash_object.contentId).attr('height', '440px');
+							updateMultiGraph(graph_data,dash_object,960,440);
+							dash_object.expanded = true;
+						}
+						else if (change == true && dash_object.expanded == true)
+						{
+							$('#' + dash_object.contentId).attr('width', '440px');
+							$('#' + dash_object.contentId).attr('height', '220px');
+							updateMultiGraph(graph_data,dash_object,440,220);
+							dash_object.expanded = false;
+						}
+					 }
+				 else
+					 {
+					 	var width = parseInt($('#' + dash_object.contentId).attr('width').substring(0,3));
+					 	var height = parseInt($('#' + dash_object.contentId).attr('height').substring(0,3));
+					 	console.log(width,height);
+					 	updateMultiGraph(graph_data,dash_object,width,height);
+					 }
+				}
+			break;
 		}
 	}
 	
@@ -165,12 +164,13 @@ $(function() {
 		
 		$.ajax({
 			type: 'POST',
-			url: 'http://localhost:8080/newGraph',
+			url: 'http://localhost:8080/statistics',
 			data: {
 				start_time: $('#start_date').val(),
 				end_time: $('#end_date').val(),
 				daylight_savings: $('#dst').val(),
 				timezone: $('#timezone').val(),
+				change: 'false'
 			},
 			datatype: 'JSON',
 			error: function()
@@ -215,11 +215,7 @@ $(function() {
 				    elem.removeAttr('disabled');
 				  });
 			}
-			
-			
-		});
-	
-		
+		});	
 	});
 	
 	$('#graphForm').submit(function(event){
@@ -227,12 +223,13 @@ $(function() {
 		console.log(dash_objects.length);
 		$.ajax({
 			type: 'POST',
-			url: 'http://localhost:8080/newGraph',
+			url: 'http://localhost:8080/statistics',
 			data: {
 				start_time: $('#start_date').val(),
 				end_time: $('#end_date').val(),
 				daylight_savings: $('#dst').val(),
 				timezone: $('#timezone').val(),
+				change: 'true'
 			},
 			datatype: 'JSON',
 			error: function()
@@ -249,20 +246,33 @@ $(function() {
 		
 	})
 	
+	var main = make_dash('dash13','visualization13','main_stat','1','blue');
+	var dash1 = make_dash('dash1','visualization1','stat','1','red');
+	var dash2 = make_dash('dash2','visualization2','stat','2','red');
+	var dash3 = make_dash('dash3','visualization3','stat','3','red');
+	var dash4 = make_dash('dash4','visualization4','stat','4','red');
+	var dash5 = make_dash('dash5','visualization5','stat','5','red');
+	var dash6 = make_dash('dash6','visualization6','stat','6','red');
+	var dash7 = make_dash('dash7','visualization7','stat','7','red');
+	var dash8 = make_dash('dash8','visualization8','stat','8','blue');
+	var dash9 = make_dash('dash9','visualization9','stat','9','blue');
+	var dash10 = make_dash('dash10','visualization10','stat','10','blue');
+	var dash11 = make_dash('dash11','visualization11','stat','11','blue');
+	var dash12 = make_dash('dash12','visualization12','stat','12','blue');
 	
-	var dash1 = make_dash('dash1','visualization1','water_level_graph','Unfiltered','blue');
-	var dash2 = make_dash('dash2','map1','map','sea_pressure','blue');
-	var dash3 = make_dash('dash3','visualization2','water_level_graph','Surge','green')
-	var dash4 = make_dash('dash4','map2','map','air_pressure','blue');
-	var dash5 = make_dash('dash5','visualization3','water_level_graph','Wave','purple');
-	var dash6 = make_dash('dash6','visualization4','water_level_graph','Air','red');
-	
+	dash_objects.push(main);
 	dash_objects.push(dash1);
 	dash_objects.push(dash2);
 	dash_objects.push(dash3);
 	dash_objects.push(dash4);
 	dash_objects.push(dash5);
 	dash_objects.push(dash6);
+	dash_objects.push(dash7);
+	dash_objects.push(dash8);
+	dash_objects.push(dash9);
+	dash_objects.push(dash10);
+	dash_objects.push(dash11);
+	dash_objects.push(dash12);
 	
 	
 });

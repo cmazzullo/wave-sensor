@@ -94,7 +94,7 @@ a{
 float: left;
 background-color: #d9d9d9;
 margin-right: 50px;
-min-height: 1000px;
+min-height: 1200px;
 padding: 20px;
 border: 3px solid black;
 border-top: none;
@@ -111,13 +111,46 @@ border-top: none;
 {
 border-right:3px solid black;
 border-bottom:2px solid black;
-min-height: 1000px;
+min-height: 1200px;
 padding: 20px;
 background-color: #e9e9e9;
 }
 
 #main_logo{
 margin: 20px 40px;
+}
+
+.dash_tile_full table
+{
+	margin: 0px 0px 0px 0px;
+	width: inherit;
+	border-collapse: collapse;
+}
+
+.dash_tile_full table tr
+{
+	cursor: pointer;
+}
+.dash_tile_full table tr td,.dash_tile_full table tr th
+{
+	padding: 5px 100px 5px 5px;
+	text-align: left;
+	border-bottom: 1px solid black;
+	border-right: 1px solid black;
+}
+
+.dash_tile_full table tr:nth-child(odd) {background: #f7f9ff}
+.dash_tile_full table tr:nth-child(even) {background: #d1dcf8}
+.dash_tile_full table tr:first-child {background: #fff}
+.dash_tile_full table tr:hover {background: #fcefb3}
+
+.dash_tile_full table tr td:last-child
+{
+	border-right: none;
+}
+
+.expand{
+	margin-left: 10px;
 }
 
 .dash_tile{
@@ -149,6 +182,20 @@ height: 218px;
 margin: auto;
 display:block;
 }
+
+.dash_tile_full{
+display: inline-block;
+float: left;
+margin-left: 20px;
+border: black 2px solid;
+background-color: white;
+height:194px;
+width: 960px;
+padding: 0px;
+margin-bottom: 20px;
+}
+
+
 
 #footer {
 background-image: url(../images/footer.png);

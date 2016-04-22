@@ -15,7 +15,7 @@ class StormData(object):
     '''Interface for master Storm GUI to manipulate data files'''
     
     def __init__(self):
-        pass
+        self.stats = stats.Stats()
     
     def extract_time(self, fname):
         return nc.get_time(fname)
@@ -82,53 +82,66 @@ class StormData(object):
         
    
         
-    def derive_statistics(self, dchunks, tchunks, wchunks=None):
+    def derive_statistics(self, dchunks, tchunks, wchunks=None, meters=True):
+        
+        if meters is True:
+            units = 1
+        else:
+            units = uc.METER_TO_FEET
        
         func_dict = {
-                     'T1/3': lambda time, depth: stats.significant_wave_period(depth, time[1]-time[0]),
-                     'H1/3 std': lambda time, depth: stats.significant_wave_height_standard(depth \
-                                                                                * uc.METER_TO_FEET),
-                     'H1/3': lambda time, depth: stats.significant_wave_height(time, depth \
-                                                                                * uc.METER_TO_FEET),
-                     'H1/32': lambda time, depth, wind: stats.significant_wave_height2(time, depth \
-                                                                                * uc.METER_TO_FEET, wind),
-                     'H10%': lambda time, depth: stats.ten_percent_wave_height(time, depth \
-                                                                                * uc.METER_TO_FEET),
-                     'H1%': lambda time, depth: stats.one_percent_wave_height(time, depth \
-                                                                                * uc.METER_TO_FEET),
-                     'RMS': lambda time, depth: stats.rms_wave_height(time, depth \
-                                                                                * uc.METER_TO_FEET),
-                     'Median': lambda time, depth: stats.median_wave_height(time, depth \
-                                                                                * uc.METER_TO_FEET),
-                     'Maximum': lambda time, depth: stats.maximum_wave_height(time, depth \
-                                                                                * uc.METER_TO_FEET),
-                     'Average': lambda time, depth: stats.average_wave_height(time, depth \
-                                                                                * uc.METER_TO_FEET),
-                     'Average Z Cross': lambda time, depth: stats.average_zero_crossing_period(time, depth),
-                     'Mean Wave Period': lambda time, depth: stats.mean_wave_period(time, depth),
-                     'Crest': lambda time, depth: stats.crest_wave_period(time, depth),
-                     'Peak Wave': lambda time, depth: stats.peak_wave_period(time, depth)
+                     'T1/3': lambda spec, freq, time, depth: self.stats.significant_wave_period(spec, freq, depth, time[1]-time[0]),
+                     'H1/3 std': lambda spec, freq, time, depth: self.stats.significant_wave_height_standard(depth \
+                                                                                * units),
+                     'H1/3': lambda spec, freq, time, depth: self.stats.significant_wave_height(spec,freq, time, depth \
+                                                                                * units),
+                     'H10%': lambda spec, freq, time, depth: self.stats.ten_percent_wave_height(spec,freq, time, depth \
+                                                                                * units),
+                     'H1%': lambda spec, freq, time, depth: self.stats.one_percent_wave_height(spec,freq, time, depth \
+                                                                                * units),
+                     'RMS': lambda spec, freq, time, depth: self.stats.rms_wave_height(spec, freq, time, depth \
+                                                                                * units),
+                     'Median': lambda spec, freq, time, depth: self.stats.median_wave_height(spec, freq, time, depth \
+                                                                                * units),
+                     'Maximum': lambda spec, freq, time, depth: self.stats.maximum_wave_height(spec, freq, time, depth \
+                                                                                * units),
+                     'Average': lambda spec, freq, time, depth: self.stats.average_wave_height(spec, freq, time, depth \
+                                                                                * units),
+                     'Average Z Cross': lambda spec, freq, time, depth: self.stats.average_zero_crossing_period(spec, freq, time, depth),
+                     'Mean Wave Period': lambda spec, freq, time, depth: self.stats.mean_wave_period(spec, freq, time, depth),
+                     'Crest': lambda spec, freq,time, depth: self.stats.crest_wave_period(spec, freq, time, depth),
+                     'Peak Wave': lambda spec, freq, time, depth: self.stats.peak_wave_period(spec, freq, time, depth)
                     }
+        
         stat_dict = {}
         stat_dict['time'] = [np.average(t) * 1000 for t in tchunks]
+    
+        stat_dict['Frequency'], stat_dict['Spectrum'] = [], []
         
-        for x in func_dict:
-            if x == 'H1/32':
-                if wchunks is not None:
-                    stat_dict[x] = [self.process_chunk(func_dict[x],y,z,w) for [y,z,w] in zip(tchunks,dchunks,wchunks)]
-            else:
-                stat_dict[x] = [self.process_chunk(func_dict[x],y,z) for (y,z) in zip(tchunks,dchunks)]
+        for x,y in zip(tchunks, dchunks):
+            freq, amp = self.stats.power_spectrum(y, x[1]-x[0])
+            print('freq length', len(freq))
+            stat_dict['Frequency'].append(freq)
+            stat_dict['Spectrum'].append(amp)
+            
+        for y in func_dict:
+            stat_dict[y] = []
+            
+        for x in range(0,len(stat_dict['time'])):
+            for y in func_dict:
+                stat_dict[y].append(\
+                                    self.process_chunk(func_dict[y],tchunks[x],dchunks[x],\
+                                                       stat_dict['Spectrum'][x],stat_dict['Frequency'][x]))
+            self.stats.spectrum = None
       
         return stat_dict
     
-    def process_chunk(self, stat_func, t_chunk,d_chunk, wchunk = None):
+    def process_chunk(self, stat_func, t_chunk,d_chunk,spec,freq):
         if np.isnan(np.sum(d_chunk)) == True:
             return np.NaN
         else:
-            if wchunk is None:
-                return stat_func(t_chunk,d_chunk)
-            else:
-                return stat_func(t_chunk,d_chunk,wchunk)
+            return stat_func(spec,freq,t_chunk,d_chunk)
+           
 
     
     
