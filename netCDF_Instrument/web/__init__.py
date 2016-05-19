@@ -165,27 +165,75 @@ class BottleApp(object):
         
     @route('/multiple', method='POST')
     def multiple(self):
-        mo = MultiOptions()
-        mo.sea_fnames = ['./data/0_NYRIC13728_1510688_wv_chop.csv.nc',
+
+        #get the request parameters
+        s = request.forms.get('start_time', type=str)
+        e = request.forms.get('end_time', type=str)
+        dst = request.forms.get('daylight_savings')
+        timezone = request.forms.get('timezone')
+        toggle_state = request.forms.get('toggle_state')
+        
+        if toggle_state is None:
+            tstate = [[1,1,1,0,0],[1,1,1,0,0]]
+        else:
+            tstate = toggle_state
+
+        wv_data = ['./data/0_NYRIC13728_1510688_wv_chop.csv.nc',
                          './data/2_NYNEW07501_1510698_wv_chop.csv.nc',
-                         './data/2_NYNEW07501_1510698_wv_chop.csv.nc',
+                         './data/3_NYQUE04755_1510693_wl_chop.csv.nc',
                          './data/4_NYSUF00011_1511364_wl_chop.csv.nc',
                          './data/5_NYSUF04781_1510678_wv_chop.csv.nc'
                          ]
         
-        mo.air_fnames = ['./data/0_NYRIC13728_1510688_bp_chop.csv.nc',
+        bp_data = ['./data/0_NYRIC13728_1510688_bp_chop.csv.nc',
                          './data/2_NYNEW07501_1510698_bp_chop.csv.nc',
-                         './data/2_NYNEW07501_1510698_bp_chop.csv.nc',
+                         './data/3_NYQUE13828_10223966_bp_chop.csv.nc',
                          './data/4_NYSUF00011_1511364_bp_chop.csv.nc',
                          './data/5_NYSUF04781_1510678_bp_chop.csv.nc'
                          ]
         
+        mo = MultiOptions()
+        
+        for x in range(0, len(tstate[0])):
+            if tstate[0][x] == 1:
+                mo.sea_fnames.append(wv_data[x])
+                
+        for x in range(0, len(tstate[1])):
+            if tstate[1][x] == 1:
+                mo.air_fnames.append(bp_data[x])
+        
         mo.create_storm_objects()
         
+        adjusted_times = []
+        for x in range(0,len(mo.storm_objects)):
+            adjusted_times.append(self.process_data(mo.storm_objects[x], s, e, dst, timezone))
+            
+        raw_final = []
+        surge_final = []
+        wave_final = []
+        air_final = []
+        for si in range(0,len(mo.storm_objects)):
+            
+            for x in range(0, len(adjusted_times)):
+                raw_final.append({"x": adjusted_times[x], 'y':mo.storm_objects[si].raw_water_level[x] * uc.METER_TO_FEET})
+                
+            for x in range(0, len(adjusted_times)):
+                surge_final.append({"x": adjusted_times[x], 'y':mo.storm_objects[si].surge_water_level[x] * uc.METER_TO_FEET})
+                
+            for x in range(0, len(adjusted_times)):
+                wave_final.append({"x": adjusted_times[x], 'y':mo.storm_objects[si].wave_water_level[x] * uc.METER_TO_FEET})
+                
+            for x in range(0, len(adjusted_times)):
+                air_final.append({"x": adjusted_times[x], 'y':mo.storm_objects[si].interpolated_air_pressure[x] \
+                                  * uc.DBAR_TO_INCHES_OF_MERCURY})
         
+        return {'raw_data': raw_final , 
+                'surge_data': surge_final,
+                'wave_data': wave_final,
+                'air_data': air_final,
+                'toggle_state': tstate}
         
-        
-        
+
     @route('/statistics', method='POST')
     def statistics(self):
         file_name = './data/SSS.true.nc'

@@ -14,17 +14,26 @@
 # plt.plot(a,yhat)
 # 
 # plt.show()
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-
-import numpy as np
+# import matplotlib.pyplot as plt
+# from mpl_toolkits.mplot3d import Axes3D
 # 
-# fig = plt.figure()
-# ax = fig.add_subplot(111, projection='3d')
-# ax.plot([1,2,3],[1,2,3],[1,2,3])
-
-
-for x in range(0,100):
-    print(x,np.sinh(x*10),x*10)
+# import numpy as np
+# # 
+# # fig = plt.figure()
+# # ax = fig.add_subplot(111, projection='3d')
+# # ax.plot([1,2,3],[1,2,3],[1,2,3])
+# 
+# a = np.array([1,2,1,4])
+# 
+# b = np.where(a<2)
+# print(len(b[0]))
+# print(a[b])
+# 
+# # for x in range(0,100):
+# #     print(x,np.sinh(x*10),x*10)
 
 # plt.show()
+
+# import numpy as np
+# 
+# print(np.fft.rfftfreq(100, .25))

@@ -82,7 +82,7 @@ class StormData(object):
         
    
         
-    def derive_statistics(self, dchunks, tchunks, wchunks=None, meters=True):
+    def derive_statistics(self, dchunks, tchunks, elevchunks = None ,pchunks=None, wchunks=None, meters=True):
         
         if meters is True:
             units = 1
@@ -117,12 +117,19 @@ class StormData(object):
         stat_dict['time'] = [np.average(t) * 1000 for t in tchunks]
     
         stat_dict['Frequency'], stat_dict['Spectrum'] = [], []
+        stat_dict['LWTFrequency'], stat_dict['LWTSpectrum'] = [], []
         
-        for x,y in zip(tchunks, dchunks):
-            freq, amp = self.stats.power_spectrum(y, x[1]-x[0])
-            print('freq length', len(freq))
+        for x in range(0,len(tchunks)):
+            
+            freq, amp = self.stats.welch_power_spectrum(dchunks[x], tchunks[x][1]-tchunks[x][0])
+            
             stat_dict['Frequency'].append(freq)
             stat_dict['Spectrum'].append(amp)
+            
+            freq2, amp2 = self.stats.lwt_pressure_to_wl_spectrum(tchunks[x], pchunks[x], elevchunks[x], elevchunks[x])
+            
+            stat_dict['LWTFrequency'].append(freq2)
+            stat_dict['LWTSpectrum'].append(amp2)
             
         for y in func_dict:
             stat_dict[y] = []

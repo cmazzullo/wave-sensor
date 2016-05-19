@@ -53,7 +53,7 @@ so.chunk_data()
 so.get_wave_statistics()
 
 data = np.transpose(so.stat_dictionary['Spectrum'])
-print(data)
+
 
 font = {'family' : 'Bitstream Vera Sans',
                     'size'   : 13}
@@ -70,7 +70,7 @@ smin = np.min([np.min(x) for x in so.stat_dictionary['Spectrum']])
 
 
 ax = figure.add_subplot('111')
-ax.set_title('Frequency Vs. Spectral Energy Over Time (DEKEN11529)')
+ax.set_title('Wave Period Vs. Spectral Energy Over Time (DEKEN11529)')
 image = ax.imshow(data**.125, extent=[0,2500,2048,0],vmin=0, vmax=1, aspect=1)
 colorbar = figure.colorbar(image)
 colorbar.set_label('Energy in $m^{1/4} / Hz$')
@@ -78,7 +78,7 @@ colorbar.ax.yaxis.set_major_formatter(plt.FuncFormatter(format_spec))
 
 ax.get_yaxis().set_major_formatter(ticker.FuncFormatter(my_formatter_fun))
 ax.set_ylabel('Time in GMT')
-ax.set_ylabel('Frequency in Hz')
+ax.set_ylabel('Wave Period in Seconds')
 ax.xaxis.set_major_formatter(ticker.FuncFormatter(format_date))
 ax.set_yticks([50,100,200,500,1000,2000])
 ax.grid(b=True, which='major', color='black', linestyle="-")

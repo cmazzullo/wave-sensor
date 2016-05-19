@@ -74,6 +74,7 @@ class StormOptions(StormData):
         self.wave_water_level_chunks = None
         self.elevation_chunks = None
         self.wave_time_chunks = None
+        self.pressure_chunks = None
         self.wind_speed_chunks = None
         self.sensor_orifice_elevation = None
         self.land_surface_elevation = None
@@ -282,7 +283,9 @@ class StormOptions(StormData):
             start_index = 0
             end_index = 4096
             increment = 2048
-            self.wave_time_chunks, self.wave_water_level_chunks, self.wind_speed_chunks = [], [], []
+            self.wave_time_chunks, self.wave_water_level_chunks, \
+            self.pressure_chunks, self.wind_speed_chunks = [], [], [], []
+            self.elevation_chunks = []
             
             if self.wind_speed is not None:
                 ws = np.interp(self.sea_time,self.wind_time,self.wind_speed)
@@ -292,6 +295,10 @@ class StormOptions(StormData):
             while end_index <= len(self.wave_water_level):
                 self.wave_time_chunks.append(self.sea_time[start_index:end_index] / 1000)
                 self.wave_water_level_chunks.append(self.wave_water_level[start_index:end_index])
+                self.pressure_chunks.append(self.corrected_sea_pressure[start_index:end_index])
+                
+                
+                self.elevation_chunks.append([np.mean(self.land_surface_elevation)])
                 
                 if self.wind_speed is not None:
                     self.wind_speed_chunks.append(ws[start_index:end_index] / 
@@ -307,7 +314,7 @@ class StormOptions(StormData):
         if self.stat_dictionary is None:
             self.get_wave_water_level()
             self.stat_dictionary = self.derive_statistics(self.wave_water_level_chunks, self.wave_time_chunks, \
-                                                          self.wind_speed_chunks)
+                                                          pchunks = self.pressure_chunks, elevchunks=self.elevation_chunks)
             
     def check_file_types(self):
         try:
@@ -447,6 +454,7 @@ class StormOptions(StormData):
         self.chunked = False
         self.wave_water_level_chunks = None
         self.elevation_chunks = None
+        self.pressure_chunks = None
         self.wave_time_chunks = None
         self.sensor_orifice_elevation = None
         self.land_surface_elevation = None

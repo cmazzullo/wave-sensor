@@ -247,19 +247,19 @@ class MultiSeries():
             self.time_nums = np.linspace(first_date, last_date, len(x.sea_time))
                
             if mode=='Surge':
-                p1, = ax.plot(self.time_nums, x.surge_water_level, alpha=.5)
+                p1, = ax.plot(self.time_nums, x.surge_water_level * unit_conversion.METER_TO_FEET, alpha=.5)
                 legend_list.append(p1)
                 label_list.append('STN Site ID: %s, STN Instrument ID: %s, Lat: %s, Lon: %s' \
                                %(x.stn_station_number, x.stn_instrument_id, 
                                  x.latitude, x.longitude))
             if mode=='Wave':
-                p1, = ax.plot(self.time_nums, x.wave_water_level, alpha=.5)
+                p1, = ax.plot(self.time_nums, x.wave_water_level * unit_conversion.METER_TO_FEET, alpha=.5)
                 legend_list.append(p1)
                 label_list.append('STN Site ID: %s, STN Instrument ID: %s, Lat: %s, Lon: %s' \
                                %(x.stn_station_number, x.stn_instrument_id, 
                                  x.latitude, x.longitude))
             if mode=='Raw':
-                p1, = ax.plot(self.time_nums, x.raw_water_level, alpha=.5)
+                p1, = ax.plot(self.time_nums, x.raw_water_level * unit_conversion.METER_TO_FEET, alpha=.5)
                 legend_list.append(p1)
                 label_list.append('STN Site ID: %s, STN Instrument ID: %s, Lat: %s, Lon: %s' \
                                %(x.stn_station_number, x.stn_instrument_id, 

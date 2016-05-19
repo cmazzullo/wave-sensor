@@ -41,4 +41,18 @@
 # b_mask = (b < 7).astype(float)
 # c = a * b_mask
 # print(c)
-
+# import netCDF_Utils.nc as nc
+# import unit_conversion as uc
+# 
+# files = \
+# [
+# 'C:\\Users\\chogg\\Desktop\\Deleware\\DEKEN11508 BHN1.csv.nc',
+# 'C:\\Users\\chogg\\Desktop\\Deleware\\DEKEN11509 BHN2.csv.nc',
+# 'C:\\Users\\chogg\\Desktop\\Deleware\\DEKEN11528 BHN3.csv.nc',
+# 'C:\\Users\\chogg\\Desktop\\Deleware\\DEKEN11529 BHN4.csv.nc',
+# 'C:\\Users\\chogg\\Desktop\\Deleware\\DEKEN11568 BHS2.csv.nc',
+# ]
+# 
+# for x in files:
+#     print(x, float(nc.get_global_attribute(x, 'sensor_orifice_elevation_at_deployment_time')) * uc.METER_TO_FEET)
+#     print(x, float(nc.get_global_attribute(x, 'sensor_orifice_elevation_at_retrieval_time')) * uc.METER_TO_FEET)

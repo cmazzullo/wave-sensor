@@ -565,6 +565,20 @@ def set_global_attribute(fname, name, value):
     with Dataset(fname, 'a') as nc_file:
         setattr(nc_file, name, value)
         
+def print_attributes(fname):
+    with Dataset(fname, 'a') as nc_file:
+       
+        list = nc_file.ncattrs()
+        for x in list:
+            print(x, ':', get_global_attribute(fname, x))
+            
+        vars = nc_file.variables.keys()
+        for x in vars:
+            var = nc_file.variables[x]
+            var_attrs = var.ncattrs()
+            for y in var_attrs:
+                print(x,':', y, ':', get_variable_attr(fname, x, y))
+        
 def set_variable_data(fname, variable_name, value):
     """Get the values of a variable from a netCDF file."""
     with Dataset(fname) as nc_file:

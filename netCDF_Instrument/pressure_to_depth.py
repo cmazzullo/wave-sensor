@@ -91,7 +91,6 @@ def omega_to_k(omega, h):
     Using Lo approximation
     Approximation to the dispersion relation, Fenton and McKee (1989)."""
     T = 2 * np.pi / omega
-    print(T)
     Lo = GRAVITY * T**2 / (2 * np.pi)
     l = Lo * np.tanh(((2 * np.pi)*((np.sqrt( h / GRAVITY))/T))**(3/4))**(2/3)
     
@@ -101,6 +100,27 @@ def echart_omega_to_wavenumber(omega, h):
     ke =  omega/(GRAVITY*np.sqrt(np.tanh(h*(omega/GRAVITY))))
     return np.nan_to_num(2 * np.pi / ke)
 
+def echart_omega_to_k(omega, h):
+    return  np.nan_to_num(omega/(GRAVITY*np.sqrt(np.tanh(h*(omega/GRAVITY)))))
+    
+def dalrymple_omega_to_k(omega, h):
+    a0 = (omega*omega*h)/GRAVITY
+    b1 = 1.0 / np.tanh(a0**(3/4.0))
+    a1 = a0*(b1**0.666)
+    da1 = 1000.0
+    
+    d1 = np.repeat(1,len(h))
+    while np.max(d1) == 1:
+        d1 = np.abs(da1/a1) > .00000001
+        th = np.tanh(a1)
+        ch = np.cosh(a1)
+        f1 = a0-(a1*th)
+        f2 = -a1*((1.0/ch)**2) - th;
+        da1 = -f1/f2
+        a1 = a1 + da1
+        
+    return a1/h
+    
 
 def pressure_to_depth_lwt(p_dbar, device_d, water_d, tstep, hi_cut='auto'):
     """Create wave height data from an array of pressure readings."""

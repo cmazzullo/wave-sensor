@@ -38,11 +38,9 @@ class StormStatistics(object):
     def get_data(self,so):
         so.get_meta_data()
         so.get_air_meta_data()
-        so.get_wind_meta_data()
         so.get_raw_water_level()
         so.get_surge_water_level()
-        so.slice_wind_data()
-        so.test_water_elevation_below_sensor_orifice_elvation()
+#         so.test_water_elevation_below_sensor_orifice_elvation()
         so.get_wave_water_level()
         so.chunk_data()
         so.get_wave_statistics()
@@ -280,9 +278,9 @@ class Bool(object):
 if __name__ == '__main__':
   
     so = StormOptions()
-    so.air_fname = 'SSS.hobo.nc'
-    so.sea_fname = 'SSS.true.nc'
-    so.wind_fname = 'jonas_wind-1.nc'
+    so.air_fname = 'bp.nc'
+    so.sea_fname = 'true.nc'
+#     so.wind_fname = 'jonas_wind-1.nc'
 
 #should be an n _-_
 #     so.air_fname = 'Joaquim-air-2.nc'
@@ -301,7 +299,7 @@ if __name__ == '__main__':
         
     so.statistics['H1/3'] = Bool(True)
     so.statistics['Average Z Cross'] = Bool(True)
-    so.format_output_fname('slide_graphs_stats'.replace('/','-'))
+    so.format_output_fname('slide_graphs_stats2'.replace('/','-'))
     ss.process_graphs(so)
         
     
