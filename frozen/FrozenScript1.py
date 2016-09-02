@@ -3,7 +3,7 @@ Created on Feb 17, 2016
 
 @author: chogg
 '''
-import tools.script1 as script1
+import pressure_script as script1
 
 inputs = {
         'instrument_name' : 'MS TruBlue 255',

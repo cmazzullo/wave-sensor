@@ -11,7 +11,7 @@ import csv as csv_package
 class StormCSV(object):
     
     def __init__(self):
-        pass
+        self.int_units = True
     
     def process_csv(self,so):
         
@@ -42,9 +42,21 @@ class StormCSV(object):
         format_time = [x.strftime('%m/%d/%y %H:%M:%S.%f') for x in format_time]
         format_time = [x[0:(len(x) - 4)] for x in format_time]
         #convert decibars to inches of mercury
-        format_air_pressure = so.interpolated_air_pressure * unit_conversion.DBAR_TO_INCHES_OF_MERCURY
-        format_surge_water_level = so.surge_water_level * unit_conversion.METER_TO_FEET
-        format_unfiltered_water_level = so.raw_water_level * unit_conversion.METER_TO_FEET
+        
+        if self.int_units == True:
+            format_surge_water_level = so.surge_water_level
+            format_surge_label = 'Storm Tide Water Level in Meters'
+            format_unfiltered_water_level = so.raw_water_level
+            format_unfiltered_label = 'Unfiltered Water Level in Meters'
+            format_air_pressure = so.interpolated_air_pressure
+            format_air_pressure_label = 'Air Pressure in Decibars'
+        else:
+            format_surge_water_level = so.surge_water_level * unit_conversion.METER_TO_FEET
+            format_surge_label = 'Storm Tide Water Level in Feet'
+            format_unfiltered_water_level = so.raw_water_level * unit_conversion.METER_TO_FEET
+            format_unfiltered_label = 'Unfiltered Water Level in Feet'
+            format_air_pressure = so.interpolated_air_pressure * unit_conversion.DBAR_TO_INCHES_OF_MERCURY
+            format_air_pressure_label = 'Air Pressure in Inches of Hg'
         #convert meters to feet
         
         
@@ -54,9 +66,9 @@ class StormCSV(object):
             column1 = '%s Time' % so.timezone  
             
         excelFile = pd.DataFrame({column1: format_time, 
-                                  'Air Pressure in Inches of Hg': format_air_pressure,
-                                  'Storm Tide Water Level in Feet': format_surge_water_level,
-                                  'Unfiltered Water Level in Feet': format_unfiltered_water_level
+                                  format_air_pressure_label: format_air_pressure,
+                                  format_surge_label: format_surge_water_level,
+                                  format_unfiltered_label : format_unfiltered_water_level
                                   })
         
         out_file_name = ''.join([so.output_fname,'_stormtide_unfiltered','.csv'])
@@ -71,9 +83,9 @@ class StormCSV(object):
            
         
         excelFile.to_csv(path_or_buf=out_file_name, mode='a', columns=[column1,
-                                                             'Unfiltered Water Level in Feet',
-                                                             'Storm Tide Water Level in Feet',
-                                                             'Air Pressure in Inches of Hg'])
+                                                             format_unfiltered_label,
+                                                             format_surge_label,
+                                                             format_air_pressure_label])
         
     def Storm_Tide_Water_Level(self, so):
         
@@ -84,9 +96,17 @@ class StormCSV(object):
         
         #convert decibars to inches of mercury
         format_air_pressure = so.interpolated_air_pressure * unit_conversion.DBAR_TO_INCHES_OF_MERCURY
-        format_surge_water_level = so.surge_water_level * unit_conversion.METER_TO_FEET
-        #convert meters to feet
         
+        if self.int_units == True:
+            format_surge_water_level = so.surge_water_level
+            format_surge_label = 'Storm Tide Water Level in Meters'
+            format_air_pressure = so.interpolated_air_pressure
+            format_air_pressure_label = 'Air Pressure in Decibars'
+        else:
+            format_surge_water_level = so.surge_water_level * unit_conversion.METER_TO_FEET
+            format_surge_label = 'Storm Tide Water Level in Feet'
+            format_air_pressure = so.interpolated_air_pressure * unit_conversion.DBAR_TO_INCHES_OF_MERCURY
+            format_air_pressure_label = 'Air Pressure in Inches of Hg'
         
         if so.daylight_savings != None and so.daylight_savings == True: 
             column1 = '%s Daylight Savings Time' % so.timezone 
@@ -94,8 +114,8 @@ class StormCSV(object):
             column1 = '%s Time' % so.timezone  
             
         excelFile = pd.DataFrame({column1: format_time[::4], 
-                                  'Air Pressure in Inches of Hg': format_air_pressure[::4],
-                                  'Storm Tide Water Level in Feet': format_surge_water_level[::4],
+                                  format_air_pressure_label: format_air_pressure[::4],
+                                  format_surge_label : format_surge_water_level[::4],
                                   })
         
         out_file_name = ''.join([so.output_fname,'_stormtide','.csv'])
@@ -110,8 +130,8 @@ class StormCSV(object):
            
         
         excelFile.to_csv(path_or_buf=out_file_name, mode='a', columns=[column1,
-                                                             'Storm Tide Water Level in Feet',
-                                                             'Air Pressure in Inches of Hg'])
+                                                             format_surge_label,
+                                                             format_air_pressure_label])
         
     def Atmospheric_Pressure(self, so):
         
@@ -120,9 +140,12 @@ class StormCSV(object):
         format_time = unit_conversion.adjust_from_gmt(format_time, so.timezone, so.daylight_savings)
         format_time = [x.strftime('%m/%d/%y %H:%M:%S') for x in format_time]
         
-        #convert decibars to inches of mercury
-        format_air_pressure = so.raw_air_pressure * unit_conversion.DBAR_TO_INCHES_OF_MERCURY
-        #convert meters to feet
+        if self.int_units == True:
+            format_air_pressure = so.raw_air_pressure
+            format_air_pressure_label = 'Air Pressure in Decibars'
+        else:
+            format_air_pressure = so.raw_air_pressure * unit_conversion.DBAR_TO_INCHES_OF_MERCURY
+            format_air_pressure_label = 'Air Pressure in Inches of Hg'
         
         
         if so.daylight_savings != None and so.daylight_savings == True: 
@@ -131,7 +154,7 @@ class StormCSV(object):
             column1 = '%s Time' % so.timezone  
             
         excelFile = pd.DataFrame({column1: format_time, 
-                                  'Air Pressure in Inches of Hg': format_air_pressure,
+                                  format_air_pressure_label: format_air_pressure,
                                   })
         
         out_file_name = ''.join([so.output_fname,'_barometric_pressure','.csv'])
@@ -146,6 +169,6 @@ class StormCSV(object):
            
         
         excelFile.to_csv(path_or_buf=out_file_name, mode='a', columns=[column1,
-                                                             'Air Pressure in Inches of Hg'])
+                                                             format_air_pressure_label])
          
         

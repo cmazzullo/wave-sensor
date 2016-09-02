@@ -27,14 +27,18 @@ def format_date(x,arb=None):
 def format_spec(x,arb=None):
         '''Format dates so that they are padded away from the x-axis'''
         index = int(x*10.0)
-        print('index',index)
         if index -1 >=0:
             return '%.6f' % np.linspace(smin,smax,10)[index-1]
         else:
             return 0
     
 def my_formatter_fun(x, p):
-    if x >= 0 and x <= 2000:
+    print('freq',x,p)
+    if x >= 0 and x <= 2500:
+        x = int(x / (2*19.5))
+        if x >= 64:
+            x = 63
+            
         fl = '%.1f' % (1 / so.stat_dictionary['Frequency'][0][int(x)])
         if fl[len(fl) - 1] == '1':
             fl = ''.join([fl[0:len(fl)-1],'0'])
@@ -44,8 +48,8 @@ def my_formatter_fun(x, p):
 #     so.stat_dictionary['Frequency'][x]
 
 so = StormOptions()
-so.sea_fname = 'DEKEN11529 BHN4.csv.nc'
-so.air_fname = 'DEKEN11529 BHN4a.nc'
+so.sea_fname = 'jersey_p.nc'
+so.air_fname = 'jersey_baro.nc'
 so.get_meta_data()
 so.get_air_meta_data()
 so.get_wave_water_level()
@@ -71,9 +75,9 @@ smin = np.min([np.min(x) for x in so.stat_dictionary['Spectrum']])
 
 ax = figure.add_subplot('111')
 ax.set_title('Wave Period Vs. Spectral Energy Over Time (DEKEN11529)')
-image = ax.imshow(data**.125, extent=[0,2500,2048,0],vmin=0, vmax=1, aspect=1)
+image = ax.imshow(data, extent=[0,2500,2048,0],vmin=0, vmax=1, aspect=1)
 colorbar = figure.colorbar(image)
-colorbar.set_label('Energy in $m^{1/4} / Hz$')
+colorbar.set_label('Energy in $m^2 / Hz$')
 colorbar.ax.yaxis.set_major_formatter(plt.FuncFormatter(format_spec))
 
 ax.get_yaxis().set_major_formatter(ticker.FuncFormatter(my_formatter_fun))

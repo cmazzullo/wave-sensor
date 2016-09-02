@@ -11,7 +11,6 @@ from tools.storm_netCDF import Storm_netCDF
 import traceback
 from tools.storm_statistics import StormStatistics
 
-
 class StormGui:
     def __init__(self, root):
         
@@ -215,81 +214,80 @@ class StormGui:
             gc.MessageDialog(root, message=message, title='Error!')
             return
         
-#         if self.so.stat_check_selected() == False:
-#             message = ("Please select at most two stat options")
-#             gc.MessageDialog(root, message=message, title='Error!')
-#             return
-        
         self.so.clear_data()
+        self.so.int_units = False
         og_fname = filedialog.asksaveasfilename()
         
         if og_fname is None or og_fname == '':
             self.root.focus_force()
             return
         
-#         try:
-        self.so.air_fname = self.air_fname
-        self.so.sea_fname = self.sea_fname
-        self.so.wind_fname = self.wind_fname
-        self.so.format_output_fname(og_fname)
-        self.so.timezone = self.tzstringvar.get()
-        self.so.daylight_savings = self.daylightSavings.get()
-        
-        self.so.baroYLims = []
         try:
-            self.so.baroYLims.append(float(self.baroYlim1.get()))
-            self.so.baroYLims.append(float(self.baroYlim2.get()))
-        except:
-            self.so.baroYLims = None
+            self.so.air_fname = self.air_fname
+            self.so.sea_fname = self.sea_fname
+            self.so.wind_fname = self.wind_fname
+            self.so.format_output_fname(og_fname)
+            self.so.timezone = self.tzstringvar.get()
+            self.so.daylight_savings = self.daylightSavings.get()
             
-        self.so.wlYLims = []
-        try:
-            self.so.wlYLims.append(float(self.wlYlim1.get()))
-            self.so.wlYLims.append(float(self.wlYlim2.get()))
-        except:
-            self.so.wlYLims = None
-        
-        if self.sea_fname != None and self.sea_fname != '':
-            
-            overlap = self.so.time_comparison()
+            self.so.baroYLims = []
+            try:
+                self.so.baroYLims.append(float(self.baroYlim1.get()))
+                self.so.baroYLims.append(float(self.baroYlim2.get()))
+            except:
+                self.so.baroYLims = None
                 
-            if overlap == 2:
-                message = ("Air pressure and water pressure files don't "
-                           "cover the same time period!\nPlease choose "
-                           "other files.")
-                gc.MessageDialog(root, message=message, title='Error!')
-                return
-            elif overlap == 1:
-                message = ("The air pressure file doesn't span the "
-                "entire time period covered by the water pressure "
-                "file.\nThe period not covered by both files will be "
-                "chopped")
-                gc.MessageDialog(root, message=message, title='Warning')
+            self.so.wlYLims = []
+            try:
+                self.so.wlYLims.append(float(self.wlYlim1.get()))
+                self.so.wlYLims.append(float(self.wlYlim2.get()))
+            except:
+                self.so.wlYLims = None
             
-        
-        snc = Storm_netCDF()
-        snc.process_netCDFs(self.so)
-        
-        scv = StormCSV()
-        scv.process_csv(self.so)
-        
-        sg = StormGraph()
-        sg.process_graphs(self.so) 
-        
-        s_stat = StormStatistics()
-        s_stat.process_graphs(self.so)
-        
-        gc.MessageDialog(root, message="Success! Files processed.",
-                                 title='Success!')
+            if self.sea_fname != None and self.sea_fname != '':
                 
-#         except:
+                overlap = self.so.time_comparison()
+                    
+                if overlap == 2:
+                    message = ("Air pressure and water pressure files don't "
+                               "cover the same time period!\nPlease choose "
+                               "other files.")
+                    gc.MessageDialog(root, message=message, title='Error!')
+                    return
+                elif overlap == 1:
+                    message = ("The air pressure file doesn't span the "
+                    "entire time period covered by the water pressure "
+                    "file.\nThe period not covered by both files will be "
+                    "chopped")
+                    gc.MessageDialog(root, message=message, title='Warning')
+                
+            
+            snc = Storm_netCDF()
+            snc.process_netCDFs(self.so)
+            
+            scv = StormCSV()
+            scv.int_units = self.so.int_units
+            scv.process_csv(self.so)
+            
+            sg = StormGraph()
+            sg.int_units = self.so.int_units
+            sg.process_graphs(self.so) 
+            
+            s_stat = StormStatistics()
+            s_stat.int_units = self.so.int_units
+            s_stat.process_graphs(self.so)
+            
+            gc.MessageDialog(root, message="Success! Files processed.",
+                                     title='Success!')
+                
+        except:
 #             exc_type, exc_value, exc_traceback = sys.exc_info()
 #        
 #             message = traceback.format_exception(exc_type, exc_value,
 #                                           exc_traceback)
-# #             message = 'Could not process files, please check file type.'
-#             gc.MessageDialog(root, message=message,
-#                              title='Error')
+            message = 'Could not process files, please check file type.'
+            gc.MessageDialog(root, message=message,
+                             title='Error')
 
 def make_frame(frame, header=None):
     """Make a frame with uniform padding."""

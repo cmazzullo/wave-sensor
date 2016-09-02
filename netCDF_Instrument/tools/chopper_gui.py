@@ -19,8 +19,8 @@ from datetime import datetime
 import easygui
 import numpy
 import unit_conversion as uc
-# import traceback
-# import sys
+import traceback
+import sys
 
 
 def find_index(array, value):
@@ -352,6 +352,10 @@ class Chopper:
             self.root.quit()
             self.root.destroy()
         except:
+#             exc_type, exc_value, exc_traceback = sys.exc_info()
+#             message = traceback.format_exception(exc_type, exc_value,
+#                                         exc_traceback)
+#             easygui.msgbox(message, "Error")
             easygui.msgbox("Could not export file, check export parameters and try again.", "Error")
 
     def select_input(self):
@@ -366,8 +370,10 @@ class Chopper:
                 self.b['state'] = 'normal'
                 self.root.focus_force()
         except:
-
-            easygui.msgbox('Cannot plot file, please check file type and try again', "Error")
+#             exc_type, exc_value, exc_traceback = sys.exc_info()
+#    
+            message = "Could not plot file, check plot options and try again."
+            easygui.msgbox(message, "Error")
              
     def format_date(self,x,arb=None):
         '''Format dates so that they are padded away from the x-axis'''

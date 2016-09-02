@@ -31,9 +31,28 @@
 # 
 # # for x in range(0,100):
 # #     print(x,np.sinh(x*10),x*10)
-
+import random
+import numpy as np
+import matplotlib.pyplot as plt
 # plt.show()
 
 # import numpy as np
 # 
 # print(np.fft.rfftfreq(100, .25))
+
+a = [random.Random().random() * 100 for x in range(0, 1000)]
+
+b = np.fft.rfft(a)
+b2 = b**2 / (len(a)/2.0) / 4.0
+# print(b)
+# print('')
+# print(b2)
+
+
+c = np.fft.irfft((b2 * 4.0 * (len(a)/2.0))**.5)
+
+ax = plt.subplot(121)
+ax.plot(range(0,len(a)),a)
+ax2 = plt.subplot(122)
+ax2.plot(range(0,len(a)),c)
+plt.show()

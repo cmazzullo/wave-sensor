@@ -203,7 +203,7 @@ class MeasureSysLogger(edit_netcdf.NetCDFWriter):
         skip_index = find_first(self.in_filename, '^ID') - 1
         # for skipping lines in case there is calibration header data
         df = pd.read_table(self.in_filename, skiprows=skip_index + 1, header=None,
-                           engine='c', sep=',', usecols=[3, 4, 5 ,6])
+                           engine='c', sep=',', usecols=[3, 4, 5])
         
         try:
             self.data_start = uc.datestring_to_ms(df[3][3][1:],
@@ -232,8 +232,9 @@ class MeasureSysLogger(edit_netcdf.NetCDFWriter):
 #         if self.daylight_savings == True:
 #             self.utc_millisecond_data = [x - 3600000 for x in self.utc_millisecond_data]
             
-        if re.match('^[0-9]{1,3}.[0-9]+$', str(df[6][0])):
-            self.temperature_data = [x for x in df[6]]
+        #WE WILL NOT BE RECORDING TEMPERATURE FOR THE FORSEEABLE FUTURE
+#         if re.match('^[0-9]{1,3}.[0-9]+$', str(df[6][0])):
+#             self.temperature_data = [x for x in df[6]]
             
     def get_serial(self):
         self.instrument_serial = "not found"

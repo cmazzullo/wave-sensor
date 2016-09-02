@@ -275,8 +275,7 @@ class MultiSeries():
         legend.get_title().set_position((-340, 0))
                     
         plt.savefig(''.join([mo.output_fname,'_multi_',mode.lower(),'.jpg']))
-        plt.cla()
-#         plt.close(self.figure)
+        plt.close(self.figure)
         
             
 if __name__ == '__main__':

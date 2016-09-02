@@ -13,7 +13,9 @@ from scipy import signal
 
 # Constants
 GRAVITY = uc.GRAVITY  
-WATER_DENSITY = uc.WATER_DENSITY
+SALT_WATER_DENSITY = 1027
+BRACKISH_WATER_DENSITY = 1015
+FRESH_WATER_DENSITY = 1000
 FILL_VALUE =  uc.FILL_VALUE
 
 
@@ -62,10 +64,16 @@ def combo_method(time, pressure, device_d, water_d, tstep = 4):
     return (dchunks,tchunks)
 
 
-def hydrostatic_method(pressure):
+def hydrostatic_method(pressure, density="salt"):
     """Return the depth corresponding to a hydrostatic pressure."""
     
-    return (pressure *  1e4) / (WATER_DENSITY * GRAVITY)
+    if density == "salt":
+        return (pressure *  1e4) / (SALT_WATER_DENSITY * GRAVITY)
+    
+    if density == "brackish":
+        return (pressure *  1e4) / (BRACKISH_WATER_DENSITY * GRAVITY)
+    
+    return (pressure *  1e4) / (FRESH_WATER_DENSITY * GRAVITY)
 
 
 def auto_cutoff(water_d):
@@ -86,7 +94,7 @@ def k_to_omega(wavenumber, water_d):
     return np.sqrt(wavenumber * GRAVITY * np.tanh(wavenumber * water_d))
 
 
-def omega_to_k(omega, h):
+def lo_omega_to_k(omega, h):
     """Converts angular frequency to wavenumber for water waves.
     Using Lo approximation
     Approximation to the dispersion relation, Fenton and McKee (1989)."""
@@ -95,6 +103,17 @@ def omega_to_k(omega, h):
     l = Lo * np.tanh(((2 * np.pi)*((np.sqrt( h / GRAVITY))/T))**(3/4))**(2/3)
     
     return np.nan_to_num(2 * np.pi / l) # nan at omega = 0 (low freq limit)
+
+def omega_to_k(omega, h):
+    k = omega / (9.8 * np.sqrt(np.tanh(omega * h / 9.8)))
+          
+    #tangent iteration to get better estimate of wavenumber
+    for x in range(0,6):
+        f0 = omega - 9.8 * k * np.tanh(k * h)
+        dfdk = -9.8 * np.tanh(k*h) - 9.8*k*h / ((np.cosh(k*h))**2)
+        k = k - f0/dfdk
+        
+    return  np.nan_to_num(k)
 
 def echart_omega_to_wavenumber(omega, h):
     ke =  omega/(GRAVITY*np.sqrt(np.tanh(h*(omega/GRAVITY))))
@@ -164,13 +183,13 @@ def _coefficient(wavenumber, device_d, water_d):
         raise ValueError("Water depth < 0, it should be positive.")
     if -device_d > water_d:
         raise ValueError("Device depth > water depth.")
-    return WATER_DENSITY * GRAVITY * (np.cosh(wavenumber * (water_d + device_d)) /
+    return SALT_WATER_DENSITY * GRAVITY * (np.cosh(wavenumber * (water_d + device_d)) /
                                       np.cosh(wavenumber * water_d))
 
 def eta_to_pressure(a, omega, k, z, H, t): 
     
-    return WATER_DENSITY * ((a*omega**2)/k)*(np.cosh(k*(z+H))/np.sinh(k*H)) \
-        * (np.cos(omega*t)) - (WATER_DENSITY*GRAVITY*z)
+    return SALT_WATER_DENSITY * ((a*omega**2)/k)*(np.cosh(k*(z+H))/np.sinh(k*H)) \
+        * (np.cos(omega*t)) - (SALT_WATER_DENSITY*GRAVITY*z)
        
 def lowpass_filter(data):
     '''Performs a butterworth filter of order 4 with a 1 min cutoff'''
@@ -185,6 +204,3 @@ def lowpass_filter(data):
     filtered_data = signal.filtfilt(b, a, data)
    
     return filtered_data
-
-    
-

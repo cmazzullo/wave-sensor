@@ -64,7 +64,7 @@ class MultiOptions():
     
     def create_storm_objects(self):
         last_water_index, last_air_index, latest_change = -1, -1, -1
-        for x in range(0, 10):
+        for x in range (0, len(self.sea_fnames)):
             if self.sea_fnames[x] != '':
                 last_water_index = x
             if self.air_fnames[x] != '':
@@ -106,8 +106,6 @@ class MultiOptions():
                 self.output_fname = og_fname
         else:
             self.output_fname = 'output'
-            
-   
             
     def clear_data(self):
         self.sea_fnames = []

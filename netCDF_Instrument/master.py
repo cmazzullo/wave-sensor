@@ -1,5 +1,4 @@
 import tools.chopper_gui as chopper
-#import tools.statviewer as statviewer
 import tools.script1_gui as script1
 import tools.script1_air_gui as script1_air
 import tools.storm_gui_v2 as storm_gui
@@ -78,6 +77,3 @@ if __name__ == '__main__':
     root.protocol("WM_DELETE_WINDOW", gui.on_closing)
     root.mainloop()
     
-    
-# plt.close('all')
-

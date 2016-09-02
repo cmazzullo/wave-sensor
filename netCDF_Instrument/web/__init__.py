@@ -20,6 +20,27 @@ def find_index(array, value):
     
     return idx
 
+#mock data base
+wv_data = ['./data/0_NYRIC13728_1510688_wv_chop.csv.nc',
+                        './data/2_NYNEW07501_1510698_wv_chop.csv.nc',
+                        './data/3_NYQUE04755_1510693_wl_chop.csv.nc',
+                        './data/4_NYSUF00011_1511364_wl_chop.csv.nc',
+                        './data/5_NYSUF04781_1510678_wv_chop.csv.nc',
+                        './data/6_wv.nc',
+                        './data/SSS.true.nc',
+                        './data/wv.nc'
+                         ]
+         
+bp_data = ['./data/0_NYRIC00002_9800742_bp_chop.csv.nc',
+                        './data/2_NYNEW07501_1510685_bp_chop.csv.nc',
+                        './data/3_NYQUE13828_10223966_bp_chop.csv.nc',
+                        './data/4_NYSUF00011_1510699_bp_chop.csv.nc',
+                        './data/5_NYSUF04781_1411333_bp_chop.csv.nc',
+                        './data/6_bp.nc',
+                        './data/SSS.hobo.nc',
+                        './data/bp.nc'
+                         ]
+
 class BottleApp(object):
     
     def __init__(self):
@@ -41,19 +62,19 @@ class BottleApp(object):
 
         return _enable_cors
 
-    def process_data(self,so, s, e, dst, timezone, type=None):
+    def process_data(self,so, s, e, dst, timezone, step, data_type=None):
         '''adjust the data based on the parameters and get storm object data'''
         
+        print('this is a da stepuh', step)
         #get meta data and water level
         so.get_meta_data()
         so.get_air_meta_data()
         so.get_wave_water_level()
         
-        if type is not None and type=="stat":
+        if data_type is not None and data_type=="stat":
             so.chunk_data()
             so.get_wave_statistics()
      
-        
         #get the time from the netCDF file and adjust according to timezone and dst params
         start_datetime = uc.convert_ms_to_date(so.sea_time[0], pytz.utc)
         end_datetime = uc.convert_ms_to_date(so.sea_time[-1], pytz.utc)
@@ -69,26 +90,24 @@ class BottleApp(object):
         e_index = find_index(adjusted_times, float(milli2))
         
         #slice data by the index
-        adjusted_times = adjusted_times[s_index:e_index:240]
-        so.raw_water_level = so.raw_water_level[s_index:e_index:240]
-        so.surge_water_level = so.surge_water_level[s_index:e_index:240]
-        so.wave_water_level = so.wave_water_level[s_index:e_index:240]
-        so.interpolated_air_pressure = so.interpolated_air_pressure[s_index:e_index:240]
+        adjusted_times = adjusted_times[s_index:e_index:step]
+        so.raw_water_level = so.raw_water_level[s_index:e_index:step]
+        so.surge_water_level = so.surge_water_level[s_index:e_index:step]
+        so.wave_water_level = so.wave_water_level[s_index:e_index:step]
+        so.interpolated_air_pressure = so.interpolated_air_pressure[s_index:e_index:step]
         
-        if type is not None and type=="stat":
+        #This is assuming SO object gets modified by reference
+        if data_type is not None and data_type=="stat":
             s_stat_index = find_index(so.stat_dictionary['time'],float(milli1))
             e_stat_index = find_index(so.stat_dictionary['time'], float(milli2))
             so.stat_dictionary['time'] = so.stat_dictionary['time'][s_stat_index:e_stat_index]
             for i in so.statistics:
-                so.stat_dictionary[i] = so.stat_dictionary[i][s_stat_index:e_stat_index]
+                if i != 'PSD Contour':
+                    so.stat_dictionary[i] = so.stat_dictionary[i][s_stat_index:e_stat_index]
         
-        #gather statistics if necessary
-        
-            
+        #gather statistics if necessary  
         return adjusted_times
         
-        
-    
     @route('/single_data', method='GET')
     def single_data(self):
         return template('single.html')
@@ -96,6 +115,10 @@ class BottleApp(object):
     @route('/multi_data', method='GET')
     def multi_data(self):
         return template('multi.html')
+    
+    @route('/multi_data2', method='GET')
+    def multi_data2(self):
+        return template('multi2.html')
     
     @route('/spectra_data', method='GET')
     def spectra_data(self):
@@ -114,14 +137,21 @@ class BottleApp(object):
     def single(self):
         '''This displays the single waterlevel and atmospheric pressure'''
         
-        file_name = './data/SSS.true.nc'
-        air_file_name = './data/SSS.hobo.nc'
-        
         #get the request parameters
         s = request.forms.get('start_time', type=str)
         e = request.forms.get('end_time', type=str)
         dst = request.forms.get('daylight_savings')
         timezone = request.forms.get('timezone')
+        sea_file = request.forms.get('sea_file')
+        baro_file = request.forms.get('baro_file')
+        multi = request.forms.get('multi')
+    
+        if sea_file is None:
+            file_name = './data/SSS.true.nc'
+            air_file_name = './data/SSS.hobo.nc'
+        else:
+            file_name = wv_data[int(sea_file)]
+            air_file_name = bp_data[int(baro_file)]
         
     #     filter = request.forms.get('filter')
        
@@ -134,7 +164,12 @@ class BottleApp(object):
         so.air_fname = air_file_name
         
         #temp deferring implementation of type of filter
-        adjusted_times = self.process_data(so, s, e, dst, timezone)
+        if multi == 'True':
+            step = 200
+        else:
+            step = 25
+            
+        adjusted_times = self.process_data(so, s, e, dst, timezone, step=step)
         
         #convert in format for javascript
         raw_final = []
@@ -153,6 +188,7 @@ class BottleApp(object):
         for x in range(0, len(adjusted_times)):
             air_final.append({"x": adjusted_times[x], 'y':so.interpolated_air_pressure[x] * uc.DBAR_TO_INCHES_OF_MERCURY})
          
+        
         return {'raw_data': raw_final , 
                 'surge_data': surge_final,
                 'wave_data': wave_final,
@@ -162,120 +198,152 @@ class BottleApp(object):
                 'sea_stn': [so.stn_station_number,so.stn_instrument_id],
                 'air_stn': [so.air_stn_station_number,so.air_stn_instrument_id]}
         
-        
-    @route('/multiple', method='POST')
-    def multiple(self):
-
-        #get the request parameters
-        s = request.forms.get('start_time', type=str)
-        e = request.forms.get('end_time', type=str)
-        dst = request.forms.get('daylight_savings')
-        timezone = request.forms.get('timezone')
-        toggle_state = request.forms.get('toggle_state')
-        
-        if toggle_state is None:
-            tstate = [[1,1,1,0,0],[1,1,1,0,0]]
-        else:
-            tstate = toggle_state
-
-        wv_data = ['./data/0_NYRIC13728_1510688_wv_chop.csv.nc',
-                         './data/2_NYNEW07501_1510698_wv_chop.csv.nc',
-                         './data/3_NYQUE04755_1510693_wl_chop.csv.nc',
-                         './data/4_NYSUF00011_1511364_wl_chop.csv.nc',
-                         './data/5_NYSUF04781_1510678_wv_chop.csv.nc'
-                         ]
-        
-        bp_data = ['./data/0_NYRIC13728_1510688_bp_chop.csv.nc',
-                         './data/2_NYNEW07501_1510698_bp_chop.csv.nc',
-                         './data/3_NYQUE13828_10223966_bp_chop.csv.nc',
-                         './data/4_NYSUF00011_1511364_bp_chop.csv.nc',
-                         './data/5_NYSUF04781_1510678_bp_chop.csv.nc'
-                         ]
-        
-        mo = MultiOptions()
-        
-        for x in range(0, len(tstate[0])):
-            if tstate[0][x] == 1:
-                mo.sea_fnames.append(wv_data[x])
-                
-        for x in range(0, len(tstate[1])):
-            if tstate[1][x] == 1:
-                mo.air_fnames.append(bp_data[x])
-        
-        mo.create_storm_objects()
-        
-        adjusted_times = []
-        for x in range(0,len(mo.storm_objects)):
-            adjusted_times.append(self.process_data(mo.storm_objects[x], s, e, dst, timezone))
-            
-        raw_final = []
-        surge_final = []
-        wave_final = []
-        air_final = []
-        for si in range(0,len(mo.storm_objects)):
-            
-            for x in range(0, len(adjusted_times)):
-                raw_final.append({"x": adjusted_times[x], 'y':mo.storm_objects[si].raw_water_level[x] * uc.METER_TO_FEET})
-                
-            for x in range(0, len(adjusted_times)):
-                surge_final.append({"x": adjusted_times[x], 'y':mo.storm_objects[si].surge_water_level[x] * uc.METER_TO_FEET})
-                
-            for x in range(0, len(adjusted_times)):
-                wave_final.append({"x": adjusted_times[x], 'y':mo.storm_objects[si].wave_water_level[x] * uc.METER_TO_FEET})
-                
-            for x in range(0, len(adjusted_times)):
-                air_final.append({"x": adjusted_times[x], 'y':mo.storm_objects[si].interpolated_air_pressure[x] \
-                                  * uc.DBAR_TO_INCHES_OF_MERCURY})
-        
-        return {'raw_data': raw_final , 
-                'surge_data': surge_final,
-                'wave_data': wave_final,
-                'air_data': air_final,
-                'toggle_state': tstate}
-        
 
     @route('/statistics', method='POST')
     def statistics(self):
-        file_name = './data/SSS.true.nc'
-        air_file_name = './data/SSS.hobo.nc'
         
         #get the request parameters
         s = request.forms.get('start_time', type=str)
         e = request.forms.get('end_time', type=str)
         dst = request.forms.get('daylight_savings')
         timezone = request.forms.get('timezone')
-        change = request.forms.get('change')
-       
+        sea_file = request.forms.get('sea_file')
+        baro_file = request.forms.get('baro_file')
         #add a response header so the service understands it is json
         response.headers['Content-type'] = 'application/json'
         
-        if change == 'true':
-            #process data
-            so = StormOptions()
-            so.sea_fname = file_name
-            so.air_fname = air_file_name
+        if sea_file is None:
+            file_name = './data/SSS.true.nc'
+            air_file_name = './data/SSS.hobo.nc'
+        else:
+            file_name = wv_data[int(sea_file)]
+            air_file_name = bp_data[int(baro_file)]
             
-            #temp deferring implementation of type of filter
-            adjusted_times = self.process_data(so, s, e, dst, timezone, type="stat")
-            
-            stat_data = {}
-            for i in so.statistics:
+        #process data
+        so = StormOptions()
+        so.sea_fname = file_name
+        so.air_fname = air_file_name
+        
+        #temp deferring implementation of type of filter
+        self.process_data(so, s, e, dst, timezone, 25, data_type="stat")
+        stat_data = {}
+        
+        ignore_list = ['PSD Contour', 'time', 'Spectrum', 'HighSpectrum', 'LowSpectrum', 'Frequency']
+        for i in so.stat_dictionary:
+            if i not in ignore_list:
                 stat = []
+                upper_ci = []
+                lower_ci = []
                 for x in range(0, len(so.stat_dictionary['time'])):
                     stat.append({"x": so.stat_dictionary['time'][x], 'y':so.stat_dictionary[i][x]})
-                    
+                    upper_ci.append({"x": so.stat_dictionary['time'][x], 'y':so.upper_stat_dictionary[i][x]})
+                    lower_ci.append({"x": so.stat_dictionary['time'][x], 'y':so.lower_stat_dictionary[i][x]})
+                
                 stat_data[i] = stat
-                
-            #add land surface elevation to water level so statistics can be superimposed
-            wave_data = []
-            scale = 0 - np.min(so.wave_water_level)        
-            for x in range(0, len(adjusted_times)):
-                wave_data.append({"x": adjusted_times[x], "y": (so.wave_water_level[x] + scale) * uc.METER_TO_FEET}) 
-                
-            stat_data['wave_wl'] = wave_data
-            self.stat_data = stat_data
+                stat_data[''.join(['upper_', i])] = upper_ci
+                stat_data[''.join(['lower_', i])] = lower_ci
+        #add land surface elevation to water level so statistics can be superimposed
+#             wave_data = []
+#             scale = 0 - np.min(so.wave_water_level)        
+#             for x in range(0, len(adjusted_times)):
+#                 wave_data.append({"x": adjusted_times[x], "y": (so.wave_water_level[x] + scale) * uc.METER_TO_FEET}) 
+#                 
+#             stat_data['wave_wl'] = wave_data
+        self.stat_data = stat_data
         
-        return self.stat_data  
+        return self.stat_data
+    
+    @route('/psd_contour', method='POST')
+    def psd_contour(self):
+        
+        #get the request parameters
+        s = request.forms.get('start_time', type=str)
+        e = request.forms.get('end_time', type=str)
+        dst = request.forms.get('daylight_savings')
+        timezone = request.forms.get('timezone')
+        sea_file = request.forms.get('sea_file')
+        baro_file = request.forms.get('baro_file')
+        
+        #keep this number static for now, will make dynamic if necessary
+        num_colors = 11
+        #add a response header so the service understands it is json
+        response.headers['Content-type'] = 'application/json'
+        
+        if sea_file is None:
+            file_name = './data/SSS.true.nc'
+            air_file_name = './data/SSS.hobo.nc'
+        else:
+            file_name = wv_data[int(sea_file)]
+            air_file_name = bp_data[int(baro_file)]
+            
+        #process data
+        so = StormOptions()
+        so.sea_fname = file_name
+        so.air_fname = air_file_name
+        
+        #temp deferring implementation of type of filter
+        self.process_data(so, s, e, dst, timezone, 25, data_type="stat")
+        
+        psd_data = {}
+        #Get the min and max for the PSD since it is easier to compute on the server
+        
+        print('time len', len(so.stat_dictionary['time']))
+        x_max = so.stat_dictionary['time'][len(so.stat_dictionary['time'])-1]
+        x_min = so.stat_dictionary['time'][0]
+        
+        freqs = [x for x in so.stat_dictionary['Frequency'][0] if x > .033333333]
+        y_min = 1.0/np.max(freqs)
+        y_max = 1.0/np.min(freqs)
+        z_max = np.max(np.max(so.stat_dictionary['Spectrum'], axis = 1))
+        z_min = np.min(np.min(so.stat_dictionary['Spectrum'], axis = 1))
+                
+        z_range = np.linspace(z_min, z_max, num_colors)
+        
+        print(z_range[1] - z_range[0])
+        
+       
+        psd_data['x'] = list(so.stat_dictionary['time'])
+#         psd_data['y'] = list(so.stat_dictionary['Frequency'][0])
+        psd_data['z'] = list([list(x) for x in so.stat_dictionary['Spectrum']])
+        psd_data['x_range'] = list([x_min,x_max])
+        psd_data['y_range']  = list([y_min,y_max])
+        psd_data['z_range'] = list(z_range)
+       
+        self.psd_data = psd_data
+        self.stat_so = so.stat_dictionary
+        
+        return self.psd_data   
+    
+    def find_index(self, array, value):
+    
+        array = np.array(array)
+        idx = (np.abs(array-value)).argmin()
+    
+        return idx
+
+    @route('/single_psd', method='POST')
+    def single_psd(self):
+        
+        #get the request parameters
+        s = request.forms.get('spectra_time', type=float)
+        
+        single_psd = {'Spectrum': [], 'upper_Spectrum': [], 'lower_Spectrum': []}
+        index = self.find_index(self.psd_data['x'], s)
+        
+        for x in range(0,len(self.stat_so['Frequency'][0])):
+            
+            single_psd['Spectrum'].append({'x': self.stat_so['Frequency'][0][x],
+                                          'y': self.stat_so['Spectrum'][index][x]})
+            single_psd['upper_Spectrum'].append({'x': self.stat_so['Frequency'][0][x],
+                                          'y': self.stat_so['HighSpectrum'][index][x]})
+            single_psd['lower_Spectrum'].append({'x': self.stat_so['Frequency'][0][x],
+                                          'y': self.stat_so['LowSpectrum'][index][x]}) 
+        
+        single_psd['time'] = self.psd_data['x'][index]
+        #add a response header so the service understands it is json
+        response.headers['Content-type'] = 'application/json'
+        
+        return single_psd
             
 
 # webbrowser.open('http://localhost:8080/test')

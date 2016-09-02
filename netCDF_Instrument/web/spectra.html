@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
+<head>
 <link rel="stylesheet" type="text/css" href="./css/style.css" ></link>
 <link rel="stylesheet" type="text/css" href="./css/jquery.datetimepicker.css"></link>
+</head>
+<body>
 <div id="header">
 <img id="main_logo" src="./images/wavelab.png" />
 <div id="menu">
@@ -45,49 +48,25 @@
 
 <h1>Spectra Dashboard</h1>
 
-<div class="dash_tile_full">
-<div class="dash_title">Instrument Info</div>
-<table>
-<tr><th></th><th>Sea Instrument</th><th>Air Instrument</th></tr>
-<tr><td><b>STN Site ID:</b></td><td id="sea_site"></td><td id="air_site"></td></tr>
-<tr><td><b>STN Instrument ID:</b></td><td id="sea_instrument"></td><td id="air_instrument"></td></tr>
-<tr><td><b>Latitude:</b></td><td id="sea_lat"></td><td id="air_lat"></td></tr>
-<tr><td><b>Longitude:</b></td><td id="sea_lon"></td><td id="air_lon"></td></tr>
-</table>
-</div>
-<div id="dash2" class="dash_tile">
-<div class="dash_title">Sea Instrument Location <button class="expand">Expand</button></div>
-<div id="map1" class="dash_content"></div>
+<div id="dash1" class="dash_tile3">
+<div class="dash_title">Contours of Power Spectral Density
+<button style="margin-left: 15px" class="image">Save Image</button></div>
+<svg id="visualization1" class="psd_contour" width="960" height="640" 
+xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+</svg>
 </div>
 
-<div id="dash1" class="dash_tile">
-<div class="dash_title">Raw Water Level in Feet <button class="expand">Expand</button></div>
-<svg id="visualization1" width="440" height="220"></svg>
-</div>
-
-
-<div id="dash3" class="dash_tile">
-<div class="dash_title">Surge Water Level in Feet<button class="expand">Expand</button></div>
-<svg id="visualization2" width="440" height="220"></svg>
-</div>
-
-<div id="dash5" class="dash_tile">
-<div class="dash_title">Wave Water Level in Feet<button class="expand">Expand</button></div>
-<svg id="visualization3" width="440" height="220"></svg>
-</div>
-
-<div id="dash4" class="dash_tile">
-<div class="dash_title">Air Instrument Location <button class="expand">Expand</button></div>
-<div id="map2" class="dash_content"></div>
-</div>
-
-<div id="dash6" class="dash_tile">
-<div class="dash_title">Atmospheric Pressure in Inches of Mercury<button class="expand">Expand</button></div>
-<svg id="visualization4" width="440" height="220"></svg>
+<div id="dash2" class="dash_tile2">
+<div class="dash_title">Spectral Estimates</span> <button class="expand">Expand</button>
+<button style="margin-left: 15px" class="image">Save Image</button></div>
+<svg id="visualization2" width="440" height="440" 
+xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+</svg>
 </div>
 
 </div>
 <div id="footer"><a style="float:left; color:white; margin-left: 30px"href="http://www.freepik.com/free-photos-vectors/background">Background vector designed by Freepik</a> USGS &#169;2016</div>
+</body>
 
 <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
 <script
@@ -95,11 +74,13 @@
 			  integrity="sha256-xNjb53/rY+WmG+4L6tTl9m6PpqknWZvRt0rO1SRnJzw="
 			  crossorigin="anonymous"></script>
 <script src="./js/jquery.datetimepicker.js"></script>
-
+<script src="./js/graphs.js"></script>
+<script type="text/javascript" src="http://gabelerner.github.io/canvg/rgbcolor.js"></script> 
+<script type="text/javascript" src="http://gabelerner.github.io/canvg/StackBlur.js"></script>
+<script type="text/javascript" src="http://gabelerner.github.io/canvg/canvg.js"></script> 
 <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script async defer
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBKbkdjgPWlg8vSn-yDSHCp3ucmcm93bAQ">
 </script>
-<script src="./js/graph.js" charset="utf-8"></script>
-<script src="./js/dash.js" charset="utf-8"></script>
-
+<script src="./js/spectra.js" charset="utf-8"></script>
+<script src="./js/svg_to_image.js" charset="utf-8"></script>

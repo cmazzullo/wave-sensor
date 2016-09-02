@@ -1,0 +1,51 @@
+<head>
+<link rel="stylesheet" type="text/css" href="./css/style.css" ></link>
+<link rel="stylesheet" type="text/css" href="./css/jquery.datetimepicker.css"></link>
+</head>
+<body>
+<form id="graphForm">
+<table>
+<tr><td>Timezone:</td><td>
+<select id="timezone" >
+<option>GMT</option>
+<option>EST</option>
+<option>PDT</option>
+</select>
+</td></tr>
+<tr><td>DST:</td><td><input type="checkbox" id="dst" /></td></tr>
+<tr><td>Start Time:</td><td><input type="text" id="start_date" value="2016/01/22 17:00"/></td></tr>
+<tr><td>End Time:</td><td><input type="text" id="end_date" value="2016/01/28 12:00"/></td></tr>
+</td></tr>
+<tr><td></td><td><button>Submit</button></td></tr>
+</table>
+</form>
+
+
+<div id="dash1" class="dash_tile2">
+<div class="dash_title">Raw Water Level in Feet <button class="expand">Expand</button>
+<button style="margin-left: 15px" class="image">Save Image</button></div>
+
+<svg id="visualization1" width="440" height="420" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+</svg>
+
+</div>
+<img id="img"/>
+</body>
+
+
+<script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+<script
+			  src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"
+			  integrity="sha256-xNjb53/rY+WmG+4L6tTl9m6PpqknWZvRt0rO1SRnJzw="
+			  crossorigin="anonymous"></script>
+<script src="./js/jquery.datetimepicker.js"></script>
+<script src="./js/graphs2.js"></script>
+<script type="text/javascript" src="http://gabelerner.github.io/canvg/rgbcolor.js"></script> 
+<script type="text/javascript" src="http://gabelerner.github.io/canvg/StackBlur.js"></script>
+<script type="text/javascript" src="http://gabelerner.github.io/canvg/canvg.js"></script> 
+<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBKbkdjgPWlg8vSn-yDSHCp3ucmcm93bAQ">
+</script>
+<script src="./js/test.js" charset="utf-8"></script>
+<script src="./js/abomination.js" charset="utf-8"></script>

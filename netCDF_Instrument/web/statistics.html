@@ -13,7 +13,7 @@
 </ul>
 </div>
 </div>
-<div id="sidebar">
+<div id="sidebar"  style="height: 3700px">
 <h3>Time Options</h3>
 <form id="graphForm">
 <table>
@@ -41,88 +41,124 @@
 </table>
 </div>
 
-<div id="mainGraph">
+<div id="mainGraph" style="height: 3700px">
 
 <h1>Statistics Dashboard</h1>
 
-<div style="width:inherit; height: 330px;">
+<!-- <div style="width:inherit; height: 330px;">
 <h3>Summary Wave Statistics</h3>
 
 <div id="dash13" class="dash_tile">
 <div class="dash_title">Wave Water Level with H1/3, H10, H1 <button class="expand">Expand</button></div>
 <svg id="visualization13" width="440" height="220"></svg>
 </div>
-</div>
+</div>-->
 
-<div style="width:inherit; height: 1160px;">
+<div style="width:inherit; height: 1960px;">
 <h3>Wave Height Statistics</h3>
 
-<div id="dash1" class="dash_tile">
-<div class="dash_title">Significant Wave Height in Feet <button class="expand">Expand</button></div>
-<svg id="visualization1" width="440" height="220"></svg>
+<div id="dash1" class="dash_tile2">
+<div class="dash_title">Significant Wave Height in Feet <button class="expand">Expand</button>
+<button style="margin-left: 15px" class="image">Save Image</button></div>
+<svg id="visualization1" width="440" height="440" 
+xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+</svg>
 </div>
 
-
-<div id="dash2" class="dash_tile">
-<div class="dash_title">Top Ten Percent Wave Height in Feet<button class="expand">Expand</button></div>
-<svg id="visualization2" width="440" height="220"></svg>
+<div id="dash2" class="dash_tile2">
+<div class="dash_title">Top 10% Wave Height in Feet <button class="expand">Expand</button>
+<button style="margin-left: 15px" class="image">Save Image</button></div>
+<svg id="visualization2" width="440" height="440" 
+xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+</svg>
 </div>
 
-<div id="dash3" class="dash_tile">
-<div class="dash_title">Top One Percent Wave Height in Feet<button class="expand">Expand</button></div>
-<svg id="visualization3" width="440" height="220"></svg>
+<div id="dash3" class="dash_tile2">
+<div class="dash_title">Top 1% Wave Height in Feet <button class="expand">Expand</button>
+<button style="margin-left: 15px" class="image">Save Image</button></div>
+<svg id="visualization3" width="440" height="440" 
+xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+</svg>
 </div>
 
-<div id="dash4" class="dash_tile">
-<div class="dash_title">Root Mean Squared Wave Height in Feet<button class="expand">Expand</button></div>
-<svg id="visualization4" width="440" height="220"></svg>
+<div id="dash4" class="dash_tile2">
+<div class="dash_title">RMS Wave Height in Feet <button class="expand">Expand</button>
+<button style="margin-left: 15px" class="image">Save Image</button></div>
+<svg id="visualization4" width="440" height="440" 
+xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+</svg>
 </div>
 
-<div id="dash5" class="dash_tile">
-<div class="dash_title">Median Wave Height in Feet<button class="expand">Expand</button></div>
-<svg id="visualization5" width="440" height="220"></svg>
+<div id="dash5" class="dash_tile2">
+<div class="dash_title">Median Wave Height in Feet <button class="expand">Expand</button>
+<button style="margin-left: 15px" class="image">Save Image</button></div>
+<svg id="visualization5" width="440" height="440" 
+xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+</svg>
 </div>
 
-<div id="dash6" class="dash_tile">
-<div class="dash_title">Maximum Wave Height in Feet<button class="expand">Expand</button></div>
-<svg id="visualization6" width="440" height="220"></svg>
+<div id="dash6" class="dash_tile2">
+<div class="dash_title">Maximum Wave Height in Feet <button class="expand">Expand</button>
+<button style="margin-left: 15px" class="image">Save Image</button></div>
+<svg id="visualization6" width="440" height="440" 
+xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+</svg>
 </div>
 
-<div id="dash7" class="dash_tile">
-<div class="dash_title">Average Wave Height in Feet<button class="expand">Expand</button></div>
-<svg id="visualization7" width="440" height="220"></svg>
+<div id="dash7" class="dash_tile2">
+<div class="dash_title">Average Wave Height in Feet <button class="expand">Expand</button>
+<button style="margin-left: 15px" class="image">Save Image</button></div>
+<svg id="visualization7" width="440" height="440" 
+xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+</svg>
 </div>
 
 </div>
+
 <div style="width:inherit">
 <h3 >Wave Period Statistics</h3>
 
-<div id="dash8" class="dash_tile">
-<div class="dash_title">Significant Wave Period in Seconds<button class="expand">Expand</button></div>
-<svg id="visualization8" width="440" height="220"></svg>
+<div id="dash8" class="dash_tile2">
+<div class="dash_title">Sign. Wave Period in Seconds <button class="expand">Expand</button>
+<button style="margin-left: 15px" class="image">Save Image</button></div>
+<svg id="visualization8" width="440" height="440" 
+xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+</svg>
 </div>
 
-<div id="dash9" class="dash_tile">
-<div class="dash_title">Average Zero Up Crossings in Seconds<button class="expand">Expand</button></div>
-<svg id="visualization9" width="440" height="220"></svg>
+<div id="dash9" class="dash_tile2">
+<div class="dash_title">Avg. Z Up Crossings in Seconds <button class="expand">Expand</button>
+<button style="margin-left: 15px" class="image">Save Image</button></div>
+<svg id="visualization9" width="440" height="440" 
+xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+</svg>
 </div>
 
-<div id="dash10" class="dash_tile">
-<div class="dash_title">Mean Wave Period in Seconds<button class="expand">Expand</button></div>
-<svg id="visualization10" width="440" height="220"></svg>
+<div id="dash10" class="dash_tile2">
+<div class="dash_title">Mean Wave Period in Seconds <button class="expand">Expand</button>
+<button style="margin-left: 15px" class="image">Save Image</button></div>
+<svg id="visualization10" width="440" height="440" 
+xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+</svg>
 </div>
 
-<div id="dash11" class="dash_tile">
-<div class="dash_title">Crest Wave Period in Seconds<button class="expand">Expand</button></div>
-<svg id="visualization11" width="440" height="220"></svg>
+<div id="dash11" class="dash_tile2">
+<div class="dash_title">Crest Wave Period in Seconds <button class="expand">Expand</button>
+<button style="margin-left: 15px" class="image">Save Image</button></div>
+<svg id="visualization11" width="440" height="440" 
+xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+</svg>
 </div>
 
-<div id="dash12" class="dash_tile">
-<div class="dash_title">Peak Wave Period in Seconds<button class="expand">Expand</button></div>
-<svg id="visualization12" width="440" height="220"></svg>
-</div>
+<div id="dash12" class="dash_tile2">
+<div class="dash_title">Peak Wave Period in Seconds <button class="expand">Expand</button>
+<button style="margin-left: 15px" class="image">Save Image</button></div>
+<svg id="visualization12" width="440" height="440" 
+xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+</svg>
 </div>
 
+</div>
 </div>
 <div id="footer"><a style="float:left; color:white; margin-left: 30px"href="http://www.freepik.com/free-photos-vectors/background">Background vector designed by Freepik</a> USGS &#169;2016</div>
 
@@ -132,7 +168,10 @@
 			  integrity="sha256-xNjb53/rY+WmG+4L6tTl9m6PpqknWZvRt0rO1SRnJzw="
 			  crossorigin="anonymous"></script>
 <script src="./js/jquery.datetimepicker.js"></script>
-
+<script type="text/javascript" src="http://gabelerner.github.io/canvg/rgbcolor.js"></script> 
+<script type="text/javascript" src="http://gabelerner.github.io/canvg/StackBlur.js"></script>
+<script type="text/javascript" src="http://gabelerner.github.io/canvg/canvg.js"></script> 
 <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script src="./js/stats.js" charset="utf-8"></script>
+<script src="./js/svg_to_image.js" charset="utf-8"></script>
 

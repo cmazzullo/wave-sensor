@@ -31,6 +31,17 @@ class StormData(object):
     def extract_raw_air_pressure(self, fname):
         return nc.get_air_pressure(fname)
     
+    def extract_salinity(self, fname):
+        salinity = nc.get_global_attribute(fname, 'salinity')
+        
+        if salinity == "Salt Water (> 30 ppt)":
+            return "salt"
+        
+        if salinity == "Brackish Water (.5 - 30 ppt)":
+            return "brackish"
+        
+        return "fresh"
+    
     def derive_wind_speed(self, u, v):
         return [(np.sqrt(x**2 + y**2)) * \
                  unit_conversion.METERS_PER_SECOND_TO_MILES_PER_HOUR \
@@ -61,17 +72,19 @@ class StormData(object):
     def derive_surge_sea_pressure(self, sea_pressure_data, sea_pressure_mean):
         return p2d.lowpass_filter(sea_pressure_data - sea_pressure_mean)
     
-    def derive_wave_sea_pressure(self, sea_pressure_data, surge_pressure_data):
+    def derive_wave_sea_pressure(self, sea_pressure_data, surge_pressure_data, salinity):
         return sea_pressure_data - surge_pressure_data
     
-    def derive_raw_water_level(self, sea_pressure_data, sensor_orifice_elevation):
-        return sensor_orifice_elevation + p2d.hydrostatic_method(sea_pressure_data)
+    def derive_raw_water_level(self, sea_pressure_data, sensor_orifice_elevation, salinity):
+        
+        return sensor_orifice_elevation + p2d.hydrostatic_method(sea_pressure_data,
+                                                                 salinity)
     
     def derive_filtered_water_level(self, pressure_data, pressure_mean, \
-                                 sensor_orifice_elevation):
+                                 sensor_orifice_elevation, salinity):
         
-    
-        return sensor_orifice_elevation + p2d.hydrostatic_method(pressure_data + pressure_mean)
+        return sensor_orifice_elevation + p2d.hydrostatic_method(pressure_data + pressure_mean,
+                                                                 salinity)
     
     def derive_lwt_wave_water_level(self, sea_time, pressure_data, water_depth, sensor_orifice_elevation):
         '''ugh I'm using the term water depth again... ill change it'''
@@ -82,66 +95,93 @@ class StormData(object):
         
    
         
-    def derive_statistics(self, dchunks, tchunks, elevchunks = None ,pchunks=None, wchunks=None, meters=True):
+    def derive_statistics(self, p_chunks, t_chunks, elev_chunks, orif_chunks, wchunks=None, 
+                          meters=True, salinity = "salt"):
         
-        if meters is True:
+        if meters == True:
             units = 1
         else:
             units = uc.METER_TO_FEET
        
         func_dict = {
-                     'T1/3': lambda spec, freq, time, depth: self.stats.significant_wave_period(spec, freq, depth, time[1]-time[0]),
-                     'H1/3 std': lambda spec, freq, time, depth: self.stats.significant_wave_height_standard(depth \
+                    'T1/3': lambda spec, freq, time, depth: self.stats.significant_wave_period(spec, freq, depth, time[1]-time[0]),
+#                      'H1/3 std': lambda spec, freq, time, depth: self.stats.significant_wave_height_standard(depth \
+#                                                                                 * units),
+                    'H1/3': lambda spec, freq, time, depth: self.stats.significant_wave_height(spec,freq, time, depth \
                                                                                 * units),
-                     'H1/3': lambda spec, freq, time, depth: self.stats.significant_wave_height(spec,freq, time, depth \
+                    'H10%': lambda spec, freq, time, depth: self.stats.ten_percent_wave_height(spec,freq, time, depth \
                                                                                 * units),
-                     'H10%': lambda spec, freq, time, depth: self.stats.ten_percent_wave_height(spec,freq, time, depth \
+                    'H1%': lambda spec, freq, time, depth: self.stats.one_percent_wave_height(spec,freq, time, depth \
                                                                                 * units),
-                     'H1%': lambda spec, freq, time, depth: self.stats.one_percent_wave_height(spec,freq, time, depth \
+                    'RMS': lambda spec, freq, time, depth: self.stats.rms_wave_height(spec, freq, time, depth \
                                                                                 * units),
-                     'RMS': lambda spec, freq, time, depth: self.stats.rms_wave_height(spec, freq, time, depth \
+                    'Median': lambda spec, freq, time, depth: self.stats.median_wave_height(spec, freq, time, depth \
                                                                                 * units),
-                     'Median': lambda spec, freq, time, depth: self.stats.median_wave_height(spec, freq, time, depth \
+                    'Maximum': lambda spec, freq, time, depth: self.stats.maximum_wave_height(spec, freq, time, depth \
                                                                                 * units),
-                     'Maximum': lambda spec, freq, time, depth: self.stats.maximum_wave_height(spec, freq, time, depth \
+                    'Average': lambda spec, freq, time, depth: self.stats.average_wave_height(spec, freq, time, depth \
                                                                                 * units),
-                     'Average': lambda spec, freq, time, depth: self.stats.average_wave_height(spec, freq, time, depth \
-                                                                                * units),
-                     'Average Z Cross': lambda spec, freq, time, depth: self.stats.average_zero_crossing_period(spec, freq, time, depth),
-                     'Mean Wave Period': lambda spec, freq, time, depth: self.stats.mean_wave_period(spec, freq, time, depth),
-                     'Crest': lambda spec, freq,time, depth: self.stats.crest_wave_period(spec, freq, time, depth),
-                     'Peak Wave': lambda spec, freq, time, depth: self.stats.peak_wave_period(spec, freq, time, depth)
+                    'Average Z Cross': lambda spec, freq, time, depth: self.stats.average_zero_crossing_period(spec, freq, time, depth),
+                    'Mean Wave Period': lambda spec, freq, time, depth: self.stats.mean_wave_period(spec, freq, time, depth),
+                    'Crest': lambda spec, freq,time, depth: self.stats.crest_wave_period(spec, freq, time, depth),
+                    'Peak Wave': lambda spec, freq, time, depth: self.stats.peak_wave_period(spec, freq, time, depth)
                     }
         
-        stat_dict = {}
-        stat_dict['time'] = [np.average(t) * 1000 for t in tchunks]
+        stat_dict, upper_stat_dict, lower_stat_dict = {}, {}, {}
+        stat_dict['time'] = [np.average(t) * 1000 for t in t_chunks]
     
         stat_dict['Frequency'], stat_dict['Spectrum'] = [], []
-        stat_dict['LWTFrequency'], stat_dict['LWTSpectrum'] = [], []
+        stat_dict['HighSpectrum'], stat_dict['LowSpectrum'] = [], []
         
-        for x in range(0,len(tchunks)):
+        #to adjust the units of the wave height calculations
+        wave_height_funcs = ['H1/3', 'H10%', 'H1%', 'Median', 'RMS', 'Maximum', 'Average']
+        
+        for x in range(0,len(t_chunks)):
             
-            freq, amp = self.stats.welch_power_spectrum(dchunks[x], tchunks[x][1]-tchunks[x][0])
+            elevation = np.mean(elev_chunks[x])
+            instrument_height = np.abs(elevation - \
+                               np.mean(orif_chunks[x]))
+            water_depth = np.mean(p2d.hydrostatic_method(p_chunks[x], salinity)) + instrument_height
+            
+            freq, amp, high, low = self.stats.power_spectrum(p_chunks[x], t_chunks[x][1]-t_chunks[x][0], \
+                                                             instrument_height, water_depth)
+            
             
             stat_dict['Frequency'].append(freq)
             stat_dict['Spectrum'].append(amp)
-            
-            freq2, amp2 = self.stats.lwt_pressure_to_wl_spectrum(tchunks[x], pchunks[x], elevchunks[x], elevchunks[x])
-            
-            stat_dict['LWTFrequency'].append(freq2)
-            stat_dict['LWTSpectrum'].append(amp2)
+            stat_dict['HighSpectrum'].append(high)
+            stat_dict['LowSpectrum'].append(low)
             
         for y in func_dict:
             stat_dict[y] = []
+            upper_stat_dict[y] = []
+            lower_stat_dict[y] = []
             
         for x in range(0,len(stat_dict['time'])):
             for y in func_dict:
-                stat_dict[y].append(\
-                                    self.process_chunk(func_dict[y],tchunks[x],dchunks[x],\
-                                                       stat_dict['Spectrum'][x],stat_dict['Frequency'][x]))
-            self.stats.spectrum = None
+             
+                if y in wave_height_funcs:
+                    stat_dict[y].append(\
+                                        self.process_chunk(func_dict[y],t_chunks[x],p_chunks[x],\
+                                                           stat_dict['Spectrum'][x],stat_dict['Frequency'][x]) * units)
+                    upper_stat_dict[y].append(\
+                                              self.process_chunk(func_dict[y],t_chunks[x],p_chunks[x],\
+                                                           stat_dict['HighSpectrum'][x],stat_dict['Frequency'][x]) * units)
+                    lower_stat_dict[y].append(\
+                                              self.process_chunk(func_dict[y],t_chunks[x],p_chunks[x],\
+                                                           stat_dict['LowSpectrum'][x],stat_dict['Frequency'][x]) * units)
+                else:
+                    stat_dict[y].append(\
+                                        self.process_chunk(func_dict[y],t_chunks[x],p_chunks[x],\
+                                                           stat_dict['Spectrum'][x],stat_dict['Frequency'][x]))
+                    upper_stat_dict[y].append(\
+                                              self.process_chunk(func_dict[y],t_chunks[x],p_chunks[x],\
+                                                           stat_dict['HighSpectrum'][x],stat_dict['Frequency'][x]))
+                    lower_stat_dict[y].append(\
+                                              self.process_chunk(func_dict[y],t_chunks[x],p_chunks[x],\
+                                                           stat_dict['LowSpectrum'][x],stat_dict['Frequency'][x]))
       
-        return stat_dict
+        return [stat_dict, upper_stat_dict, lower_stat_dict]
     
     def process_chunk(self, stat_func, t_chunk,d_chunk,spec,freq):
         if np.isnan(np.sum(d_chunk)) == True:

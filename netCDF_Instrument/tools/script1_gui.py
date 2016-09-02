@@ -115,67 +115,67 @@ class Wavegui:
         message = ('Working, this may take a few minutes.')
 
         dialog = None
-        
-#         try:
-        dialog = MessageDialog(self.parent, message=message,
-                               title='Processing...', buttons=0, wait=False)
-        globs = dict(zip(GLOBAL_FIELDS.keys(),
-                         self.global_form.export_entries()))
-        bad_data = None
-
-        for fname, datafile in self.datafiles.items():
-            inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
-            inputs.update(globs)
-            
-            if self.air_pressure == False:
-                inputs['pressure_type'] = 'Sea Pressure'
-            else:
-                inputs['pressure_type'] = 'Air Pressure'
-            inputs['sea_pressure'] = not self.air_pressure
-            inputs['in_filename'] = fname
-            inputs['out_filename'] = fname + '.nc'
-            
-            process_files = self.validate_entries(inputs)
-            
-            inputs['deployment_time'] = uc.datestring_to_ms(inputs['deployment_time'], '%Y%m%d %H%M', \
-                                                             inputs['tz_info'],
-                                                             inputs['daylight_savings'])
-        
-            inputs['retrieval_time'] = uc.datestring_to_ms(inputs['retrieval_time'], '%Y%m%d %H%M', \
-                                                             inputs['tz_info'],
-                                                             inputs['daylight_savings'])
-            
-            if process_files == True:
-                bad_data = convert_to_netcdf(inputs)
-                self.remove_file(fname)
-                dialog.destroy()
-                if bad_data == True:
-                    MessageDialog(self.parent, message="There were some bad data points in the file, please cut them using chopper\n and/or" \
-                                  " use the \"Hydrostatic\" method in the Water Level GUI",
-                              title='Data Issues!')
+         
+        try:
+            dialog = MessageDialog(self.parent, message=message,
+                                   title='Processing...', buttons=0, wait=False)
+            globs = dict(zip(GLOBAL_FIELDS.keys(),
+                             self.global_form.export_entries()))
+            bad_data = None
+    
+            for fname, datafile in self.datafiles.items():
+                inputs = dict(zip(LOCAL_FIELDS.keys(), datafile.export_entries()))
+                inputs.update(globs)
+                
+                if self.air_pressure == False:
+                    inputs['pressure_type'] = 'Sea Pressure'
                 else:
-                    MessageDialog(self.parent, message="There were no bad data points in the file",
-                              title='No Data Issues!')
+                    inputs['pressure_type'] = 'Air Pressure'
+                inputs['sea_pressure'] = not self.air_pressure
+                inputs['in_filename'] = fname
+                inputs['out_filename'] = fname + '.nc'
+                
+                process_files = self.validate_entries(inputs)
+                
+                inputs['deployment_time'] = uc.datestring_to_ms(inputs['deployment_time'], '%Y%m%d %H%M', \
+                                                                 inputs['tz_info'],
+                                                                 inputs['daylight_savings'])
             
-                MessageDialog(self.parent, message="Success! Files saved.",
-                              title='Success!') 
-            else:
+                inputs['retrieval_time'] = uc.datestring_to_ms(inputs['retrieval_time'], '%Y%m%d %H%M', \
+                                                                 inputs['tz_info'],
+                                                                 inputs['daylight_savings'])
+                
+                if process_files == True:
+                    bad_data = convert_to_netcdf(inputs)
+                    self.remove_file(fname)
+                    dialog.destroy()
+                    if bad_data == True:
+                        MessageDialog(self.parent, message="There were some bad data points in the file, please cut them using chopper\n and/or" \
+                                      " use the \"Hydrostatic\" method in the Water Level GUI",
+                                  title='Data Issues!')
+                    else:
+                        MessageDialog(self.parent, message="There were no bad data points in the file",
+                                  title='No Data Issues!')
+                
+                    MessageDialog(self.parent, message="Success! Files saved.",
+                                  title='Success!') 
+                else:
+                    dialog.destroy()
+                    MessageDialog(self.parent, message= self.error_message,
+                                  title='Error')
+                
+                self.error_message = ''
+                         
+        except:
+            if dialog is not None:
                 dialog.destroy()
-                MessageDialog(self.parent, message= self.error_message,
-                              title='Error')
-            
-            self.error_message = ''
-                     
-#         except:
-#             if dialog is not None:
-#                 dialog.destroy()
-#             MessageDialog(self.parent, message="Could not process files, please check file type.",
-#                           title='Error')
+            MessageDialog(self.parent, message="Could not process files, please check file type.",
+                        title='Error')
 #             exc_type, exc_value, exc_traceback = sys.exc_info()
 # #    
 #             message = traceback.format_exception(exc_type, exc_value,
 #                                         exc_traceback)
-#             
+#              
 #             MessageDialog(root, message=message,
 #                              title='Error')
     

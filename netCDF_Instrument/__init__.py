@@ -56,7 +56,13 @@
 # dt1 = datetime.strptime(start_date,'%Y-%m-%d %H:%M')
 # dt1 = unit_conversion.make_timezone_aware(dt1, tz, ds)
 # print(dt1.isoformat('T'))
-
-
+# import numpy as np
+# elev_chunks = np.linspace(-.6035, -.5761, 20)
+# orif_chunks = np.linspace(-.5761, -.5761, 20)
+# water_depth = np.abs(np.mean(elev_chunks))
+# instrument_height = np.abs(water_depth - \
+#                                np.abs(np.mean(orif_chunks)))
+# 
+# print(water_depth, instrument_height)
 
 

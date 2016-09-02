@@ -21,7 +21,7 @@ class Storm_netCDF(object):
             so.get_wave_water_level()
             self.Storm_Tide_and_Unfiltered_Water_Level(so)
 #           
-#         time.sleep(2)  
+        time.sleep(2)  
         if so.netCDF['Storm Tide Water Level'].get() == True:
             so.get_meta_data()
             so.get_raw_water_level()
@@ -77,9 +77,6 @@ class Storm_netCDF(object):
         
         nc.wave_copy(so.sea_fname, out_fname2, so.begin, so.end, step = step, )
             
-        
-        
-        
             
     def Storm_Tide_and_Unfiltered_Water_Level(self,so):
         
@@ -89,13 +86,14 @@ class Storm_netCDF(object):
         nc.custom_copy(so.sea_fname, out_fname2, so.begin, so.end, mode = 'storm_surge', step=step)
         self.Common_Attributes(so, out_fname2, step)
             
-        nc.set_global_attribute(out_fname2,'summary','This file contains two time series: 1)' 
-                                'air pressure 2) sea surface elevation.  The latter was derived'
-                                ' from a time series of high frequency sea pressure measurements '
-                                ' adjusted using the former and then lowpass filtered to remove '
-                                ' waves of period 1 second or less.')
+        nc.set_global_attribute(out_fname2,'summary','This file contains three time series: 1)' 
+                                ' air pressure 2) sea surface elevation 3) unfiltered sea surface elevation.'
+                                ' The second was derived'
+                                ' from a time series of high frequency sea pressure measurements'
+                                ' adjusted using the former and then lowpass filtered to remove'
+                                ' waves of period 1 second or less. The third is also sea surface elevation'
+                                ' with no such filter.')
         
-    #     nc.append_depth_qc(out_fname2, sea_qc[begin:end], air_qc, purpose)
         nc.append_depth(out_fname2, so.surge_water_level[::step])
         sea_uuid = nc.get_global_attribute(so.sea_fname, 'uuid')
         air_uuid = nc.get_global_attribute(so.air_fname, 'uuid')
@@ -113,6 +111,13 @@ class Storm_netCDF(object):
                              'air_uuid', air_uuid)
         nc.set_var_attribute(out_fname2, 'unfiltered_water_surface_height_above_reference_datum', \
                              'sea_uuid', sea_uuid)
+        nc.set_var_attribute(out_fname2, 'unfiltered_water_surface_height_above_reference_datum', \
+                             'units', 'meters')
+        nc.set_var_attribute(out_fname2, 'unfiltered_water_surface_height_above_reference_datum', \
+                             'nodc_name', 'WATER LEVEL')
+        nc.set_var_attribute(out_fname2, 'unfiltered_water_surface_height_above_reference_datum', \
+                             'ioos_category', 'sea_level')
+    
        
     def Storm_Tide_Water_Level(self, so): 
         out_fname2 = ''.join([so.output_fname,'_stormtide','.nc'])

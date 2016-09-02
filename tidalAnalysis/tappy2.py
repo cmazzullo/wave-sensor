@@ -50,13 +50,13 @@ import datetime
 import re
 import sparser
 import astronomia.calendar as cal
-import astronomia.util as uti
 import pad.pad as pad
 from parameter_database import _master_speed_dict, letter_to_factor_map
 import baker
 from netCDF4 import Dataset
 import netCDF4
 import pytz
+
 
 #import pandas.Series as pd
 
@@ -171,7 +171,7 @@ def dates2jd(dates):
 
         if isinstance(dates[0], datetime.datetime):
             jd = [cal.cal_to_jd(i.year, i.month, i.day) +
-                  uti.hms_to_fday(i.hour, i.minute, i.second) for i in dates]
+                  cal.hms_to_fday(i.hour, i.minute, i.second) for i in dates]
             jd = np.array(jd)
         else:
             jd = dates
@@ -209,7 +209,7 @@ class Util():
 
         if isinstance(dates[0], datetime.datetime):
             jd = [cal.cal_to_jd(i.year, i.month, i.day) +
-                  uti.hms_to_fday(i.hour, i.minute, i.second) for i in dates]
+                  cal.hms_to_fday(i.hour, i.minute, i.second) for i in dates]
             jd = np.array(jd)
         else:
             jd = dates
@@ -253,10 +253,11 @@ class Util():
         in the dates vector.
         """
 
-        import astronomia.elp2000 as elp
+        import astronomia.lunar as lun
+#         import astronomia.elp2000 as elp
         import astronomia.sun as sun
 
-        lunar_eph = elp.ELP2000()
+        lunar_eph = lun.Lunar()
         solar_eph = sun.Sun()
 
         jd = self.dates2jd(dates)

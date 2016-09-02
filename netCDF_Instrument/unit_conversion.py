@@ -33,7 +33,10 @@ FILL_VALUE = -1e10
 
 GRAVITY = 9.8  # (m / s**2)
 GRAVITY_FEET = 32.1740 #(f / s**2)
-WATER_DENSITY = 1030  # density of seawater (kg / m**3)
+SALT_WATER_DENSITY = 1027  # density of seawater (kg / m**3)
+FRESH_WATER_DENSITY = 1000
+BRACKISH_WATER_DENSITY = 1015
+
 FILL_VALUE = -1e10
 
 

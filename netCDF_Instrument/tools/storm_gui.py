@@ -40,8 +40,8 @@ class StormGui:
                              self.sea_var, 'sea_fname')
         self.make_fileselect(self.top, 'Air file:',
                              self.air_var, 'air_fname')
-#         self.make_fileselect(self.top, 'Wind file:',
-#                              self.wind_var, 'wind_fname')
+        self.make_fileselect(self.top, 'Wind file:',
+                             self.wind_var, 'wind_fname')
         c3 = lambda: self.select_output_file(self.root)
         
         self.so = StormOptions()

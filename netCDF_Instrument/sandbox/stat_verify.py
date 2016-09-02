@@ -93,7 +93,7 @@ def run_wave_stats(p_window):
         amps = amp_sum * scale
         amps = amps.real 
     #     print(amps)
-    #     freqs,amps = welch(final_pressure, 6, window = window, nperseg=256, noverlap=0, detrend='linear')
+        freqs,amps = welch(final_pressure, 6, window = window, nperseg=256, noverlap=0, detrend='linear')
         
         amps = np.array(amps,dtype=np.float64)
         freqs, amps = freqs[1:], amps[1:]

@@ -2,6 +2,15 @@
 <meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="./css/style.css" ></link>
 <link rel="stylesheet" type="text/css" href="./css/jquery.datetimepicker.css"></link>
+
+<div id="pair_bar">
+<div id="pair_label"></div>
+<div id="pair_back">
+<table id="pairs">
+<tr><td><button id="add_pair">Add Pair</button></td></tr>
+</table>
+</div>
+</div>
 <div id="header">
 <img id="main_logo" src="./images/wavelab.png" />
 <div id="menu">
@@ -14,6 +23,7 @@
 </div>
 </div>
 <div id="sidebar">
+<div id="side_container">
 <h3>Time Options</h3>
 <form id="graphForm">
 <table>
@@ -27,94 +37,63 @@
 <tr><td>DST:</td><td><input type="checkbox" id="dst" /></td></tr>
 <tr><td>Start Time:</td><td><input type="text" id="start_date" value="2016/01/22 17:00"/></td></tr>
 <tr><td>End Time:</td><td><input type="text" id="end_date" value="2016/01/28 12:00"/></td></tr>
-</td></tr>
 <tr><td></td><td><button>Submit</button></td></tr>
 </table>
 </form>
-<h3>File Options</h3>
-
-<table>
-<tr><td>Sea File:</td><td>
-<input type="file" style="width: 170px"/>
-</td></tr>
-<tr><td>Air File:</td><td><input type="file" style="width: 170px"/></td></tr>
-</table>
 </div>
+</div>
+
+
 
 <div id="mainGraph">
 
 <h1>Multi Dashboard</h1>
 
 <div style="display:block">
-<h3>Wave Height Statistics</h3>
 
-<div id="dash1" class="dash_tile">
-<div class="dash_title">Significant Wave Height in Feet <button class="expand">Expand</button></div>
-<svg id="visualization1" width="440" height="220"></svg>
+<div class="map_tile_full">
+<div class="dash_title">Instrument Locations</div>
+<div style="width:960px;height:396px" id="multi_map" class="dash_content"></div>
+</div>
+
+<div id="multi_raw" class="dash_tile2">
+<div class="dash_title">Raw Water Level in Feet 
+<button class="expand">Expand</button>
+<button style="margin-left: 15px" class="image">Save Image</button>
+</div>
+<svg id="visualization1" width="440" height="440"></svg>
 </div>
 
 
-<div id="dash2" class="dash_tile">
-<div class="dash_title">Top Ten Percent Wave Height in Feet<button class="expand">Expand</button></div>
-<svg id="visualization2" width="440" height="220"></svg>
+<div id="multi_surge" class="dash_tile2">
+<div class="dash_title">Surge Water Level in Feet
+<button class="expand">Expand</button>
+<button style="margin-left: 15px" class="image">Save Image</button>
+</div>
+<svg id="visualization2" width="440" height="440"></svg>
 </div>
 
-<div id="dash3" class="dash_tile">
-<div class="dash_title">Top One Percent Wave Height in Feet<button class="expand">Expand</button></div>
-<svg id="visualization3" width="440" height="220"></svg>
+<div id="multi_wave" class="dash_tile2">
+<div class="dash_title">Wave Water Level in Feet
+<button class="expand">Expand</button>
+<button style="margin-left: 15px" class="image">Save Image</button>
+</div>
+<svg id="visualization3" width="440" height="440"></svg>
 </div>
 
-<div id="dash4" class="dash_tile">
-<div class="dash_title">Root Mean Squared Wave Height in Feet<button class="expand">Expand</button></div>
-<svg id="visualization4" width="440" height="220"></svg>
+<div id="multi_baro" class="dash_tile2">
+<div class="dash_title">Baro. Pressure in Inches of Hg
+<button class="expand">Expand</button>
+<button style="margin-left: 15px" class="image">Save Image</button>
 </div>
-
-<div id="dash5" class="dash_tile">
-<div class="dash_title">Median Wave Height in Feet<button class="expand">Expand</button></div>
-<svg id="visualization5" width="440" height="220"></svg>
-</div>
-
-<div id="dash6" class="dash_tile">
-<div class="dash_title">Maximum Wave Height in Feet<button class="expand">Expand</button></div>
-<svg id="visualization6" width="440" height="220"></svg>
-</div>
-
-<div id="dash7" class="dash_tile">
-<div class="dash_title">Average Wave Height in Feet<button class="expand">Expand</button></div>
-<svg id="visualization7" width="440" height="220"></svg>
+<svg id="visualization4" width="440" height="440"></svg>
 </div>
 
 </div>
-<div style="display:block; margin-top:1180px">
-<h3 >Wave Period Statistics</h3>
-
-<div id="dash8" class="dash_tile">
-<div class="dash_title">Significant Wave Period in Seconds<button class="expand">Expand</button></div>
-<svg id="visualization8" width="440" height="220"></svg>
 </div>
 
-<div id="dash9" class="dash_tile">
-<div class="dash_title">Average Zero Up Crossings in Seconds<button class="expand">Expand</button></div>
-<svg id="visualization9" width="440" height="220"></svg>
-</div>
 
-<div id="dash10" class="dash_tile">
-<div class="dash_title">Mean Wave Period in Seconds<button class="expand">Expand</button></div>
-<svg id="visualization10" width="440" height="220"></svg>
-</div>
 
-<div id="dash11" class="dash_tile">
-<div class="dash_title">Crest Wave Period in Seconds<button class="expand">Expand</button></div>
-<svg id="visualization11" width="440" height="220"></svg>
-</div>
-
-<div id="dash12" class="dash_tile">
-<div class="dash_title">Peak Wave Period in Seconds<button class="expand">Expand</button></div>
-<svg id="visualization12" width="440" height="220"></svg>
-</div>
-</div>
-
-</div>
 <div id="footer"><a style="float:left; color:white; margin-left: 30px"href="http://www.freepik.com/free-photos-vectors/background">Background vector designed by Freepik</a> USGS &#169;2016</div>
 
 <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
@@ -125,5 +104,10 @@
 <script src="./js/jquery.datetimepicker.js"></script>
 
 <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-<script src="./js/stats.js" charset="utf-8"></script>
-
+<script type="text/javascript" src="http://gabelerner.github.io/canvg/rgbcolor.js"></script> 
+<script type="text/javascript" src="http://gabelerner.github.io/canvg/StackBlur.js"></script>
+<script type="text/javascript" src="http://gabelerner.github.io/canvg/canvg.js"></script> 
+<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="./js/multi_dash.js" charset="utf-8"></script>
+<script src="./js/svg_to_image.js" charset="utf-8"></script>
+<script src="./js/graphs.js" charset="utf-8"></script>
