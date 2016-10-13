@@ -68,6 +68,9 @@ build_exe_options = {
                      }
 
 executables = [
+#                Executable('precip.py'),
+#                Executable('tmin.py'),
+#                Executable('tmax.py')
                 Executable('FrozenMaster.py', base="Win32GUI")
 #                 Executable('FrozenScript1.py')
 #                 Executable('format_time.py', base = None),
@@ -86,6 +89,6 @@ setup(name='advanced_cx_Freeze_sample',
       version='0.1',
       description='Advanced sample cx_Freeze script',
       executables=executables,
-    options={"build_exe": build_exe_options},
+      options={"build_exe": build_exe_options},
       )
 

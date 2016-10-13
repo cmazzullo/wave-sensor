@@ -47,8 +47,8 @@ class StormData(object):
                  unit_conversion.METERS_PER_SECOND_TO_MILES_PER_HOUR \
                  for x, y in zip(u,v)]
     
-#     def extract_wind_direction(self, fname):
-#         return nc.get_variable_data(fname, 'wind_direction')
+    def derive_wind_direction(self, u, v):
+        return [(180-(270-np.arctan2(y,x)*180/np.pi)%360)%360 for x, y in zip(u,v)]
     
     def extract_wind_u(self, fname):
         return nc.get_variable_data(fname, 'u')

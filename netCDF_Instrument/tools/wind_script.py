@@ -60,7 +60,7 @@ def get_wind_data(file_name,sites,start_date = None, end_date = None, tz=None, d
     }
 
     r = requests.get('http://waterservices.usgs.gov/nwis/iv/', params=params)
-
+    print(r.url)
     time, speed, u, v, gust =[],[],[],[],[]
     lat, lon, name, data_type = None, None, None, None
     
@@ -119,7 +119,6 @@ def get_wind_data(file_name,sites,start_date = None, end_date = None, tz=None, d
             var_datastore.longitude = lon
             var_datastore.u_data = u
             var_datastore.v_data = v
-            print(len(gust), len(v))
             var_datastore.gust_data = gust
             var_datastore.send_wind_data(ds)
 #        
@@ -128,5 +127,5 @@ def get_wind_data(file_name,sites,start_date = None, end_date = None, tz=None, d
 
     
 if __name__ == '__main__':
-    get_wind_data('jonas_wind-1.nc','01194815', start_date='2016-01-22 00:00', end_date='2016-01-28 06:00', \
+    get_wind_data('ny_wind-1.nc','403836073154801', start_date='2016-06-01 00:00', end_date='2016-06-06 06:00', \
                   tz = 'US/Eastern', ds =False)

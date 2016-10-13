@@ -10,6 +10,7 @@ import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
 import matplotlib.image as image
 import matplotlib.ticker as ticker
+from matplotlib.patches import Polygon
 from tools.storm_options import StormOptions
 matplotlib.use('TkAgg', warn=False)
 import pytz
@@ -35,6 +36,8 @@ class StormStatistics(object):
     def get_data(self,so):
         so.get_meta_data()
         so.get_air_meta_data()
+        so.get_wave_water_level()
+        so.test_water_elevation_below_sensor_orifice_elvation()
         so.get_wave_statistics()
         
     def just_chunks(self,so):
@@ -52,6 +55,10 @@ class StormStatistics(object):
         if so.statistics['Average Z Cross'].get() == True:
             self.create_header(so)
             self.plot_avgz(so)
+            
+        if so.statistics['Peak Wave'].get() == True:
+            self.create_header(so)
+            self.plot_peak(so)
         
         if so.statistics['PSD Contour'].get() == True:
             self.create_header(so, True)
@@ -141,9 +148,9 @@ class StormStatistics(object):
         second_title = "Latitude: %.4f Longitude: %.4f STN Site ID: %s" \
                 % (so.latitude,so.longitude,str(so.stn_station_number).replace('\n', ''))
     
-        titleText = ax.text(0.5, 1.065,first_title,  \
+        ax.text(0.5, 1.065,first_title,  \
                 va='center', ha='center', transform=ax.transAxes)
-        titleText2 = ax.text(0.5, 1.03,second_title,  \
+        ax.text(0.5, 1.03,second_title,  \
                 va='center', ha='center', transform=ax.transAxes)
 
         ax.set_ylabel('Average Zero-Up-Crossing Period in Seconds')
@@ -173,6 +180,48 @@ class StormStatistics(object):
         file_name = ''.join([so.output_fname,'_avg_z_cross','.jpg'])
         plt.savefig(file_name)
         
+    def plot_peak(self,so):
+        ax = self.figure.add_subplot(self.grid_spec[1,0:])
+        pos1 = ax.get_position() # get the original position 
+        pos2 = [pos1.x0, pos1.y0,  pos1.width, pos1.height + .06] 
+        ax.set_position(pos2) # set a new position
+        
+        first_title = "Peak Wave Period" 
+        second_title = "Latitude: %.4f Longitude: %.4f STN Site ID: %s" \
+                % (so.latitude,so.longitude,str(so.stn_station_number).replace('\n', ''))
+    
+        ax.text(0.5, 1.065,first_title,  \
+                va='center', ha='center', transform=ax.transAxes)
+        ax.text(0.5, 1.03,second_title,  \
+                va='center', ha='center', transform=ax.transAxes)
+
+        ax.set_ylabel('Peak Wave Period in Seconds')
+        
+        #plot major grid lines
+        ax.grid(b=True, which='major', color='grey', linestyle="-")
+    
+        #x axis formatter for dates (function format_date() below)
+        ax.xaxis.set_major_formatter(ticker.FuncFormatter(self.format_date))
+        ax.set_xlabel('Timezone: %s' % so.timezone)
+        
+        p6, = ax.plot(self.time_nums,so.stat_dictionary['Peak Wave'], color='blue')
+        
+        #THE COMMENTED CODE BELOW WHICH SETS YLIMITS MAY BE IMPLEMENTED IN THE FUTURE
+#             ax.set_ylim([np.min(so.stat_dictionary[data[0][0]]) * .9,
+#                      np.max(so.stat_dictionary[data[0][0]]) * 1.1])
+
+        legend = ax.legend([p6],[
+        'Peak Wave Period',
+        ], \
+                  bbox_to_anchor=(.95, 1.355), loc=1, borderaxespad=0.0, prop={'size':10.3},frameon=False,numpoints=1, \
+                  title="EXPLANATION")
+        legend.get_title().set_position((-80, 0))
+        
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+         
+        file_name = ''.join([so.output_fname,'_peak_wave','.jpg'])
+        plt.savefig(file_name)
+        
         
     def plot_h13(self,so):
         
@@ -185,9 +234,9 @@ class StormStatistics(object):
         second_title = "Latitude: %.4f Longitude: %.4f STN Site ID: %s" \
                 % (so.latitude,so.longitude,str(so.stn_station_number).replace('\n', ''))
     
-        titleText = ax.text(0.5, 1.065,first_title,  \
+        ax.text(0.5, 1.065,first_title,  \
                 va='center', ha='center', transform=ax.transAxes)
-        titleText2 = ax.text(0.5, 1.03,second_title,  \
+        ax.text(0.5, 1.03,second_title,  \
                 va='center', ha='center', transform=ax.transAxes)
 
         if self.int_units == True:
@@ -202,18 +251,22 @@ class StormStatistics(object):
         ax.xaxis.set_major_formatter(ticker.FuncFormatter(self.format_date))
         ax.set_xlabel('Timezone: %s' % so.timezone)
         
-        p6, = ax.plot(self.time_nums,so.stat_dictionary['H1/3'], color='blue')
-        p7, = ax.plot(self.time_nums,so.upper_stat_dictionary['H1/3'], color="green")
-        p8, = ax.plot(self.time_nums,so.lower_stat_dictionary['H1/3'], color="red")
+#         p7, = ax.plot(self.time_nums, so.upper_stat_dictionary['H1/3'],"--", \
+#                       alpha=0,color="red")
+    
+        p7 = ax.fill_between(self.time_nums,so.upper_stat_dictionary['H1/3'], \
+                        so.lower_stat_dictionary['H1/3'], facecolor='#969696', alpha=0.3, edgecolors=None)
+        p6, = ax.plot(self.time_nums,so.stat_dictionary['H1/3'],color='red',linewidth=2)
         
+        print(np.nanmax(so.upper_stat_dictionary['H1/3']) * 1.1)
+        ax.set_ylim([0,np.nanmax(so.upper_stat_dictionary['H1/3']) * 1.1])
         #THE COMMENTED CODE BELOW WHICH SETS YLIMITS MAY BE IMPLEMENTED IN THE FUTURE
 #             ax.set_ylim([np.min(so.stat_dictionary[data[0][0]]) * .9,
 #                      np.max(so.stat_dictionary[data[0][0]]) * 1.1])
 
-        legend = ax.legend([p6,p7,p8],[
+        legend = ax.legend([p6,p7],[
         'Original Estimate',
-        'Upper 95% Confidence Bound',
-        'Lower 95% Confidence Bound'
+        '90% Confidence Bound',
         ], \
                   bbox_to_anchor=(.95, 1.355), loc=1, borderaxespad=0.0, prop={'size':10.3},frameon=False,numpoints=1, \
                   title="EXPLANATION")
@@ -244,8 +297,9 @@ class StormStatistics(object):
 
         #get the energy min and max to create a linspace between the two for
         #the color bar
-        smax = np.max([np.max(x) for x in spectra])
-        smin = np.min([np.min(x) for x in spectra])
+        
+        smax = np.nanmax(np.nanmax(data, axis = 1))
+        smin = np.nanmin(np.nanmin(data, axis = 1))
         
         def format_spec(x,arb=None):
             '''Format dates so that they are padded away from the x-axis'''
@@ -288,9 +342,9 @@ class StormStatistics(object):
         second_title = "Latitude: %.4f Longitude: %.4f STN Site ID: %s" \
                 % (so.latitude,so.longitude,so.stn_station_number)
   
-        titleText = ax.text(0.5, 1.065,first_title,  \
+        ax.text(0.5, 1.065,first_title,  \
                 va='center', ha='center', transform=ax.transAxes)
-        titleText2 = ax.text(0.5, 1.03,second_title,  \
+        ax.text(0.5, 1.03,second_title,  \
                 va='center', ha='center', transform=ax.transAxes)
         
         #plot the PSD contour and label its colorbar
@@ -331,9 +385,11 @@ class Bool(object):
 if __name__ == '__main__':
   
     so = StormOptions()
-    so.air_fname = 'bp.nc'
-    so.sea_fname = 'true.nc'
-    so.int_units = True
+    so.air_fname = 'AirGUI.nc'
+    so.sea_fname = 'sub_yes.nc'
+    so.int_units = False
+    so.high_cut = 1.0
+    so.low_cut = 0.045
 
     so.timezone = 'GMT'
     so.daylight_savings = False
@@ -343,9 +399,10 @@ if __name__ == '__main__':
         so.statistics[y] = Bool(False)
         
     so.statistics['H1/3'] = Bool(True)
-#     so.statistics['Average Z Cross'] = Bool(True)
-#     so.statistics['PSD Contour'] = Bool(True)
-    so.format_output_fname('test9'.replace('/','-'))
+    so.statistics['Average Z Cross'] = Bool(False)
+    so.statistics['PSD Contour'] = Bool(False)
+    so.statistics['Peak Wave'] = Bool(False)
+    so.format_output_fname('test12'.replace('/','-'))
     ss.process_graphs(so)
         
     

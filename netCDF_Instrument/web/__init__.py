@@ -65,7 +65,6 @@ class BottleApp(object):
     def process_data(self,so, s, e, dst, timezone, step, data_type=None):
         '''adjust the data based on the parameters and get storm object data'''
         
-        print('this is a da stepuh', step)
         #get meta data and water level
         so.get_meta_data()
         so.get_air_meta_data()
@@ -74,6 +73,10 @@ class BottleApp(object):
         if data_type is not None and data_type=="stat":
             so.chunk_data()
             so.get_wave_statistics()
+            
+        if data_type is not None and data_type=="wind":
+            so.get_wind_meta_data()
+            
      
         #get the time from the netCDF file and adjust according to timezone and dst params
         start_datetime = uc.convert_ms_to_date(so.sea_time[0], pytz.utc)
@@ -95,6 +98,10 @@ class BottleApp(object):
         so.surge_water_level = so.surge_water_level[s_index:e_index:step]
         so.wave_water_level = so.wave_water_level[s_index:e_index:step]
         so.interpolated_air_pressure = so.interpolated_air_pressure[s_index:e_index:step]
+        
+        if data_type is not None and data_type=="wind":
+            so.sea_time = adjusted_times
+            so.slice_wind_data()
         
         #This is assuming SO object gets modified by reference
         if data_type is not None and data_type=="stat":
@@ -127,6 +134,10 @@ class BottleApp(object):
     @route('/stat_data', method='GET')
     def stat_data(self):
         return template('statistics.html')
+    
+    @route('/test', method='GET')
+    def test(self):
+        return template('test_graph.html')
     
     @route('/<filename:path>', method="GET")
     def send_static(self, filename):
@@ -162,6 +173,8 @@ class BottleApp(object):
         so = StormOptions()
         so.sea_fname = file_name
         so.air_fname = air_file_name
+        so.high_cut = 1.0
+        so.low_cut = 0.045
         
         #temp deferring implementation of type of filter
         if multi == 'True':
@@ -223,6 +236,8 @@ class BottleApp(object):
         so = StormOptions()
         so.sea_fname = file_name
         so.air_fname = air_file_name
+        so.high_cut = 1.0
+        so.low_cut = 0.045
         
         #temp deferring implementation of type of filter
         self.process_data(so, s, e, dst, timezone, 25, data_type="stat")
@@ -280,6 +295,8 @@ class BottleApp(object):
         so = StormOptions()
         so.sea_fname = file_name
         so.air_fname = air_file_name
+        so.high_cut = 1.0
+        so.low_cut = 0.045
         
         #temp deferring implementation of type of filter
         self.process_data(so, s, e, dst, timezone, 25, data_type="stat")
@@ -344,8 +361,47 @@ class BottleApp(object):
         response.headers['Content-type'] = 'application/json'
         
         return single_psd
+    
+    @route('/wind', method='POST')
+    def wind(self):
+        
+        #get the request parameters
+        s = request.forms.get('start_time', type=str)
+        e = request.forms.get('end_time', type=str)
+        dst = request.forms.get('daylight_savings')
+        timezone = request.forms.get('timezone')
+        sea_file = request.forms.get('sea_file')
+        baro_file = request.forms.get('baro_file')
+        
+        response.headers['Content-type'] = 'application/json'
+        
+        if sea_file is None:
+            file_name = './data/SSS.true.nc'
+            air_file_name = './data/SSS.hobo.nc'
+        else:
+            file_name = wv_data[int(sea_file)]
+            air_file_name = bp_data[int(baro_file)]
             
-
+        so = StormOptions()
+        so.sea_fname = file_name
+        so.air_fname = air_file_name
+        so.wind_fname = "./data/ny_wind.nc"
+        
+        self.process_data(so, s, e, dst, timezone, 1, data_type="wind")
+        
+        wind = {'Wind_Speed': None, 'Wind_Direction': None}
+        
+        wind['Wind_Speed'] = so.derive_wind_speed(so.u, so.v)
+        wind['Wind_Max'] = np.max(wind['Wind_Speed'])
+        wind['Wind_Direction'] = so.derive_wind_direction(so.u, so.v)
+        wind['time'] = list(so.wind_time)
+        
+        #add a response header so the service understands it is json
+        response.headers['Content-type'] = 'application/json'
+        
+        
+        return wind
+    
 # webbrowser.open('http://localhost:8080/test')
 if __name__ == '__main__':
    

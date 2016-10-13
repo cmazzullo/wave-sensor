@@ -116,3 +116,31 @@
 # # ds.setncattr('datum', so.datum)
 # # 
 # # ds.close()
+
+# import requests
+# import json
+# 
+# r = requests.get('https://stn.wim.usgs.gov/STNServices/Instruments/FilteredInstruments.json?Event=119&EventType=&EventStatus=0&States=&County=&SensorType=&CurrentStatus=&CollectionCondition=&DeploymentType=')
+# jdata = json.loads(r.text)
+# 
+# for x in jdata:
+#     if x['site_id'] == 'VAFAI04283':
+#         print(x['sensorBrand'], x['latitude'], ' ', x['longitude'], '' , x['site_id'], ' ' , x['site_no'], ' ', x['instrument_id'])
+# import numpy as np
+# # 
+# v = np.array([1,2,3])
+# # query = np.where(v < 3)
+# if type(v) is float:
+#     pass
+# else:
+#     print(len(np.where(np.isnan(v))[0]))
+# #     if np.isnan(v.all()):
+# #         print('yuuuup')
+# from netCDF_Utils import nc
+# import numpy as np
+# 
+# print(np.mean(nc.get_pressure('VAACC17426 Chincoteague3.csv.nc')) - np.mean(nc.get_air_pressure('Chincoteague Baro.csv.nc')))
+# print(np.mean(nc.get_pressure('VAACC17425 Chincoteague1.csv.nc'))  - np.mean(nc.get_air_pressure('Chincoteague Baro.csv.nc')))
+# print(np.mean(nc.get_pressure('VAACC17427 Chincoteague2.csv.nc')) - np.mean(nc.get_air_pressure('Chincoteague Baro.csv.nc')))
+# print(np.mean(nc.get_pressure('MDWOR04571.1 Assateague.csv.nc')) - np.mean(nc.get_air_pressure('Assateague Baro.csv.nc')))
+# print(np.mean(nc.get_pressure('MDWOR045861 Assateague.csv.nc')) - np.mean(nc.get_air_pressure('Assateague Baro.csv.nc')))

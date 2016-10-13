@@ -297,31 +297,102 @@ svg.psd_contour:active {
 	border-bottom: 1px solid black
 }
 
+#layers{
+	font-size: 12pt;
+	border-collapse: collapse;
+	margin-left: 30px;
+	padding-top: 40px;
+}
+
+#layers td{
+	padding-top: 5px;
+	padding-bottom: 5px;
+	padding-left: 5px;
+}
+
+#layers tr.first td{
+	height: 25px;
+	border-bottom: 1px solid black
+}
+
+#layers tr.last td{
+	border-bottom: 1px solid black
+}
+
 #pair_bar
 {
 	position: fixed;
-	width: 372px;
+	width: 308px;
 	height: 1000px;
 	left: 50000px;
+}
+
+#label_container
+{
+	padding-top: 20px;
+	width: 40px;
+	height: 999px;	
+	float:left;
+	margin-right: -3px;
 }
 
 #pair_label
 {
 	cursor: pointer;
-	background-image: url("/images/pair_label.png");
-	background-repeat: no-repeat;
-	width: 52px;
-	height: 999px;	
-	float:left;
+	z-index: 0;
+	margin-right: -13px;
+	z-index: 0;
+}
+
+#layers_label
+{
+	cursor: pointer;
+	z-index: 1;
+	margin-top: -25px;
+	z-index: 0;
+
 }
 
 #pair_back
 {
-	margin-left: 52px;
+	margin-left: 51px;
 	background-image: url("/images/pair_back.png");
 	background-repeat: repeat-y;
 	width: 268px;
-	height: 8000px;	
+	height: 8000px;
+	border-left: 2px solid black;	
+	z-index: 1;
+}
+
+#loading
+{
+	margin-left: 30px;
+	position:fixed;
+	margin-top: 270px;
+	height: 60px;
+	font-size: 14pt;
+	font-weight: bold;
+}
+
+#slideLoad{
+	display: none;
+	height: inherit;
+	background-color: #ffffff;
+	border: 1px solid black;
+	padding: 15px 10px;
+}
+
+#loading_image
+{
+	height: 50px;
+	width: 50px;
+	margin-top: 3px;
+	margin-left: 5px;
+}
+
+#loading_text
+{
+	float:left;
 }
 
 .seaicon
@@ -344,6 +415,19 @@ svg.psd_contour:active {
 	padding-top: 10px;
 	padding-left: 10px;
 	position: absolute;
+}
+
+.windicon
+{
+	height: 29px;
+	width: 19px;
+	font-size: 14pt;
+	font-weight: bold;
+	position: absolute;
+	padding-top: 5px;
+	padding-left: 5px;
+	padding-right: 5px;
+	background-image: url("/images/wind.png")
 }
 
 .sea

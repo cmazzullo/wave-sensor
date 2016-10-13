@@ -81,5 +81,5 @@ def plot_wind_data2(ax, so, time_nums):
             
 def get_second_coordinate(y1, yorigin, angle):
     
-    newy = (y1 - yorigin)* np.sin(angle * np.pi / 180)
+    newy = (y1 - yorigin) * np.sin(angle * np.pi / 180)
     return newy

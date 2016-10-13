@@ -13,7 +13,9 @@
 </ul>
 </div>
 </div>
-<div id="sidebar"  style="height: 3700px">
+
+<div id="sidebar" style="height: 3700px">
+<div id="side_container">
 <h3>Time Options</h3>
 <form id="graphForm">
 <table>
@@ -27,18 +29,15 @@
 <tr><td>DST:</td><td><input type="checkbox" id="dst" /></td></tr>
 <tr><td>Start Time:</td><td><input type="text" id="start_date" value="2016/01/22 17:00"/></td></tr>
 <tr><td>End Time:</td><td><input type="text" id="end_date" value="2016/01/28 12:00"/></td></tr>
-</td></tr>
 <tr><td></td><td><button>Submit</button></td></tr>
 </table>
 </form>
-<h3>File Options</h3>
-
-<table>
-<tr><td>Sea File:</td><td>
-<input type="file" style="width: 170px"/>
-</td></tr>
-<tr><td>Air File:</td><td><input type="file" style="width: 170px"/></td></tr>
-</table>
+</div>
+<div id="loading">
+<div id="slideLoad">
+<p id="loading_text">Loading...</p> <img id="loading_image" src="./images/loading.gif" />
+</div>
+</div>
 </div>
 
 <div id="mainGraph" style="height: 3700px">
@@ -114,9 +113,9 @@ xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
 </div>
 
 </div>
-
-<div style="width:inherit">
-<h3 >Wave Period Statistics</h3>
+<br />
+<div style="width:inherit; margin-top:20px;">
+<h3 style="margin-right:1000px">Wave Period Statistics</h3>
 
 <div id="dash8" class="dash_tile2">
 <div class="dash_title">Sign. Wave Period in Seconds <button class="expand">Expand</button>
@@ -167,11 +166,11 @@ xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
 			  src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"
 			  integrity="sha256-xNjb53/rY+WmG+4L6tTl9m6PpqknWZvRt0rO1SRnJzw="
 			  crossorigin="anonymous"></script>
-<script src="./js/jquery.datetimepicker.js"></script>
+<script src="./js/aesthetic/jquery.datetimepicker.js"></script>
 <script type="text/javascript" src="http://gabelerner.github.io/canvg/rgbcolor.js"></script> 
 <script type="text/javascript" src="http://gabelerner.github.io/canvg/StackBlur.js"></script>
 <script type="text/javascript" src="http://gabelerner.github.io/canvg/canvg.js"></script> 
 <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-<script src="./js/stats.js" charset="utf-8"></script>
-<script src="./js/svg_to_image.js" charset="utf-8"></script>
+<script src="./js/dashboards/stats.js" charset="utf-8"></script>
+<script src="./js/aesthetic/svg_to_image.js" charset="utf-8"></script>
 

@@ -6,7 +6,7 @@ Created on Feb 4, 2016
 from tools.storm_data import StormData
 import numpy as np
 from netCDF_Utils import nc
-import unit_conversion
+import unit_conversion as uc
 
 
 class StormOptions(StormData):
@@ -22,8 +22,9 @@ class StormOptions(StormData):
         self.csv = {
                     'Storm Tide with Unfiltered Water Level': None,
                     'Storm Tide Water Level': None,
-                    'Atmospheric Pressure': None
-                    
+                    'Atmospheric Pressure': None,
+                    'Stats' : None,
+                    'PSD': None
                     }
         
         self.graph = {
@@ -45,7 +46,7 @@ class StormOptions(StormData):
                      'Average Z Cross': None,
 #                      'Mean Wave Period': None,
 #                      'Crest': None,
-#                      'Peak Wave': None,
+                    'Peak Wave': None,
                      'PSD Contour': None
                      }
         
@@ -111,6 +112,11 @@ class StormOptions(StormData):
         self.air_stn_instrument_id = None
         self.int_units = False
         self.salinity = None
+        self.clip = None
+        self.clip_query = None
+        self.elev_test = False
+        self.low_cut = None
+        self.high_cut = None
         
     def get_sea_time(self):
         if self.sea_time is None:
@@ -270,8 +276,24 @@ class StormOptions(StormData):
                                                                       self.salinity))
             
     def test_water_elevation_below_sensor_orifice_elvation(self):
-        self.raw_water_level[np.where(self.raw_water_level < self.sensor_orifice_elevation)] = np.NaN
-        self.surge_water_level[np.where(self.surge_water_level < self.sensor_orifice_elevation)] = np.NaN
+        if self.elev_test == False:
+            if self.int_units == True:
+                clip_scale = .1 / uc.METER_TO_FEET
+            else:
+                clip_scale = .1
+                
+            print(self.clip)
+            if self.clip == False:
+                clip_scale = 0
+                
+            query1 = np.where(self.surge_water_level < self.sensor_orifice_elevation + clip_scale)
+            query2 = np.where(self.raw_water_level < self.sensor_orifice_elevation + clip_scale)
+            self.clip_query = np.union1d(query1[0], query2[0])
+    
+            self.surge_water_level[query1[0]] = np.NaN
+            self.raw_water_level[query2[0]] = np.NaN
+            
+            self.elev_test = True
         
            
     def get_wave_water_level(self, method = 'hyrdostatic'):
@@ -298,16 +320,20 @@ class StormOptions(StormData):
                 ws = np.interp(self.sea_time,self.wind_time,self.wind_speed)
             else:
                 self.wind_speed_chunks = None
+                
+            c_pressure = self.corrected_sea_pressure
+
+            c_pressure[self.clip_query] = np.NaN
             
-            while end_index <= len(self.corrected_sea_pressure):
+            while end_index <= len(c_pressure):
                 self.wave_time_chunks.append(self.sea_time[start_index:end_index] / 1000)
-                self.pressure_chunks.append(self.corrected_sea_pressure[start_index:end_index])
+                self.pressure_chunks.append(c_pressure[start_index:end_index])
                 self.elevation_chunks.append(np.mean(self.land_surface_elevation[start_index:end_index]))
                 self.sensor_orifice_chunks.append(np.mean(self.sensor_orifice_elevation[start_index:end_index]))
                 
                 if self.wind_speed is not None:
                     self.wind_speed_chunks.append(ws[start_index:end_index] / 
-                                              unit_conversion.METERS_PER_SECOND_TO_MILES_PER_HOUR)
+                                              uc.METERS_PER_SECOND_TO_MILES_PER_HOUR)
                 
                 
                 start_index += increment
@@ -320,6 +346,10 @@ class StormOptions(StormData):
             
             self.get_corrected_pressure()
             self.chunk_data()
+            
+            self.stats.low_cut = self.low_cut
+            self.stats.high_cut = self.high_cut
+            
             self.stat_dictionary, self.upper_stat_dictionary, self.lower_stat_dictionary = \
                 self.derive_statistics(self.pressure_chunks, self.wave_time_chunks, \
                                                            self.elevation_chunks, self.sensor_orifice_chunks, \
@@ -502,5 +532,9 @@ class StormOptions(StormData):
         self.air_stn_instrument_id = None
         self.int_units = True
         self.salinity = None
-            
+        self.clip = None  
+        self.clip_query = None
+        self.elev_test = False
+        self.low_cut = None
+        self.high_cut = None
         

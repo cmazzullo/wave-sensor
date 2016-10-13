@@ -3,7 +3,7 @@ import scipy.stats as stats
 import unit_conversion as uc
 import pressure_to_depth as p2d
 import scipy.signal as signal
-
+import matplotlib.pyplot as plt
 #Statistics calculation pulled from Storm Surge Matlab Project by
 #Joe Vrabel and Sam Rendon at the USGS in Texas
 
@@ -13,16 +13,19 @@ std_dev = False
 class Stats(object):
 
     def __init__(self):
-        pass
+        self.low_cut = 0
+        self.high_cut = 1.0
          
     def power_spectrum(self, y, tstep, h, d):
         """Calculate the power spectrum of the series y"""
         #calculate the Power Spectral Density (PSD)
-        spec = abs(np.fft.rfft(y))**2 / (len(y)/2)/ 4.0
+        scale = (len(y)/2.0) * 4.0
+        spec = np.fft.rfft(y)
+        spec = spec * np.conjugate(spec) / scale
         freqs = np.fft.rfftfreq(len(y), d=tstep)
         spec = spec[1:]
         self.frequencies = freqs = freqs[1:]
-        
+      
         #band average the spectra
         freqs, spec = self.band_average_psd(freqs, spec, 32)
         
@@ -132,8 +135,14 @@ class Stats(object):
     
     
     def peak_wave_period(self, spec, freq, t, depth):
-        '''value given in seconds; inverse of the frequency with the highest energy in the reported spectrum.'''   
-        return 1/ freq[np.argmax(spec)]
+        '''value given in seconds; inverse of the frequency with the highest energy in the reported spectrum.'''
+        if type(spec) is float:
+            return np.NaN
+        else:
+            if len(np.where(np.isnan(spec))[0]) > 0:
+                return np.NaN
+            else:   
+                return 1/ freq[np.argmax(spec)]
     
     
     def significant_wave_period(self, spec, freq, depth, tstep):
@@ -174,9 +183,13 @@ class Stats(object):
         freqs = np.array(new_freqs)
         
         #CUTOFF ALL FREQUENCIES THAT ARE GREATER THAN 1HZ
-        cut_off = np.where(freqs<=1.0)
-        freqs = freqs[cut_off]
-        psd_avg_amps = psd_avg_amps[cut_off].real
+        high_cut_off = np.where(freqs <= self.high_cut)
+        freqs = freqs[high_cut_off]
+        psd_avg_amps = psd_avg_amps[high_cut_off].real
+        
+        low_cut_off = np.where(freqs >= self.low_cut)
+        freqs = freqs[low_cut_off]
+        psd_avg_amps = psd_avg_amps[low_cut_off]
         
         return freqs, psd_avg_amps
     

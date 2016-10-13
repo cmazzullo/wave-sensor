@@ -24,7 +24,7 @@ GLOBAL_FIELDS = OrderedDict([
     ('creator_url', ['Your personal url:', ''])])
 LOCAL_FIELDS = OrderedDict([
     ('instrument_name', ['Instrument:', [
-        'MS TruBlue 255', 'Onset Hobo U20', #'LevelTroll','RBRSolo', 'USGS Homebrew'
+        'MS TruBlue 255', 'Onset Hobo U20', 'LevelTroll', #'RBRSolo', 'USGS Homebrew'
         ], True]),
      ('stn_station_number', ['STN Site Id:', '']),
     ('stn_instrument_id', ['STN Instrument Id:', '']),

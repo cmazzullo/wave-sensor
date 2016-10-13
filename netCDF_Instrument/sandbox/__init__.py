@@ -31,28 +31,43 @@
 # 
 # # for x in range(0,100):
 # #     print(x,np.sinh(x*10),x*10)
-import random
-import numpy as np
-import matplotlib.pyplot as plt
-# plt.show()
-
+# import random
 # import numpy as np
+# import matplotlib.pyplot as plt
+# # plt.show()
 # 
-# print(np.fft.rfftfreq(100, .25))
+# # import numpy as np
+# # 
+# # print(np.fft.rfftfreq(100, .25))
+# 
+# a = [random.Random().random() * 100 for x in range(0, 1000)]
+# 
+# b = np.fft.rfft(a)
+# b2 = b**2 / (len(a)/2.0) / 4.0
+# # print(b)
+# # print('')
+# # print(b2)
+# 
+# 
+# c = np.fft.irfft((b2 * 4.0 * (len(a)/2.0))**.5)
+# 
+# ax = plt.subplot(121)
+# ax.plot(range(0,len(a)),a)
+# ax2 = plt.subplot(122)
+# ax2.plot(range(0,len(a)),c)
+# plt.show()
+from netCDF4 import Dataset
 
-a = [random.Random().random() * 100 for x in range(0, 1000)]
+# with Dataset('test.nc', 'w', format="NETCDF4_CLASSIC") as ds:
+#             time_dimen = ds.createDimension("time", None)
+#             arb_dim = ds.createDimension("arb", 8)
+#             v = ds.createVariable("v",'f8',(['time','arb']))
 
-b = np.fft.rfft(a)
-b2 = b**2 / (len(a)/2.0) / 4.0
-# print(b)
-# print('')
-# print(b2)
+a = [[1,2,3,4,5,6,7,8],[2,2,2,2,2,2,2,2]]
 
-
-c = np.fft.irfft((b2 * 4.0 * (len(a)/2.0))**.5)
-
-ax = plt.subplot(121)
-ax.plot(range(0,len(a)),a)
-ax2 = plt.subplot(122)
-ax2.plot(range(0,len(a)),c)
-plt.show()
+for x in range(0,len(a)):
+    with Dataset('test.nc', 'a') as ds:
+            b = ds.variables["v"]
+            b[x,:] = a[x]
+            ds.sync()
+            

@@ -130,7 +130,6 @@ class StormGui:
         self.wlPickFrame.pack(anchor=W, padx = 15)
         
 
-        
         self.side1.grid(row=1, column=0, sticky=W, padx = 15)
         
         self.side2 = Frame(self.root)
@@ -144,6 +143,29 @@ class StormGui:
             button = Checkbutton(self.side2, text=x, variable=self.so.statistics[x])
             button.pack(anchor=W,padx = 2,pady = 2)
    
+        self.TzLabel = Label(self.side2, text=' ')
+        self.TzLabel.pack(padx = 2,pady = 45)
+        
+#         self.TzLabel = Label(self.side2, text='Clip water level graph:')
+#         self.TzLabel.pack(padx = 2,pady = 2)
+         
+        #clip_options=('Yes','No')
+        self.clip = 'No'
+        #StringVar()
+        #self.clip.set(clip_options[0])
+ 
+        #OptionMenu(self.side2, self.clip, *clip_options).pack( pady=10, padx=15)
+        
+        self.TzLabel = Label(self.side2, text=' ')
+        self.TzLabel.pack(padx = 2,pady = 10)
+        self.TzLabel = Label(self.side2, text='Output Name:')
+        self.TzLabel.pack(padx = 2,pady = 2)
+#         
+        self.output_name = Entry(self.side2, width=20)
+        self.output_name.pack(pady=2, padx=15)
+#         self.high_cut = Entry(self.side2, width=5)
+#         self.high_cut.pack(pady=2, padx=15)
+        
         self.side2.grid(row=1, column=1, sticky=N, padx = 15)
         
         self.final = Frame(self.root)
@@ -151,8 +173,6 @@ class StormGui:
         
         self.b3.pack(fill='both')
          
-       
-        
         self.final.grid(row=2, columnspan=2)
     
 
@@ -198,6 +218,9 @@ class StormGui:
         '''Processes the selected afiles and outputs in format selected'''
         
         #Format the name properly based on the input of the user
+        slash_index = self.sea_fname.rfind('/')
+        self.final_output_name = ''.join([self.sea_fname[0:slash_index+1], self.output_name.get()])
+        
         if self.sea_fname is None or self.sea_fname == '':
             if self.so.air_check_selected() == True:
                 message = ("Please upload a water netCDF file or uncheck options that require it")
@@ -216,78 +239,84 @@ class StormGui:
         
         self.so.clear_data()
         self.so.int_units = False
-        og_fname = filedialog.asksaveasfilename()
         
-        if og_fname is None or og_fname == '':
-            self.root.focus_force()
-            return
+#         og_fname = filedialog.asksaveasfilename()
+#         
+#         if og_fname is None or og_fname == '':
+#             self.root.focus_force()
+#             return
         
+#         try:
+        self.so.air_fname = self.air_fname
+        self.so.sea_fname = self.sea_fname
+        self.so.wind_fname = self.wind_fname
+        self.so.output_fname = self.final_output_name
+      
+        self.so.timezone = self.tzstringvar.get()
+        self.so.daylight_savings = self.daylightSavings.get()
+        
+        self.so.clip = False
+            
+        self.so.baroYLims = []
         try:
-            self.so.air_fname = self.air_fname
-            self.so.sea_fname = self.sea_fname
-            self.so.wind_fname = self.wind_fname
-            self.so.format_output_fname(og_fname)
-            self.so.timezone = self.tzstringvar.get()
-            self.so.daylight_savings = self.daylightSavings.get()
-            
-            self.so.baroYLims = []
-            try:
-                self.so.baroYLims.append(float(self.baroYlim1.get()))
-                self.so.baroYLims.append(float(self.baroYlim2.get()))
-            except:
-                self.so.baroYLims = None
-                
-            self.so.wlYLims = []
-            try:
-                self.so.wlYLims.append(float(self.wlYlim1.get()))
-                self.so.wlYLims.append(float(self.wlYlim2.get()))
-            except:
-                self.so.wlYLims = None
-            
-            if self.sea_fname != None and self.sea_fname != '':
-                
-                overlap = self.so.time_comparison()
-                    
-                if overlap == 2:
-                    message = ("Air pressure and water pressure files don't "
-                               "cover the same time period!\nPlease choose "
-                               "other files.")
-                    gc.MessageDialog(root, message=message, title='Error!')
-                    return
-                elif overlap == 1:
-                    message = ("The air pressure file doesn't span the "
-                    "entire time period covered by the water pressure "
-                    "file.\nThe period not covered by both files will be "
-                    "chopped")
-                    gc.MessageDialog(root, message=message, title='Warning')
-                
-            
-            snc = Storm_netCDF()
-            snc.process_netCDFs(self.so)
-            
-            scv = StormCSV()
-            scv.int_units = self.so.int_units
-            scv.process_csv(self.so)
-            
-            sg = StormGraph()
-            sg.int_units = self.so.int_units
-            sg.process_graphs(self.so) 
-            
-            s_stat = StormStatistics()
-            s_stat.int_units = self.so.int_units
-            s_stat.process_graphs(self.so)
-            
-            gc.MessageDialog(root, message="Success! Files processed.",
-                                     title='Success!')
-                
+            self.so.baroYLims.append(float(self.baroYlim1.get()))
+            self.so.baroYLims.append(float(self.baroYlim2.get()))
         except:
-#             exc_type, exc_value, exc_traceback = sys.exc_info()
-#        
-#             message = traceback.format_exception(exc_type, exc_value,
-#                                           exc_traceback)
-            message = 'Could not process files, please check file type.'
-            gc.MessageDialog(root, message=message,
-                             title='Error')
+            self.so.baroYLims = None
+            
+        self.so.wlYLims = []
+        try:
+            self.so.wlYLims.append(float(self.wlYlim1.get()))
+            self.so.wlYLims.append(float(self.wlYlim2.get()))
+        except:
+            self.so.wlYLims = None
+            
+        self.so.low_cut = 0.045
+        self.so.high_cut = 1.0
+        
+        if self.sea_fname != None and self.sea_fname != '':
+            
+            overlap = self.so.time_comparison()
+                
+            if overlap == 2:
+                message = ("Air pressure and water pressure files don't "
+                           "cover the same time period!\nPlease choose "
+                           "other files.")
+                gc.MessageDialog(root, message=message, title='Error!')
+                return
+            elif overlap == 1:
+                message = ("The air pressure file doesn't span the "
+                "entire time period covered by the water pressure "
+                "file.\nThe period not covered by both files will be "
+                "chopped")
+                gc.MessageDialog(root, message=message, title='Warning')
+            
+        snc = Storm_netCDF()
+        snc.process_netCDFs(self.so)
+        
+        scv = StormCSV()
+        scv.int_units = self.so.int_units
+        scv.process_csv(self.so)
+        
+        sg = StormGraph()
+        sg.int_units = self.so.int_units
+        sg.process_graphs(self.so) 
+        
+        s_stat = StormStatistics()
+        s_stat.int_units = self.so.int_units
+        s_stat.process_graphs(self.so)
+        
+        gc.MessageDialog(root, message="Success! Files processed.",
+                                 title='Success!')
+                
+#         except:
+# #             exc_type, exc_value, exc_traceback = sys.exc_info()
+# #          
+# #             message = traceback.format_exception(exc_type, exc_value,
+# #                                           exc_traceback)
+#             message = 'Could not process files, please check file type.'
+#             gc.MessageDialog(root, message=message,
+#                              title='Error')
 
 def make_frame(frame, header=None):
     """Make a frame with uniform padding."""

@@ -2,25 +2,37 @@
 <meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="./css/style.css" ></link>
 <link rel="stylesheet" type="text/css" href="./css/jquery.datetimepicker.css"></link>
+<link rel="stylesheet" type="text/css" href="./js/leaflet/leaflet.css" />
+<script src="./js/leaflet/leaflet-src.js"></script>
+<script src="https://cdn.jsdelivr.net/leaflet.esri/2.0.2/esri-leaflet.js"></script>
+
 
 <div id="pair_bar">
-<div id="pair_label"></div>
+<div id="label_container">
+<img src="/images/pair_label.png" id="pair_label" />
+<img src="/images/layer_label.png" id="layers_label" />
+</div>
 <div id="pair_back">
+
 <table id="pairs">
 <tr><td><button id="add_pair">Add Pair</button></td></tr>
 </table>
+
+<table id="layers">
+<tr class="first"><td></td><td></td></tr>
+<tr><td>Bathymetric Contours:</td><td><input class="map_layer" id="bath" type="checkbox" /></td></tr>
+<tr><td>CSRB Units:</td> <td> <input class="map_layer" id="csrb" type="checkbox" /></td></tr>
+<tr><td>Refuges:</td><td> <input class="map_layer" id="refuges" type="checkbox" /></td></tr>
+<tr class="last"><td>Wetlands:</td><td><input class="map_layer" id="wetlands" type="checkbox" /></td></tr>
+</table>
+
 </div>
 </div>
+
+
 <div id="header">
 <img id="main_logo" src="./images/wavelab.png" />
-<div id="menu">
-<ul id="main_menu">
-<li><a href="http://localhost:8080/single_data">Single</a></li>
-<li><a href="http://localhost:8080/multi_data">Multi</a></li>
-<li><a href="http://localhost:8080/spectra_data">Spectra</a></li>
-<li><a href="http://localhost:8080/stat_data">Statistics</a></li>
-</ul>
-</div>
+
 </div>
 <div id="sidebar">
 <div id="side_container">
@@ -40,6 +52,11 @@
 <tr><td></td><td><button>Submit</button></td></tr>
 </table>
 </form>
+</div>
+<div id="loading">
+<div id="slideLoad">
+<p id="loading_text">Loading...</p> <img id="loading_image" src="./images/loading.gif" />
+</div>
 </div>
 </div>
 
@@ -89,6 +106,14 @@
 <svg id="visualization4" width="440" height="440"></svg>
 </div>
 
+<div id="wind" class="dash_tile2">
+<div class="dash_title">Wind Speed and Direction
+<button class="wind_expand">Expand</button>
+<button style="margin-left: 15px" class="image">Save Image</button>
+</div>
+<svg id="visualization5" width="440" height="440"></svg>
+</div>
+
 </div>
 </div>
 
@@ -101,13 +126,10 @@
 			  src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"
 			  integrity="sha256-xNjb53/rY+WmG+4L6tTl9m6PpqknWZvRt0rO1SRnJzw="
 			  crossorigin="anonymous"></script>
-<script src="./js/jquery.datetimepicker.js"></script>
+<script src="./js/aesthetic/jquery.datetimepicker.js"></script>
 
 <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-<script type="text/javascript" src="http://gabelerner.github.io/canvg/rgbcolor.js"></script> 
-<script type="text/javascript" src="http://gabelerner.github.io/canvg/StackBlur.js"></script>
-<script type="text/javascript" src="http://gabelerner.github.io/canvg/canvg.js"></script> 
 <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-<script src="./js/multi_dash.js" charset="utf-8"></script>
-<script src="./js/svg_to_image.js" charset="utf-8"></script>
-<script src="./js/graphs.js" charset="utf-8"></script>
+<script src="./js/dashboards/multi_dash2.js" charset="utf-8"></script>
+<script src="./js/dashboards/til.js" charset="utf-8"></script>
+<script src="./js/aesthetic/svg_to_image.js" charset="utf-8"></script>
