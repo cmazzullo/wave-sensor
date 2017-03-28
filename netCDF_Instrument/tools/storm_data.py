@@ -16,6 +16,7 @@ class StormData(object):
     
     def __init__(self):
         self.stats = stats.Stats()
+        self.fs = 4
     
     def extract_time(self, fname):
         return nc.get_time(fname)
@@ -70,7 +71,7 @@ class StormData(object):
         return np.linspace(init, final, series_len)
     
     def derive_surge_sea_pressure(self, sea_pressure_data, sea_pressure_mean):
-        return p2d.lowpass_filter(sea_pressure_data - sea_pressure_mean)
+        return p2d.lowpass_filter(sea_pressure_data - sea_pressure_mean, self.fs)
     
     def derive_wave_sea_pressure(self, sea_pressure_data, surge_pressure_data, salinity):
         return sea_pressure_data - surge_pressure_data
@@ -94,7 +95,6 @@ class StormData(object):
                                 sensor_orifice_elevation, water_depth)
         
    
-        
     def derive_statistics(self, p_chunks, t_chunks, elev_chunks, orif_chunks, wchunks=None, 
                           meters=True, salinity = "salt"):
         
@@ -189,9 +189,3 @@ class StormData(object):
         else:
             return stat_func(spec,freq,t_chunk,d_chunk)
            
-
-    
-    
-    
-    
-        

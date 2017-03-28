@@ -59,14 +59,15 @@ with netCDF4.Dataset('bp.nc') as nc_file:
     air_time = nc_file.variables['time'][:]
     air_pressure = nc_file.variables['air_pressure'][:]
 
-  
-
-
-
-
-
 air_pressure = np.interp(sea_time, air_time, air_pressure)
 sea_pressure = sea_pressure - air_pressure
+
+co = np.correlate(sea_pressure[0:4096], sea_pressure[0:4096], mode="full")
+co = co/np.max(co)
+for x in co[co.size/2.0:]:
+    print(x) 
+    
+    
 # sea_pressure = sea_pressure[0:4096]  
 # air_pressure = air_pressure[0:4096]
 # 
@@ -136,64 +137,64 @@ sea_pressure = sea_pressure - air_pressure
 #     index += 1
 # p_level, p_time = final_answer(constituents, len(sea_pressure), t_delta, sea_time[0], False, 0)
  
-window_size = 4096
-current_start = 0
-current_end = window_size
-
-
-
-while current_end <= len(sea_pressure):
-    
-    current_pressure = sea_pressure[current_start:current_end]
-    current_time = sea_time[current_start:current_end]
-    
-    coeff = np.polyfit(current_time,current_pressure,1)
-    static_p = coeff[1] + coeff[0]*current_time
-    current_pressure = current_pressure - static_p
-   
-    orifice_elev = np.linspace(-20,-20,len(current_pressure))
-    land_surface_elev = np.linspace(-20,-20,len(current_pressure))
-    scale = (len(current_pressure)/2) * 4.0
-    
-    elevation = np.mean(land_surface_elev)
-    h = np.abs(elevation - \
-                       np.mean(orifice_elev))
-    d = np.mean(p2d.hydrostatic_method(current_pressure)) + h
-    
-    
-    
-    sea_spec = np.fft.fft(current_pressure-np.mean(current_pressure))
-    sea_spec = sea_spec
-    psd_conj = np.conjugate(sea_spec)
-    
-    psd_spec = sea_spec * psd_conj / scale
-    
-    
-    freqs_wl = np.fft.fftfreq(4096,d=1/4.0)
-  
-    k = p2d.omega_to_k(2*np.pi*freqs_wl, h)
-    kz = np.array(np.cosh(h*k)/np.cosh(d*k))
-    
-    
-    # for x in kz:
-    #     print(x)
-    
-    wl_amps = psd_spec/kz**2
-    # avg_freqs, avg_amps = stat.band_average_psd(freqs_og, psd_spec,32)
-    # _, conj_amps = stat.band_average_psd(freqs_og, psd_conj, 32)
-    
-    new_wl = np.fft.ifft((wl_amps * scale / (psd_conj/kz**2))) + static_p
-    hydro_wl = h + p2d.hydrostatic_method(current_pressure-np.mean(current_pressure)) + static_p
-    
-    plt.plot(current_time,hydro_wl, color="blue")
-    # new_press = np.interp(current_end[0:4096],current_end[0:4096:64], new_press.real)
-    
-    plt.plot(current_time,h + new_wl.real, alpha=.5, color="red")
-    plt.plot(current_time,hydro_wl - (h + new_wl.real), color="green")
-    plt.show()
-    
-    current_start += window_size
-    current_end += window_size
+# window_size = 4096
+# current_start = 0
+# current_end = window_size
+# 
+# 
+# 
+# while current_end <= len(sea_pressure):
+#     
+#     current_pressure = sea_pressure[current_start:current_end]
+#     current_time = sea_time[current_start:current_end]
+#     
+#     coeff = np.polyfit(current_time,current_pressure,1)
+#     static_p = coeff[1] + coeff[0]*current_time
+#     current_pressure = current_pressure - static_p
+#    
+#     orifice_elev = np.linspace(-20,-20,len(current_pressure))
+#     land_surface_elev = np.linspace(-20,-20,len(current_pressure))
+#     scale = (len(current_pressure)/2) * 4.0
+#     
+#     elevation = np.mean(land_surface_elev)
+#     h = np.abs(elevation - \
+#                        np.mean(orifice_elev))
+#     d = np.mean(p2d.hydrostatic_method(current_pressure)) + h
+#     
+#     
+#     
+#     sea_spec = np.fft.fft(current_pressure-np.mean(current_pressure))
+#     sea_spec = sea_spec
+#     psd_conj = np.conjugate(sea_spec)
+#     
+#     psd_spec = sea_spec * psd_conj / scale
+#     
+#     
+#     freqs_wl = np.fft.fftfreq(4096,d=1/4.0)
+#   
+#     k = p2d.omega_to_k(2*np.pi*freqs_wl, h)
+#     kz = np.array(np.cosh(h*k)/np.cosh(d*k))
+#     
+#     
+#     # for x in kz:
+#     #     print(x)
+#     
+#     wl_amps = psd_spec/kz**2
+#     # avg_freqs, avg_amps = stat.band_average_psd(freqs_og, psd_spec,32)
+#     # _, conj_amps = stat.band_average_psd(freqs_og, psd_conj, 32)
+#     
+#     new_wl = np.fft.ifft((wl_amps * scale / (psd_conj/kz**2))) + static_p
+#     hydro_wl = h + p2d.hydrostatic_method(current_pressure-np.mean(current_pressure)) + static_p
+#     
+#     plt.plot(current_time,hydro_wl, color="blue")
+#     # new_press = np.interp(current_end[0:4096],current_end[0:4096:64], new_press.real)
+#     
+#     plt.plot(current_time,h + new_wl.real, alpha=.5, color="red")
+#     plt.plot(current_time,hydro_wl - (h + new_wl.real), color="green")
+#     plt.show()
+#     
+#     current_start += window_size
+#     current_end += window_size
 
 
 

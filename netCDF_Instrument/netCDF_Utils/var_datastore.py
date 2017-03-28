@@ -267,6 +267,9 @@ class DataStore(object):
         if len(self.gust_data) == len(self.v_data):
             self.get_gust_var(ds)
             
+        if len(self.pressure_data) == len(self.v_data):
+            self.get_pressure_var(ds)
+            
         self.get_global_vars(ds)
 
     def get_instrument_var(self,ds):

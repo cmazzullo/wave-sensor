@@ -53,8 +53,7 @@ from matplotlib.transforms import Bbox
 def plot_wind_data2(ax, so, time_nums):
 
     so.wind_speed = np.array(so.wind_speed)
-    max_index = so.wind_speed.argmax()
-    wind_speed_max = so.wind_speed[max_index]
+    wind_speed_max = np.nanmax(so.wind_speed)
     print('max speed', wind_speed_max, len(so.wind_speed))
     
     logo = image.imread('north.png', None)

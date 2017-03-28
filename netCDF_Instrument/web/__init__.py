@@ -21,25 +21,32 @@ def find_index(array, value):
     return idx
 
 #mock data base
-wv_data = ['./data/0_NYRIC13728_1510688_wv_chop.csv.nc',
+ny_wv_data = ['./data/0_NYRIC13728_1510688_wv_chop.csv.nc',
                         './data/2_NYNEW07501_1510698_wv_chop.csv.nc',
                         './data/3_NYQUE04755_1510693_wl_chop.csv.nc',
                         './data/4_NYSUF00011_1511364_wl_chop.csv.nc',
                         './data/5_NYSUF04781_1510678_wv_chop.csv.nc',
-                        './data/6_wv.nc',
-                        './data/SSS.true.nc',
-                        './data/wv.nc'
-                         ]
+                       ]
+
+nc_wv_data = ['./data/NCDAR00003_1511478_stormtide_unfiltered.nc',
+           './data/NCDAR12688_1511486_stormtide_unfiltered.nc',
+           './data/NCDAR12689_1511417_stormtide_unfiltered.nc',
+           './data/NCDAR12788_1511491_stormtide_unfiltered.nc',
+           './data/NCDAR12790_1511465_stormtide_unfiltered.nc']
          
-bp_data = ['./data/0_NYRIC00002_9800742_bp_chop.csv.nc',
+ny_bp_data = ['./data/0_NYRIC00002_9800742_bp_chop.csv.nc',
                         './data/2_NYNEW07501_1510685_bp_chop.csv.nc',
                         './data/3_NYQUE13828_10223966_bp_chop.csv.nc',
                         './data/4_NYSUF00011_1510699_bp_chop.csv.nc',
                         './data/5_NYSUF04781_1411333_bp_chop.csv.nc',
-                        './data/6_bp.nc',
-                        './data/SSS.hobo.nc',
-                        './data/bp.nc'
-                         ]
+                        ]
+    
+
+nc_bp_data = ['./data/NCDAR00003_1511478_stormtide_unfiltered.nc',
+           './data/NCDAR12688_1511486_stormtide_unfiltered.nc',
+           './data/NCDAR12689_1511417_stormtide_unfiltered.nc',
+           './data/NCDAR12788_1511491_stormtide_unfiltered.nc',
+           './data/NCDAR12790_1511465_stormtide_unfiltered.nc']
 
 class BottleApp(object):
     
@@ -48,6 +55,7 @@ class BottleApp(object):
         
         self.name = 'enable_cors'
         self.api = 2
+        self.fs = 4
 
     def apply(self, fn, context):
         def _enable_cors(*args, **kwargs):
@@ -66,6 +74,8 @@ class BottleApp(object):
         '''adjust the data based on the parameters and get storm object data'''
         
         #get meta data and water level
+        
+        so.fs = self.fs
         so.get_meta_data()
         so.get_air_meta_data()
         so.get_wave_water_level()
@@ -108,9 +118,14 @@ class BottleApp(object):
             s_stat_index = find_index(so.stat_dictionary['time'],float(milli1))
             e_stat_index = find_index(so.stat_dictionary['time'], float(milli2))
             so.stat_dictionary['time'] = so.stat_dictionary['time'][s_stat_index:e_stat_index]
+            so.stat_dictionary['Spectrum'] = so.stat_dictionary['Spectrum'][s_stat_index:e_stat_index]
+            so.stat_dictionary['HighSpectrum'] = so.stat_dictionary['HighSpectrum'][s_stat_index:e_stat_index]
+            so.stat_dictionary['LowSpectrum'] = so.stat_dictionary['LowSpectrum'][s_stat_index:e_stat_index]
             for i in so.statistics:
                 if i != 'PSD Contour':
                     so.stat_dictionary[i] = so.stat_dictionary[i][s_stat_index:e_stat_index]
+                    
+                
         
         #gather statistics if necessary  
         return adjusted_times
@@ -156,13 +171,26 @@ class BottleApp(object):
         sea_file = request.forms.get('sea_file')
         baro_file = request.forms.get('baro_file')
         multi = request.forms.get('multi')
-    
+        event = request.forms.get('event')
+        
+        self.fs = 4
         if sea_file is None:
             file_name = './data/SSS.true.nc'
             air_file_name = './data/SSS.hobo.nc'
+            from_wl = False
         else:
-            file_name = wv_data[int(sea_file)]
-            air_file_name = bp_data[int(baro_file)]
+            if event is None or event == "ny":
+                file_name = ny_wv_data[int(sea_file)]
+                air_file_name = ny_bp_data[int(baro_file)]
+                
+                if int(sea_file) in [2,3]:
+                    self.fs = 1/30
+                from_wl = False
+                
+            else:
+                file_name = nc_wv_data[int(sea_file)]
+                air_file_name = nc_bp_data[int(baro_file)]
+                from_wl = True
         
     #     filter = request.forms.get('filter')
        
@@ -171,6 +199,7 @@ class BottleApp(object):
         
         #process data
         so = StormOptions()
+        so.from_water_level_file = from_wl
         so.sea_fname = file_name
         so.air_fname = air_file_name
         so.high_cut = 1.0
@@ -178,7 +207,7 @@ class BottleApp(object):
         
         #temp deferring implementation of type of filter
         if multi == 'True':
-            step = 200
+            step = 100
         else:
             step = 25
             
@@ -229,8 +258,8 @@ class BottleApp(object):
             file_name = './data/SSS.true.nc'
             air_file_name = './data/SSS.hobo.nc'
         else:
-            file_name = wv_data[int(sea_file)]
-            air_file_name = bp_data[int(baro_file)]
+            file_name = ny_wv_data[int(sea_file)]
+            air_file_name = ny_bp_data[int(baro_file)]
             
         #process data
         so = StormOptions()
@@ -288,8 +317,8 @@ class BottleApp(object):
             file_name = './data/SSS.true.nc'
             air_file_name = './data/SSS.hobo.nc'
         else:
-            file_name = wv_data[int(sea_file)]
-            air_file_name = bp_data[int(baro_file)]
+            file_name = ny_wv_data[int(sea_file)]
+            air_file_name = ny_bp_data[int(baro_file)]
             
         #process data
         so = StormOptions()
@@ -305,7 +334,7 @@ class BottleApp(object):
         #Get the min and max for the PSD since it is easier to compute on the server
         
         print('time len', len(so.stat_dictionary['time']))
-        x_max = so.stat_dictionary['time'][len(so.stat_dictionary['time'])-1]
+        x_max = so.stat_dictionary['time'][-1]
         x_min = so.stat_dictionary['time'][0]
         
         freqs = [x for x in so.stat_dictionary['Frequency'][0] if x > .033333333]
@@ -316,9 +345,9 @@ class BottleApp(object):
                 
         z_range = np.linspace(z_min, z_max, num_colors)
         
-        print(z_range[1] - z_range[0])
+        print(z_range[1] - z_range[0], x_max, x_min)
+        print(len(so.stat_dictionary['Spectrum']))
         
-       
         psd_data['x'] = list(so.stat_dictionary['time'])
 #         psd_data['y'] = list(so.stat_dictionary['Frequency'][0])
         psd_data['z'] = list([list(x) for x in so.stat_dictionary['Spectrum']])
@@ -372,21 +401,39 @@ class BottleApp(object):
         timezone = request.forms.get('timezone')
         sea_file = request.forms.get('sea_file')
         baro_file = request.forms.get('baro_file')
+        event = request.forms.get("event")
         
         response.headers['Content-type'] = 'application/json'
         
         if sea_file is None:
             file_name = './data/SSS.true.nc'
             air_file_name = './data/SSS.hobo.nc'
-        else:
-            file_name = wv_data[int(sea_file)]
-            air_file_name = bp_data[int(baro_file)]
             
-        so = StormOptions()
-        so.sea_fname = file_name
-        so.air_fname = air_file_name
-        so.wind_fname = "./data/ny_wind.nc"
-        
+            so = StormOptions()
+            so.sea_fname = file_name
+            so.air_fname = air_file_name
+            so.wind_fname = "./data/ny_wind.nc"
+        else:
+            if event is None or event == "ny":
+                file_name = ny_wv_data[int(sea_file)]
+                air_file_name = ny_bp_data[int(baro_file)]
+                
+                so = StormOptions()
+                so.sea_fname = file_name
+                so.air_fname = air_file_name
+                so.wind_fname = "./data/ny_wind.nc"
+                
+            else:
+                file_name = nc_wv_data[int(sea_file)]
+                air_file_name = nc_bp_data[int(baro_file)]
+                
+                so = StormOptions()
+                so.from_water_level_file = True
+                so.sea_fname = file_name
+                so.air_fname = air_file_name
+                so.wind_fname = "./data/nc_wind.nc"
+            
+      
         self.process_data(so, s, e, dst, timezone, 1, data_type="wind")
         
         wind = {'Wind_Speed': None, 'Wind_Direction': None}
@@ -398,7 +445,6 @@ class BottleApp(object):
         
         #add a response header so the service understands it is json
         response.headers['Content-type'] = 'application/json'
-        
         
         return wind
     

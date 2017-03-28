@@ -2,9 +2,9 @@
 //This will eventually not be necessary as the code
 //will be querying a thredds server
 	   
-query_server = function(lats,lons)
+query_server = function(lats,lons, type)
 {
-	stations = get_data();
+	stations = get_data(type);
 	data = []
 	for (var i = 0; i < stations.length; i++)
 	{

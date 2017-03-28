@@ -16,12 +16,13 @@ from datetime import datetime
 
 def process_files(path_base):
     
-    file_name = ''.join([path_base,"\\","pcal.nc"])
+    file_name = ''.join(["./","pcal.nc"])
+    print(file_name)
     with Dataset(file_name, 'w', format="NETCDF4_CLASSIC") as ds:
         
             ds.createDimension("time", None)
-            ds.createDimension("y", 804)
-            ds.createDimension("x", 606)
+            ds.createDimension("y", 647)
+            ds.createDimension("x", 602)
             
             albers = ds.createVariable("albers_conical_equal_area", "S1")
             setattr(albers, "grid_mapping_name", "albers_conical_equal_area")
@@ -36,7 +37,7 @@ def process_files(path_base):
             setattr(albers, "spatial_ref", "PROJCS[\"unnamed\",GEOGCS[\"NAD83\",DATUM[\"North_American_Datum_1983\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],TOWGS84[0,0,0,0,0,0,0],AUTHORITY[\"EPSG\",\"6269\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9108\"]],AUTHORITY[\"EPSG\",\"4269\"]],PROJECTION[\"Albers_Conic_Equal_Area\"],PARAMETER[\"standard_parallel_1\",29.5],PARAMETER[\"standard_parallel_2\",45.5],PARAMETER[\"latitude_of_center\",23],PARAMETER[\"longitude_of_center\",-84],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"METERS\",1]]")
             setattr(albers, "GeoTransform", "-478000 1524 0 1460296 0 -1524 ")
             
-            precip = ds.createVariable("precip",'f4',(['time','y','x']), fill_value=-9999.0)
+            precip = ds.createVariable("precipitation",'f4',(['time','y','x']), fill_value=-9999.0)
             setattr(precip, "long_name", "Daily Precipitation")
             setattr(precip, "units", "Inches per day")
             setattr(precip, "missing_value", -9999.0)
@@ -72,31 +73,39 @@ def process_files(path_base):
                     
                     if current_file != file_name:
                         with Dataset(current_file, 'a')  as ds:
-                            p_val = ds.variables["Band1"]
-                            precip = p_val[:,:]
+                            #p_val = ds.variables["Band1"]
                             
+                            p_val  = ds.get_variables_by_attributes(grid_mapping = "albers_conical_equal_area")[0]
+                           
+                            try:
+                                ds.renameVariable(p_val.name, 'daily precipitation')
+                            except:
+                                pass
+                                
+                            precip = p_val[:,:]
+                              
                             x_val = ds.variables["x"]
                             x = x_val[:]
-                            
+                              
                             y_val = ds.variables["y"]
                             y = y_val[:]
-                            
+                              
                         with Dataset(file_name, 'a') as ds:
-                            p_val = ds.variables["precip"]
+                            p_val = ds.variables["precipitation"]
                             p_val[nc_index,:,:] = precip
-                        
+                          
                             if xy_data == False:
                                 x_val = ds.variables["x"]
                                 x_val[:] = x
-                                
+                                  
                                 y_val = ds.variables["y"]
                                 y_val[:] = y
-                                
+                                  
                                 xy_data = True
-                            
+                              
                             time = ds.variables["time"]
                             time[nc_index] = nc_index * 24
-                            
+                              
                         nc_index += 1
                         
                         
@@ -108,9 +117,7 @@ if __name__ == '__main__':
 #                         help='type of file to concatenate')
 #   
     args = parser.parse_args(sys.argv[1:])
-#     
-#     
-#     code = process_files(args.directory)
     process_files(args.directory)
+    
     
     print('Done processing pcal.nc!\n')

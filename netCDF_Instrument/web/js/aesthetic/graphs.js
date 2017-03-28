@@ -17,6 +17,9 @@
 	//This is the graph creation for the single graph
 	var makeGraph = function(data, dash_object)
 	{
+//		console.log(data)
+//		console.log(dash_object.contentType)
+//		console.log(dash_objct.method)
 		//This is the fill data to be graphed
 		var lineData = data;
 		var xmin = find_min([data], true);

@@ -20,8 +20,8 @@ def process_files(path_base):
     with Dataset(file_name, 'w', format="NETCDF4_CLASSIC") as ds:
         
             ds.createDimension("time", None)
-            ds.createDimension("y", 804)
-            ds.createDimension("x", 606)
+            ds.createDimension("y", 647)
+            ds.createDimension("x", 602)
             
             albers = ds.createVariable("albers_conical_equal_area", "S1")
             setattr(albers, "grid_mapping_name", "albers_conical_equal_area")
@@ -72,7 +72,7 @@ def process_files(path_base):
                     
                     if current_file != file_name:
                         with Dataset(current_file, 'a')  as ds:
-                            p_val = ds.variables["Band1"]
+                            p_val = ds.variables["maximum daily temp"]
                             tmax = p_val[:,:]
                             
                             x_val = ds.variables["x"]
@@ -110,7 +110,6 @@ if __name__ == '__main__':
     args = parser.parse_args(sys.argv[1:])
 #     
 #     
-#     code = process_files(args.directory)
     process_files(args.directory)
-    
+   
     print('Done processing tmax.nc!\n')

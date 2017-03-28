@@ -120,24 +120,24 @@ class WindGUI:
         
        
         #exception handling for the export process
-        try:
-            out_fname = filedialog.asksaveasfilename()
-            if out_fname == '':
-                return
-    #           #get the beginning and end of the selection
-            site = self.station_id.get()
-            date1 = self.date1.get()
-            date2 = self.date2.get()
-            tz = self.tzstringvar.get()
-            daylight_savings = self.daylightSavings.get()
-           
-            get_wind_data(out_fname, site, date1, date2, tz, daylight_savings)         
-            #convert string to date time, then convert to matplotlib number
-            #tz = pytz.timezone(str(self.tzstringvar.get()))
-            
-            easygui.msgbox("Success grabbing file!", "Success")
-        except:
-            easygui.msgbox("Could not process file, please check station id and date time entries.", "Error")
+#         try:
+        out_fname = filedialog.asksaveasfilename()
+        if out_fname == '':
+            return
+#           #get the beginning and end of the selection
+        site = self.station_id.get()
+        date1 = self.date1.get()
+        date2 = self.date2.get()
+        tz = self.tzstringvar.get()
+        daylight_savings = self.daylightSavings.get()
+       
+        get_wind_data(out_fname, site, date1, date2, tz, daylight_savings)         
+        #convert string to date time, then convert to matplotlib number
+        #tz = pytz.timezone(str(self.tzstringvar.get()))
+        
+        easygui.msgbox("Success grabbing file!", "Success")
+#         except:
+#             easygui.msgbox("Could not process file, please check station id and date time entries.", "Error")
 
     
              

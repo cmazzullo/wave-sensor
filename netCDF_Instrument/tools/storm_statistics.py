@@ -132,12 +132,7 @@ class StormStatistics(object):
            
         #display logo 
         ax2.imshow(logo)
-        #I'll be calm and docile to the best of my ability
-        #I'm sorry for ragin and yelling like a lunatic
-        #I;m going to seek therapy
-        #It's no one elses fault I kept it to myself
-        #and I'm only so smart, I'm not a genius or anything...
-    
+   
     def plot_avgz(self,so):
         ax = self.figure.add_subplot(self.grid_spec[1,0:])
         pos1 = ax.get_position() # get the original position 
@@ -258,7 +253,7 @@ class StormStatistics(object):
                         so.lower_stat_dictionary['H1/3'], facecolor='#969696', alpha=0.3, edgecolors=None)
         p6, = ax.plot(self.time_nums,so.stat_dictionary['H1/3'],color='red',linewidth=2)
         
-        print(np.nanmax(so.upper_stat_dictionary['H1/3']) * 1.1)
+        
         ax.set_ylim([0,np.nanmax(so.upper_stat_dictionary['H1/3']) * 1.1])
         #THE COMMENTED CODE BELOW WHICH SETS YLIMITS MAY BE IMPLEMENTED IN THE FUTURE
 #             ax.set_ylim([np.min(so.stat_dictionary[data[0][0]]) * .9,
@@ -281,7 +276,7 @@ class StormStatistics(object):
         '''Plot of spectral wave energy vs. wave period in seconds over time'''
     
         #assign vars for variable name terse...ness, tersity? tersation, tersocity, tersitude
-        spectra = so.stat_dictionary['Spectrum']
+        spectra = np.sqrt(so.stat_dictionary['Spectrum'])
         freqs = so.stat_dictionary['Frequency'][0]
         fname = so.output_fname
         sea_time = so.sea_time
@@ -385,11 +380,13 @@ class Bool(object):
 if __name__ == '__main__':
   
     so = StormOptions()
-    so.air_fname = 'AirGUI.nc'
-    so.sea_fname = 'sub_yes.nc'
+    so.clip = False
+    so.air_fname = 'NCDAR00003_1511478_stormtide_unfiltered.nc'
+    so.sea_fname = 'NCDAR00003_1511478_stormtide_unfiltered.nc'
     so.int_units = False
     so.high_cut = 1.0
     so.low_cut = 0.045
+    so.from_water_level_file = True
 
     so.timezone = 'GMT'
     so.daylight_savings = False
@@ -399,10 +396,10 @@ if __name__ == '__main__':
         so.statistics[y] = Bool(False)
         
     so.statistics['H1/3'] = Bool(True)
-    so.statistics['Average Z Cross'] = Bool(False)
-    so.statistics['PSD Contour'] = Bool(False)
-    so.statistics['Peak Wave'] = Bool(False)
-    so.format_output_fname('test12'.replace('/','-'))
+    so.statistics['Average Z Cross'] = Bool(True)
+    so.statistics['PSD Contour'] = Bool(True)
+    so.statistics['Peak Wave'] = Bool(True)
+    so.format_output_fname('FEVTest2'.replace('/','-'))
     ss.process_graphs(so)
         
     

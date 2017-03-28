@@ -1,6 +1,7 @@
 
 $(function() {
 	
+	
 	$.getScript( "./js/query/query_thredds.js", 
 			function() {
 			$.getScript( "./js/query/dummy_data.js")  
@@ -9,7 +10,9 @@ $(function() {
 				var bounds = map.getBounds();
 				
 				stations = query_server([bounds._southWest['lat'],bounds._northEast['lat']], 
-				    	[bounds._northEast['lng'],bounds._southWest['lng']])
+				    	[bounds._northEast['lng'],bounds._southWest['lng']], 'ny')
+				    	
+				console.log(stations)
 					
 				apply_markers(map,stations);
 			});
@@ -122,44 +125,195 @@ $(function() {
 	var stations = null;
 	var paths = [];
 	  
-	var map = L.map('multi_map').setView([40.900501251, -73.352996826], 9);
+	var map = L.map('multi_map').setView([41.0005012512207,-73.45299682617188], 8);
+	
+	base_map = L.esri.basemapLayer("Oceans").addTo(map);
+	
+	$('#storm_event').change(function() {
+		
+		if ($(this).val() == "nc"){
+			map.setView([35.900501251, -75.5009536743164], 8);
+			$('#event_title').text('');
+			$('#event_title').text('Hurricane Matthew: North Carolina Coast')
+		}else{
+			map.setView([41.0005012512207,-73.45299682617188], 8);
+			$('#event_title').text('');
+			$('#event_title').text("Nor'easter of January 2016: Long Island, New York")
+		}
+		
+		//removes the pairs when changing to another event
+		$('.remove_pair').each(function(){
+			$(this).trigger('click');
+		})
+		
+		clear_paths(map);
+		
+		bounds = map.getBounds();
+		
+		stations = query_server([bounds._southWest['lat'],bounds._northEast['lat']], 
+		    	[bounds._northEast['lng'],bounds._southWest['lng']], $(this).val())
+			
+		apply_markers(map,stations);
+	})
+	
+	$('#base_map').change(function(){
+		map.removeLayer(base_map);
+		
+		base_map = L.esri.basemapLayer($(this).val()).addTo(map);
+	});
 	
 	
 	
-	L.esri.basemapLayer("NationalGeographic").addTo(map);
-//	L.tileLayer.wms("http://idpgis.ncep.noaa.gov/arcgis/services/NOAA/NOAA_Estuarine_Bathymetry/MapServer/WMSServer?", {
-//	    layers: '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,'
-//	    	+ '30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,'
-//	    	+ '60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,'
-//	    	+ '92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,'
-//	    	+ '118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,'
-//	    	+ '142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,'
-//	    	+ '166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,'
-//	    	+ '190,191,192,193,194,195,196,197,198,199,200,201,203,202,204,',
-//	    	format: 'image/png',
-//	        transparent: true,})
-//	.addTo(map)
-//	
-//	$.getJSON('./data/east.geojson', function (data) {
-//		
-//		
-//		var myStyle = {
-//			    "color": "#0085ff",
-//			    "weight": 1,
-//			    "opacity": 0.99
-//			};
-//		
-//		layer = L.geoJSON(data, {style: myStyle}).addTo(map);
-//		
-//	});
+	bath_contours = null;
+	$('#bath').change(function(){
+		if(bath_contours == null)
+		{
+			bath_contours = L.tileLayer.wms("http://idpgis.ncep.noaa.gov/arcgis/services/NOAA/NOAA_Estuarine_Bathymetry/MapServer/WMSServer?", {
+			    layers: '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,'
+		    	+ '30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,'
+		    	+ '60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,'
+		    	+ '92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,'
+		    	+ '118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,'
+		    	+ '142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,'
+		    	+ '166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,'
+		    	+ '190,191,192,193,194,195,196,197,198,199,200,201,203,202,204,',
+		    		format: "image/png",
+		    		transparent: true,
+		    })
+		    .addTo(map)
+		    
+		    bath_contours.bringToFront();
+
+			
+		}
+		else
+		{
+			map.removeLayer(bath_contours);
+			bath_contours = null;
+		}
+	})
 	
+	var wetlands = null;
+	$('#wetlands').change(function(){
+		if (wetlands == null)
+		{		
+			wetlands = L.tileLayer.wms("https://www.fws.gov/wetlands/arcgis/services/Wetlands_Raster/ImageServer/WMSServer?",
+			{format: "image/png",transparent: true}).addTo(map);
+			
+			
+			wetlands.bringToBack();
+			base_map.bringToBack();
+			
+			if (refuges != null)
+			{
+				refuges.bringToFront();
+			}
+			
+//			wetlands = L.esri.imageMapLayer({
+//			      url: 'https://www.fws.gov/wetlands/arcgis/rest/services/Wetlands_Raster/ImageServer',
+//			      opacity: .5
+//			    }).addTo(map);
+			
+			
+		}
+		else
+		{
+			map.removeLayer(wetlands);
+			wetlands = null;
+		}
+		
+	})
 	
+	var csrb = null;
+	$('#csrb').change(function() {
+		if (csrb == null)
+		{
+			csrb = L.esri.dynamicMapLayer({
+			    url: 'https://www.fws.gov/wetlands/arcgis/rest/services/CBRAMapper/GeoCBRA/MapServer',
+			    opacity: 0.7
+			  }).addTo(map);
+		}
+		else
+		{
+			map.removeLayer(csrb);
+			csrb = null;
+		}
+	})
 	
+	var refuges = null;
+	$('#refuges').change(function(){
+		console.log('changed!');
+		if (refuges == null)
+		{
+			var myStyle = {
+				    "color": "#ffb600",
+				    "weight": 2,
+				    "opacity": 1
+				};
+			
+			
+			var southWest = L.latLng(40.51, -120.70);
+			var northEast = L.latLng(45.52, -60.64);
+			var bounds = L.latLngBounds(southWest, northEast);
+
+//			L.fileGDB('site/fgdb.gdb.zip',options).addTo(m);
+			var query = L.esri.query({
+			    url:'https://gis.fws.gov/arcgis/rest/services/FWS_Refuge_Boundaries/MapServer/2'
+			});
+//
+			query.within(map.getBounds());
+
+			query.run(function(error, featureCollection, response){
+				console.log(featureCollection);
+			    refuges = L.geoJson(featureCollection, 
+			    		{style: myStyle,
+			    		onEachFeature: function (feature, layer){
+			    			
+			    			layer.bindPopup(feature.properties.ORGNAME);
+			    			layer.on('click', function(e) {this.openPopup();})
+//			    			layer.on('mouseout', function(e) {
+//			    				var thisLayer = this;
+//			    				setTimeout(function() {
+//			    					thisLayer.closePopup();
+//			    				}, 1000)
+//			    			})
+			    		}})
+			    .addTo(map);
+			    
+			    refuges.bringToFront();
+			});
+			
+			
+//			console.log(attr);
+//			refuges = L.tileLayer.wms("https://gis.fws.gov/arcgis/services/FWS_Refuge_Boundaries/MapServer/WMSServer?", {
+//			    layers: '0,1,2,3',
+//		    	format: 'image/png',
+//		        transparent: true,
+//		        style: myStyle}).addTo(map);
+		}
+		else
+		{
+			map.removeLayer(refuges);
+			refuges = null;
+		}
+	})
 	
-	
-	//need to get query thredds script because the encased methods
-	//will run before it is loaded
-	
+	watersheds = null;
+	$('#watersheds').change(function() {
+		if (watersheds == null)
+		{
+			watersheds = L.esri.dynamicMapLayer({
+			    url: 'https://www.fws.gov/wetlands/arcgis/rest/services/HUCs/MapServer',
+			    opacity: 0.7
+			  }).addTo(map);
+		}
+		else
+		{
+			map.removeLayer(watersheds);
+			watersheds = null;
+		}
+	})
+
 	var sea_index = 1;
 	var air_index = 1;
 
@@ -262,6 +416,15 @@ $(function() {
 			});
 		
 		var marker = L.marker([40.6433333, -73.2633333], {icon: myIcon})
+		.addTo(map);
+		
+		var myIcon = L.divIcon({
+			className: 'my-div-icon',
+			iconAnchor: L.point(20, 20),
+			html: '<span class="windicon">W</span>'
+			});
+		
+		var marker = L.marker([35.2550639343262,-75.5614105224609], {icon: myIcon})
 		.addTo(map);
 	}
 	
@@ -423,6 +586,7 @@ $(function() {
 	{
 		for (var i = 0; i < markers.length; i++)
 		{
+			console.log(type + ' ' +  id + ' ' + markers[i].instrument_type + ' ' + markers[i].station_id)
 			if(markers[i].instrument_type == type && markers[i].station_id == id)
 			{
 				return markers[i];
@@ -738,7 +902,8 @@ $(function() {
 					timezone: $('#timezone').val(),
 					sea_file: pairs.sea_id,
 					baro_file: pairs.air_id,
-					multi: 'True'
+					multi: 'True',
+					event: $('#storm_event').val()
 				},
 				datatype: 'JSON',
 				error: function()
@@ -782,6 +947,7 @@ $(function() {
 					timezone: $('#timezone').val(),
 					sea_file: 4,
 					baro_file: 4,
+					event: $('#storm_event').val()
 				},
 				datatype: 'JSON',
 				error: function()

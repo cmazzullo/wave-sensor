@@ -300,7 +300,7 @@ svg.psd_contour:active {
 #layers{
 	font-size: 12pt;
 	border-collapse: collapse;
-	margin-left: 30px;
+	margin-left: 0px;
 	padding-top: 40px;
 }
 
@@ -368,7 +368,7 @@ svg.psd_contour:active {
 {
 	margin-left: 30px;
 	position:fixed;
-	margin-top: 270px;
+	margin-top: 350px;
 	height: 60px;
 	font-size: 14pt;
 	font-weight: bold;
@@ -395,6 +395,11 @@ svg.psd_contour:active {
 	float:left;
 }
 
+#start_date, #end_date
+{
+	width: 120px;
+}
+
 .seaicon
 {
 	height: 29px;
@@ -419,8 +424,8 @@ svg.psd_contour:active {
 
 .windicon
 {
-	height: 29px;
-	width: 19px;
+	height: 28.5px;
+	width: 17px;
 	font-size: 14pt;
 	font-weight: bold;
 	position: absolute;

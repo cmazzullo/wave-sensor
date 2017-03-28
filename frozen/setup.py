@@ -61,17 +61,17 @@ include_files = [
                  ]
 build_exe_options = {
                     'path': sys.path, 
-                    'packages': ["tkinter", "matplotlib"],
-                    'include_files':include_files,
-                    'zip_includes': zip_include_files(),
+#                     'packages': ["tkinter", "matplotlib"],
+#                     'include_files':include_files,
+#                     'zip_includes': zip_include_files(),
 #                     'copy_dependent_files': True
                      }
 
 executables = [
-#                Executable('precip.py'),
-#                Executable('tmin.py'),
-#                Executable('tmax.py')
-                Executable('FrozenMaster.py', base="Win32GUI")
+                Executable('precip.py'),
+                Executable('tmin.py'),
+                Executable('tmax.py')
+#                 Executable('FrozenMaster.py', base="Win32GUI")
 #                 Executable('FrozenScript1.py')
 #                 Executable('format_time.py', base = None),
 #                Executable('FrozenAverager.py', base = "Win32GUI"),

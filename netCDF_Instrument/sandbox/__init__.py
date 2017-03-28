@@ -1,3 +1,7 @@
+import re
+
+a = 'block'
+print(re.search('c', 'block') )
 # '''import numpy as np
 # import matplotlib.pyplot as plt
 # 
@@ -56,18 +60,18 @@
 # ax2 = plt.subplot(122)
 # ax2.plot(range(0,len(a)),c)
 # plt.show()
-from netCDF4 import Dataset
-
-# with Dataset('test.nc', 'w', format="NETCDF4_CLASSIC") as ds:
-#             time_dimen = ds.createDimension("time", None)
-#             arb_dim = ds.createDimension("arb", 8)
-#             v = ds.createVariable("v",'f8',(['time','arb']))
-
-a = [[1,2,3,4,5,6,7,8],[2,2,2,2,2,2,2,2]]
-
-for x in range(0,len(a)):
-    with Dataset('test.nc', 'a') as ds:
-            b = ds.variables["v"]
-            b[x,:] = a[x]
-            ds.sync()
-            
+# from netCDF4 import Dataset
+# 
+# # with Dataset('test.nc', 'w', format="NETCDF4_CLASSIC") as ds:
+# #             time_dimen = ds.createDimension("time", None)
+# #             arb_dim = ds.createDimension("arb", 8)
+# #             v = ds.createVariable("v",'f8',(['time','arb']))
+# 
+# a = [[1,2,3,4,5,6,7,8],[2,2,2,2,2,2,2,2]]
+# 
+# for x in range(0,len(a)):
+#     with Dataset('test.nc', 'a') as ds:
+#             b = ds.variables["v"]
+#             b[x,:] = a[x]
+#             ds.sync()
+#             

@@ -4,8 +4,12 @@
 <link rel="stylesheet" type="text/css" href="./css/jquery.datetimepicker.css"></link>
 <link rel="stylesheet" type="text/css" href="./js/leaflet/leaflet.css" />
 <script src="./js/leaflet/leaflet-src.js"></script>
+<script src="./js/leaflet/leaflet.control.orderlayers.js"></script>
 <script src="https://cdn.jsdelivr.net/leaflet.esri/2.0.2/esri-leaflet.js"></script>
-
+<script src="./js/leaflet/catiline.js"></script>
+<script src="./js/leaflet/leaflet.fgdb.js"></script>
+<script src="./js/leaflet/colorbrewer.js"></script>
+<script src="./js/leaflet/spin.js"></script>
 
 <div id="pair_bar">
 <div id="label_container">
@@ -20,9 +24,31 @@
 
 <table id="layers">
 <tr class="first"><td></td><td></td></tr>
+<tr><td>Base Map</td><td>
+	<select id="base_map">
+	    <option>Oceans</option>
+		<option>Gray</option>
+		<option>Streets</option>
+		<option>Topographic</option>
+		<option>OceansLabels</option>
+		<option>NationalGeographic</option>
+		<option>GrayLabels</option>
+		<option>DarkGray</option>
+		<option>DarkGrayLabels</option>
+		<option>Imagery</option>
+		<option>ImageryLabels</option>
+		<option>ImageryTransportation</option>
+		<option>ShadedRelief</option>
+		<option>ShadedReliefLabels</option>
+		<option>Terrain</option>
+		<option>TerrainLabels</option>
+		<option>USATopo</option>
+	</select> 
+</td></tr>
 <tr><td>Bathymetric Contours:</td><td><input class="map_layer" id="bath" type="checkbox" /></td></tr>
 <tr><td>CSRB Units:</td> <td> <input class="map_layer" id="csrb" type="checkbox" /></td></tr>
 <tr><td>Refuges:</td><td> <input class="map_layer" id="refuges" type="checkbox" /></td></tr>
+<tr><td>Watersheds:</td><td><input class="map_layer" id="watersheds" type="checkbox" /></td></tr>
 <tr class="last"><td>Wetlands:</td><td><input class="map_layer" id="wetlands" type="checkbox" /></td></tr>
 </table>
 
@@ -36,6 +62,13 @@
 </div>
 <div id="sidebar">
 <div id="side_container">
+<h3>Choose Event</h3>
+
+<select id="storm_event">
+<option value="ny">Nor'easter of January 2016: NY</option>
+<option value="nc">Hurricane Matthew: NC</option>
+</select>
+
 <h3>Time Options</h3>
 <form id="graphForm">
 <table>
@@ -47,8 +80,8 @@
 </select>
 </td></tr>
 <tr><td>DST:</td><td><input type="checkbox" id="dst" /></td></tr>
-<tr><td>Start Time:</td><td><input type="text" id="start_date" value="2016/01/22 17:00"/></td></tr>
-<tr><td>End Time:</td><td><input type="text" id="end_date" value="2016/01/28 12:00"/></td></tr>
+<tr><td>Start Time:</td><td><input type="text" id="start_date" value="2016/10/6 17:00"/></td></tr>
+<tr><td>End Time:</td><td><input type="text" id="end_date" value="2016/10/12 12:00"/></td></tr>
 <tr><td></td><td><button>Submit</button></td></tr>
 </table>
 </form>
@@ -64,7 +97,7 @@
 
 <div id="mainGraph">
 
-<h1>Multi Dashboard</h1>
+<h1 id="event_title">Nor'easter of January 2016: Long Island, New York</h1>
 
 <div style="display:block">
 

@@ -75,6 +75,16 @@ def hydrostatic_method(pressure, density="salt"):
     
     return (pressure *  1e4) / (FRESH_WATER_DENSITY * GRAVITY)
 
+def hydrostatic_pressure(wl, density="salt"):
+    """Return the pressure corresponding to hydrostatic water level"""
+    
+    if density == "salt":
+        return wl * (SALT_WATER_DENSITY * GRAVITY) / 1e4
+    
+    if density == "brackish":
+        return wl * (BRACKISH_WATER_DENSITY * GRAVITY) / 1e4
+    
+    return wl * (FRESH_WATER_DENSITY * GRAVITY) / 1e4
 
 def auto_cutoff(water_d):
     """Return a sensible frequency to cut off for a certain water depth"""
@@ -191,10 +201,10 @@ def eta_to_pressure(a, omega, k, z, H, t):
     return SALT_WATER_DENSITY * ((a*omega**2)/k)*(np.cosh(k*(z+H))/np.sinh(k*H)) \
         * (np.cos(omega*t)) - (SALT_WATER_DENSITY*GRAVITY*z)
        
-def lowpass_filter(data):
+def lowpass_filter(data, fs):
     '''Performs a butterworth filter of order 4 with a 1 min cutoff'''
-    fs = 4 
-    cutoff = .0166666665
+#     fs = 4 
+    cutoff = .0004
 #     cutoff = .0001
     
     lowcut = cutoff / (.5 * fs)
