@@ -113,6 +113,8 @@ def get_wind_data(file_name,sites,start_date = None, end_date = None, tz=None, d
                
         
         time = format_time(time)
+        time = time[2:]
+        print(len(time), len(u), len(v))
         with Dataset(file_name, 'w', format="NETCDF4_CLASSIC") as ds:
             time_dimen = ds.createDimension("time", len(time))
             station_dimen = ds.createDimension("station_id", len(sites))

@@ -29,7 +29,7 @@ class StormOptions(StormData):
                     }
         
         self.graph = {
-                    'Storm Tide with Unfiltered Water Level and Wind Data' : None,
+                    'Storm Tide with Wind Data' : None,
                     'Storm Tide with Unfiltered Water Level': None,
                     'Storm Tide Water Level': None,
                     'Atmospheric Pressure': None

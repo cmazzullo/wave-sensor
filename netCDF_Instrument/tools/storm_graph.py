@@ -41,16 +41,16 @@ class StormGraph(object):
         
         self.int_units = so.int_units
         
-        if so.graph['Storm Tide with Unfiltered Water Level and Wind Data'].get() == True:
-            so.get_meta_data()
-            so.get_air_meta_data()
-            so.get_wind_meta_data()
-            so.get_raw_water_level()
-            so.get_surge_water_level()
-            so.slice_wind_data()
-            so.test_water_elevation_below_sensor_orifice_elvation()
-            self.create_header(so, wind=True)
-            self.Storm_Tide_Unfiltered_and_Wind(so)
+#         if so.graph['Storm Tide with Unfiltered Water Level and Wind Data'].get() == True:
+#             so.get_meta_data()
+#             so.get_air_meta_data()
+#             so.get_wind_meta_data()
+#             so.get_raw_water_level()
+#             so.get_surge_water_level()
+#             so.slice_wind_data()
+#             so.test_water_elevation_below_sensor_orifice_elvation()
+#             self.create_header(so, wind=True)
+#             self.Storm_Tide_Unfiltered_and_Wind(so)
             
             #To avoid over allocating memory for the graphs
 #             plt.close()
@@ -302,16 +302,12 @@ class StormGraph(object):
             tide_max = so.surge_water_level[tide_idx] * unit_conversion.METER_TO_FEET
         
         #calculate and format the datetime of the unfiltered and storm tide maximum
-        depth_time = unit_conversion.convert_ms_to_date(so.sea_time[depth_idx], pytz.UTC)
-        tide_time = unit_conversion.convert_ms_to_date(so.sea_time[tide_idx], pytz.UTC)
-        format_times = unit_conversion.adjust_from_gmt([depth_time,tide_time], \
-                                          so.timezone,so.daylight_savings)
-        tide_time = format_times[1].strftime('%m/%d/%y %H:%M:%S')
-        depth_time = format_times[0].strftime('%m/%d/%y %H:%M:%S.%f')
-        depth_time = depth_time[0:(len(depth_time) - 4)]
-                 
-        depth_num = mdates.date2num(format_times[0])
-        tide_num = mdates.date2num(format_times[1])
+        
+        tide_time = str(mdates.num2date(self.time_nums[tide_idx], pytz.timezone(so.timezone)))[:-10]
+        depth_time = str(mdates.num2date(self.time_nums[depth_idx], pytz.timezone(so.timezone)))[:-10]
+     
+        depth_num = self.time_nums[depth_idx]
+        tide_num = self.time_nums[tide_idx]
          
         depth_min = np.floor(depth_min_start * 100.0)/100.0
          
@@ -391,6 +387,7 @@ class StormGraph(object):
           
         file_name = ''.join([so.output_fname,'_stormtide_unfiltered','.jpg'])
         plt.savefig(file_name)
+        
 
     def Storm_Tide_and_Wind(self,so):
         
@@ -454,17 +451,12 @@ class StormGraph(object):
             tide_max = so.surge_water_level[tide_idx] * unit_conversion.METER_TO_FEET
         
         #format the unfiltered and storm tide maximum dates
-        depth_time = unit_conversion.convert_ms_to_date(so.sea_time[depth_idx], pytz.UTC)
-       
-        tide_time = unit_conversion.convert_ms_to_date(so.sea_time[tide_idx], pytz.UTC)
-        format_times = unit_conversion.adjust_from_gmt([depth_time,tide_time], \
-                                          so.timezone,so.daylight_savings)
-        tide_time = format_times[1].strftime('%m/%d/%y %H:%M:%S')
-        depth_time = format_times[0].strftime('%m/%d/%y %H:%M:%S.%f')
-        depth_time = depth_time[0:(len(depth_time) - 4)]
-                
-        tide_num = mdates.date2num(format_times[1])
-        
+        tide_time = str(mdates.num2date(self.time_nums[tide_idx], pytz.timezone(so.timezone)))[:-10]
+        depth_time = str(mdates.num2date(self.time_nums[depth_idx], pytz.timezone(so.timezone)))[:-10]
+     
+        depth_num = self.time_nums[depth_idx]
+        tide_num = self.time_nums[tide_idx]
+         
         depth_min = np.floor(depth_min_start * 100.0)/100.0
         
         if depth_min > (sensor_min - .02):
@@ -550,8 +542,10 @@ class StormGraph(object):
          
         file_name = ''.join([so.output_fname,'_stormtide_wind','.jpg'])
         
-        plt.show()
-#         plt.savefig(file_name)
+
+        plt.savefig(file_name)
+        
+      
           
             
     def Storm_Tide_Water_Level(self,so):
@@ -591,9 +585,8 @@ class StormGraph(object):
         ax.set_xlabel('Timezone: %s' % so.timezone)
         
         #plan on rebuilding the flow of execution, ignore spaghetti for now
-        depth_min_start = np.min(so.surge_water_level)
+        depth_min_start = np.nanmin(so.surge_water_level)
         
-        depth_idx = np.nanargmax(so.raw_water_level)
         tide_idx = np.nanargmax(so.surge_water_level)
         
         if self.int_units == True:
@@ -604,17 +597,10 @@ class StormGraph(object):
             tide_max = so.surge_water_level[tide_idx] * unit_conversion.METER_TO_FEET
        
        
-        depth_time = unit_conversion.convert_ms_to_date(so.sea_time[depth_idx], pytz.UTC)
+        tide_time = str(mdates.num2date(self.time_nums[tide_idx], pytz.timezone(so.timezone)))[:-10]
         
-        tide_time = unit_conversion.convert_ms_to_date(so.sea_time[tide_idx], pytz.UTC)
-        format_times = unit_conversion.adjust_from_gmt([depth_time,tide_time], \
-                                          so.timezone,so.daylight_savings)
-        tide_time = format_times[1].strftime('%m/%d/%y %H:%M:%S')
-        depth_time = format_times[0].strftime('%m/%d/%y %H:%M:%S.%f')
-        depth_time = depth_time[0:(len(depth_time) - 4)]
-                
-        tide_num = mdates.date2num(format_times[1])
-        
+        tide_num = self.time_nums[tide_idx]
+         
         depth_min = np.floor(depth_min_start * 100.0)/100.0
        
         if depth_min > (sensor_min - .02):
@@ -688,6 +674,7 @@ class StormGraph(object):
         file_name = ''.join([so.output_fname,'_stormtide','.jpg'])
         plt.savefig(file_name)
     
+    
     def Atmospheric_Graph(self,so):
         ax = self.figure.add_subplot(self.grid_spec[1,0:])
         pos1 = ax.get_position() # get the original position 
@@ -744,6 +731,8 @@ class StormGraph(object):
         file_name = ''.join([so.output_fname,'_barometric_pressure','.jpg'])
         plt.savefig(file_name)
         
+      
+        
 class Bool(object):
     
     def __init__(self, val):
@@ -756,23 +745,23 @@ if __name__ == '__main__':
   
     so = StormOptions()
     so.clip = False
-    so.air_fname = 'NYSUF04781_stormtide_unfiltered.nc'
-    so.sea_fname = 'NYSUF04781_stormtide_unfiltered.nc'
+    so.air_fname = 'NYWES07664_9800742_baro_chop.csv.nc'
+    so.sea_fname = 'NYWES07664_1510687_wv_chop.csv.nc'
 #     so.wind_fname = "nc_wind.nc"
    
 #     so.air_fname = 'FLVOL03143_stormtide_unfiltered.nc'
 #     so.sea_fname = 'FLVOL03143_stormtide_unfiltered.nc'
 #     so.wind_fname = "fl_wind.nc"
     
-    so.from_water_level_file = True
-    so.format_output_fname('ny')
+    so.from_water_level_file = False
+    so.format_output_fname('waka_flaka')
     so.timezone = 'GMT'
     so.daylight_savings = False
     so.graph['Storm Tide with Unfiltered Water Level and Wind Data'] = Bool(False)
     so.graph['Storm Tide with Unfiltered Water Level'] = Bool(True)
-    so.graph['Storm Tide Water Level'] = Bool(False)
+    so.graph['Storm Tide Water Level'] = Bool(True)
     so.graph['Storm Tide with Wind Data'] = Bool(False)
-    so.graph['Atmospheric Pressure'] = Bool(False)
+    so.graph['Atmospheric Pressure'] = Bool(True)
                     
     sg = StormGraph()
     so.int_units = False
