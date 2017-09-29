@@ -46,21 +46,24 @@ class StormStatistics(object):
         
     def process_graphs(self,so):
         
-        self.get_data(so)
-        
+
         if so.statistics['H1/3'].get() == True:
+            self.get_data(so)
             self.create_header(so)
             self.plot_h13(so)
             
         if so.statistics['Average Z Cross'].get() == True:
+            self.get_data(so)
             self.create_header(so)
             self.plot_avgz(so)
             
         if so.statistics['Peak Wave'].get() == True:
+            self.get_data(so)
             self.create_header(so)
             self.plot_peak(so)
         
         if so.statistics['PSD Contour'].get() == True:
+            self.get_data(so)
             self.create_header(so, True)
             self.spectra_plot(so)      
         

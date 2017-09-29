@@ -45,9 +45,10 @@ class StormGui:
         
         self.so = StormOptions()
         
-        self.top.grid(row=0, columnspan=2, sticky=W, padx = 15, pady=10)
+        self.top.grid(row=0, columnspan=3, sticky=W, padx = 15, pady=10)
         
         self.side1 = Frame(self.root)
+        self.side3 = Frame(self.root)
         
         #Check boxes for output variables
         self.netCDFLabel = Label(self.side1, text='netCDF Options:')
@@ -76,7 +77,7 @@ class StormGui:
             
         
         
-        self.TzLabel = Label(self.side1, text='Time zone to display dates in:')
+        self.TzLabel = Label(self.side3, text='Time zone to display dates in:')
         self.TzLabel.pack(anchor=W,padx = 2,pady = 2)
         
         options=('GMT',
@@ -89,21 +90,21 @@ class StormGui:
         self.tzstringvar = StringVar()
         self.tzstringvar.set(options[0])
 
-        self.datePickFrame = Frame(self.side1)
+        self.datePickFrame = Frame(self.side3)
         
         OptionMenu(self.datePickFrame, self.tzstringvar, *options).pack(side=LEFT, pady=2, padx=15)
         self.daylightSavings = BooleanVar()
         Checkbutton(self.datePickFrame, text="Daylight Savings", variable=self.daylightSavings).pack(side=RIGHT)
         self.datePickFrame.pack(anchor=W)
         
-        self.emptyLabel4 = Label(self.side1, text='', font=("Helvetica", 2))
+        self.emptyLabel4 = Label(self.side3, text='', font=("Helvetica", 2))
         self.emptyLabel4.pack(anchor=W,padx = 15,pady = 0)
         
         #variables and text boxes for air pressure limits
-        self.BaroPickLabel = Label(self.side1, text='Barometric Pressure Y Axis Limits: (optional)')
+        self.BaroPickLabel = Label(self.side3, text='Barometric Pressure Y Axis Limits: (optional)')
         self.BaroPickLabel.pack(anchor=W,padx = 15,pady = 0)
         
-        self.baroPickFrame = Frame(self.side1)
+        self.baroPickFrame = Frame(self.side3)
         self.bLowerLabel = Label(self.baroPickFrame, text="lower:").pack(side=LEFT, pady=10, padx=2)
         self.baroYlim1 = Entry(self.baroPickFrame, width=5)
         self.baroYlim1.pack(side=LEFT, pady=2, padx=15)
@@ -113,14 +114,14 @@ class StormGui:
         self.baroPickFrame.pack(anchor=W, padx = 15)
         
         #tkinter spacing
-        self.emptyLabel4 = Label(self.side1, text='', font=("Helvetica", 2))
+        self.emptyLabel4 = Label(self.side3, text='', font=("Helvetica", 2))
         self.emptyLabel4.pack(anchor=W,padx = 15,pady = 0)
         
         #variables and textboxes for water level limits
-        self.WaterLevelLabel = Label(self.side1, text='Water Level Y Axis Limits: (optional)')
+        self.WaterLevelLabel = Label(self.side3, text='Water Level Y Axis Limits: (optional)')
         self.WaterLevelLabel.pack(anchor=W,padx = 15,pady = 0)
         
-        self.wlPickFrame = Frame(self.side1)
+        self.wlPickFrame = Frame(self.side3)
         self.wlLowerLabel = Label(self.wlPickFrame, text="lower:").pack(side=LEFT, pady=10, padx=2)
         self.wlYlim1 = Entry(self.wlPickFrame, width=5)
         self.wlYlim1.pack(side=LEFT, pady=2, padx=15)
@@ -131,6 +132,7 @@ class StormGui:
         
 
         self.side1.grid(row=1, column=0, sticky=W, padx = 15)
+        
         
         self.side2 = Frame(self.root)
            
@@ -143,7 +145,7 @@ class StormGui:
             button = Checkbutton(self.side2, text=x, variable=self.so.statistics[x])
             button.pack(anchor=W,padx = 2,pady = 2)
    
-        self.TzLabel = Label(self.side2, text=' ')
+        self.TzLabel = Label(self.side3, text=' ')
         self.TzLabel.pack(padx = 2,pady = 45)
         
 #         self.TzLabel = Label(self.side2, text='Clip water level graph:')
@@ -156,17 +158,18 @@ class StormGui:
  
         #OptionMenu(self.side2, self.clip, *clip_options).pack( pady=10, padx=15)
         
-        self.TzLabel = Label(self.side2, text=' ')
+        self.TzLabel = Label(self.side3, text=' ')
         self.TzLabel.pack(padx = 2,pady = 10)
-        self.TzLabel = Label(self.side2, text='Output Name:')
+        self.TzLabel = Label(self.side3, text='Output Name:')
         self.TzLabel.pack(padx = 2,pady = 2)
 #         
-        self.output_name = Entry(self.side2, width=20)
+        self.output_name = Entry(self.side3, width=20)
         self.output_name.pack(pady=2, padx=15)
 #         self.high_cut = Entry(self.side2, width=5)
 #         self.high_cut.pack(pady=2, padx=15)
         
         self.side2.grid(row=1, column=1, sticky=N, padx = 15)
+        self.side3.grid(row=1, column=2, sticky=N, padx = 15)
         
         self.final = Frame(self.root)
         self.b3 = ttk.Button(self.final,text="Process Files", command=c3, state=DISABLED,width=50)

@@ -12,7 +12,6 @@ from tools.multi_series_options import MultiOptions
 import matplotlib.pyplot as plt
 import os
 
-
 def find_index(array, value):
     
     array = np.array(array)
